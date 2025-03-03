@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="#FFF0F0"
+    tools:ignore="ExtraText"
+    android:padding="16dp">
+
+    <!-- Hình ảnh minh họa -->
+    <ImageView
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:src="@drawable/welcome_illustration"
+        android:contentDescription="Welcome Illustration"
+        android:scaleType="fitCenter" />
+
+    <!-- Tiêu đề -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Welcome to EasyBuy!"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        android:layout_marginTop="24dp" />
+
+    <!-- Mô tả -->
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/jetbrains_mono_semibold"
+        android:gravity="center"
+        android:maxWidth="300dp"
+        android:text="Mua sắm dễ dàng, giá cả cạnh tranh và giao hàng nhanh chóng – tất cả trong EasyBuy!"
+        android:textColor="#666666"
+        android:textSize="16sp" />
+
+    <Button
+        android:layout_gravity="center_horizontal"
+        android:id="@+id/btnUser"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="Tôi là người mua hàng"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:textSize="16sp"
+        android:background="@drawable/rounded_button"
+        android:textColor="#FFFFFF"
+        app:backgroundTint="#4A90E2"
+        android:layout_marginTop="32dp" />
+
+
+    <Button
+        android:layout_gravity="center_horizontal"
+        android:id="@+id/btnAdmin"
+        android:layout_width="match_parent"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_height="50dp"
+        android:text="Tôi là người bán "
+        android:textSize="16sp"
+        android:background="@drawable/rounded_button"
+        android:textColor="#FFFFFF"
+        app:backgroundTint="#567084"
+        android:layout_marginTop="32dp" />
+
+</LinearLayout>

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    android:padding="16dp"
+    tools:context=".Activity.Login.ForgotPW.CheckEmailActivity">
+
+    <!-- Nút quay lại -->
+    <ImageButton
+        android:id="@+id/btnBack"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_gravity="start"
+        android:layout_marginTop="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/left" />
+
+    <!-- Tiêu đề -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Kiểm tra Email "
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:layout_marginTop="32dp" />
+
+    <!-- Hướng dẫn -->
+    <TextView
+        android:layout_width="370dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:maxWidth="300dp"
+        android:text="Chúng tôi đã gửi mã xác nhận đến email của bạn."
+        android:textColor="#666666"
+        android:textSize="16sp" />
+
+    <!-- Ô nhập mã OTP -->
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="32dp">
+
+        <EditText
+            android:id="@+id/etOtp1"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:inputType="number"
+            android:text="8"
+            android:textAlignment="center"
+            android:background="@drawable/otp_edittext_border"
+            android:layout_margin="8dp" />
+
+        <EditText
+            android:id="@+id/etOtp2"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:inputType="number"
+            android:text="6"
+            android:textAlignment="center"
+            android:background="@drawable/otp_edittext_border"
+            android:layout_margin="8dp" />
+
+        <EditText
+            android:id="@+id/etOtp3"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:inputType="number"
+            android:text="3"
+            android:textAlignment="center"
+            android:background="@drawable/otp_edittext_border"
+            android:layout_margin="8dp" />
+
+        <EditText
+            android:id="@+id/etOtp4"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:inputType="number"
+            android:text=""
+            android:textAlignment="center"
+            android:background="@drawable/otp_edittext_border"
+            android:layout_margin="8dp" />
+
+        <EditText
+            android:id="@+id/etOtp5"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:inputType="number"
+            android:text=""
+            android:textAlignment="center"
+            android:background="@drawable/otp_edittext_border"
+            android:layout_margin="8dp" />
+    </LinearLayout>
+
+    <!-- Nút Verify Code -->
+    <Button
+        android:id="@+id/btnVerifyCode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Verify Code"
+        android:textSize="18sp"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/rounded_button"
+        app:backgroundTint="#4A90E2"
+        android:padding="12dp"
+        android:layout_marginTop="32dp"
+        android:maxWidth="300dp" />
+
+    <!-- Liên kết Resend email -->
+    <TextView
+        android:id="@+id/tvResendEmail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Chưa nhận được mã? Gửi lại "
+        android:textSize="14sp"
+        android:textColor="#4A90E2"
+        android:layout_marginTop="16dp"
+        android:clickable="true"
+        android:gravity="center" />
+
+</LinearLayout>
