@@ -71,7 +71,6 @@
 
     <!-- Special Offers Section -->
     <TextView
-        android:id="@+id/specialOffersTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Danh Sách Sản Phẩm 🔥"
@@ -84,6 +83,16 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="10dp" />
+
+    <!-- TextView khi danh sách rỗng -->
+    <TextView
+        android:id="@+id/tvEmptyList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Không có sản phẩm nào"
+        android:gravity="center"
+        android:visibility="gone"
+        android:padding="16dp" />
 
 </LinearLayout>
