@@ -4,6 +4,7 @@ import static android.app.Activity.RESULT_OK;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
@@ -36,13 +37,14 @@ public class AdminHomeFragment extends Fragment {
 
     private RecyclerView recyclerViewProducts;
     private TextView tvEmptyList;
-    private EditText etSearchProduct; // Thêm biến cho thanh tìm kiếm
+    private EditText etSearchProduct;
     private FloatingActionButton fabAddProduct;
     private ProductAdapter productAdapter;
     private ProductDAO productDAO;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private AlertDialog currentDialog;
     private List<Uri> additionalImageUris = new ArrayList<>();
+    private int adminId; // Thêm biến để lưu adminId
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -50,23 +52,31 @@ public class AdminHomeFragment extends Fragment {
 
         recyclerViewProducts = view.findViewById(R.id.recyclerViewProducts);
         tvEmptyList = view.findViewById(R.id.tvEmptyList);
-        etSearchProduct = view.findViewById(R.id.etSearchProduct); // Khởi tạo thanh tìm kiếm
+        etSearchProduct = view.findViewById(R.id.etSearchProduct);
         fabAddProduct = view.findViewById(R.id.fabAddProduct);
 
         productDAO = new ProductDAO(requireContext());
+        adminId = getAdminId(); // Lấy adminId
 
         setupImagePicker();
         setupRecyclerView();
-        setupSearchListener(); // Gọi phương thức để thiết lập lắng nghe tìm kiếm
+        setupSearchListener();
 
         fabAddProduct.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), AddProductActivity.class);
+            intent.putExtra("adminId", adminId); // Truyền adminId sang AddProductActivity
             startActivity(intent);
         });
 
         loadProducts();
 
         return view;
+    }
+
+    private int getAdminId() {
+        // Lấy adminId từ SharedPreferences (hoặc cơ chế đăng nhập khác)
+        SharedPreferences prefs = requireContext().getSharedPreferences("AdminPrefs", requireContext().MODE_PRIVATE);
+        return prefs.getInt("adminId", 1); // Mặc định là 1 nếu không tìm thấy
     }
 
     private void setupSearchListener() {
@@ -85,7 +95,7 @@ public class AdminHomeFragment extends Fragment {
     }
 
     private void filterProducts(String query) {
-        List<Product> allProducts = productDAO.getAllProducts();
+        List<Product> allProducts = productDAO.getProductsByAdmin(adminId); // Chỉ lấy sản phẩm của admin hiện tại
         List<Product> filteredList = new ArrayList<>();
         for (Product product : allProducts) {
             if (product.getProductName().toLowerCase().contains(query.toLowerCase())) {
@@ -109,14 +119,14 @@ public class AdminHomeFragment extends Fragment {
 
                             if (requestingButton != null && requestingButton.getId() == R.id.ibPickDialogImage) {
                                 Glide.with(this).load(selectedUri).into(ivDialogProductImage);
-                                ivDialogProductImage.setTag(selectedUri.toString()); // Lưu URI mới
+                                ivDialogProductImage.setTag(selectedUri.toString());
                                 Toast.makeText(requireContext(), "Ảnh chính đã được chọn", Toast.LENGTH_SHORT).show();
                             } else if (requestingButton != null && requestingButton.getId() == R.id.ibPickAdditionalImage) {
                                 additionalImageUris.add(selectedUri);
-                                recyclerViewImages.getAdapter().notifyDataSetChanged(); // Làm mới RecyclerView
+                                recyclerViewImages.getAdapter().notifyDataSetChanged();
                                 Toast.makeText(requireContext(), "Ảnh bổ sung đã được chọn", Toast.LENGTH_SHORT).show();
                             }
-                            getView().setTag(null); // Reset tag sau khi xử lý
+                            getView().setTag(null);
                         }
                     }
                 }
@@ -125,7 +135,7 @@ public class AdminHomeFragment extends Fragment {
 
     private void setupRecyclerView() {
         recyclerViewProducts.setLayoutManager(new GridLayoutManager(getContext(), 2));
-        List<Product> initialProducts = productDAO.getAllProducts();
+        List<Product> initialProducts = productDAO.getProductsByAdmin(adminId); // Chỉ lấy sản phẩm của admin hiện tại
         productAdapter = new ProductAdapter(getContext(), initialProducts, product -> showProductDialog(product));
         recyclerViewProducts.setAdapter(productAdapter);
     }
@@ -145,15 +155,13 @@ public class AdminHomeFragment extends Fragment {
         Button btnEditProduct = dialogView.findViewById(R.id.btnEditProduct);
         Button btnDeleteProduct = dialogView.findViewById(R.id.btnDeleteProduct);
 
-        // Điền thông tin sản phẩm
         Glide.with(this).load(product.getImageUrl()).into(ivDialogProductImage);
-        ivDialogProductImage.setTag(product.getImageUrl()); // Lưu URI ban đầu
+        ivDialogProductImage.setTag(product.getImageUrl());
         etDialogProductName.setText(product.getProductName());
         etDialogPrice.setText(String.valueOf(product.getPrice()));
         etDialogDescription.setText(product.getDescription());
 
-        // Cấu hình RecyclerView cho ảnh bổ sung
-        additionalImageUris.clear(); // Xóa danh sách cũ
+        additionalImageUris.clear();
         List<ProductImage> additionalImages = productDAO.getProductImages(product.getProductId());
         if (additionalImages != null && !additionalImages.isEmpty()) {
             for (ProductImage image : additionalImages) {
@@ -167,7 +175,7 @@ public class AdminHomeFragment extends Fragment {
 
         ibPickDialogImage.setOnClickListener(v -> {
             if (isEditing[0]) {
-                getView().setTag(v); // Lưu button hiện tại để biết nguồn gốc
+                getView().setTag(v);
                 openGallery();
             } else {
                 Toast.makeText(requireContext(), "Vui lòng nhấn Sửa để chọn ảnh", Toast.LENGTH_SHORT).show();
@@ -176,7 +184,7 @@ public class AdminHomeFragment extends Fragment {
 
         ibPickAdditionalImage.setOnClickListener(v -> {
             if (isEditing[0]) {
-                getView().setTag(v); // Lưu button hiện tại để biết nguồn gốc
+                getView().setTag(v);
                 openGallery();
             } else {
                 Toast.makeText(requireContext(), "Vui lòng nhấn Sửa để chọn ảnh bổ sung", Toast.LENGTH_SHORT).show();
@@ -193,7 +201,6 @@ public class AdminHomeFragment extends Fragment {
                 btnEditProduct.setText("Lưu");
                 isEditing[0] = true;
             } else {
-                // Lưu thay đổi
                 product.setProductName(etDialogProductName.getText().toString().trim());
                 try {
                     product.setPrice(Double.parseDouble(etDialogPrice.getText().toString().trim()));
@@ -202,26 +209,28 @@ public class AdminHomeFragment extends Fragment {
                     return;
                 }
                 product.setDescription(etDialogDescription.getText().toString().trim());
-                // Cập nhật ảnh chính từ tag của ImageView
                 String newImageUrl = (String) ivDialogProductImage.getTag();
                 if (newImageUrl != null && !newImageUrl.isEmpty()) {
                     product.setImageUrl(newImageUrl);
                 }
 
-                // Cập nhật ảnh bổ sung vào database
                 List<Uri> additionalUris = new ArrayList<>(additionalImageUris);
-                productDAO.updateProductImages(product.getProductId(), additionalUris); // Giả định có phương thức này
+                productDAO.updateProductImages(product.getProductId(), additionalUris);
 
-                productDAO.updateProduct(product);
-                etDialogProductName.setEnabled(false);
-                etDialogPrice.setEnabled(false);
-                etDialogDescription.setEnabled(false);
-                ibPickDialogImage.setVisibility(View.GONE);
-                ibPickAdditionalImage.setVisibility(View.GONE);
-                btnEditProduct.setText("Sửa");
-                isEditing[0] = false;
-                Toast.makeText(requireContext(), "Sản phẩm đã được cập nhật!", Toast.LENGTH_SHORT).show();
-                loadProducts(); // Cập nhật danh sách
+                int rowsAffected = productDAO.updateProduct(product, adminId); // Truyền adminId để kiểm tra quyền
+                if (rowsAffected > 0) {
+                    etDialogProductName.setEnabled(false);
+                    etDialogPrice.setEnabled(false);
+                    etDialogDescription.setEnabled(false);
+                    ibPickDialogImage.setVisibility(View.GONE);
+                    ibPickAdditionalImage.setVisibility(View.GONE);
+                    btnEditProduct.setText("Sửa");
+                    isEditing[0] = false;
+                    Toast.makeText(requireContext(), "Sản phẩm đã được cập nhật!", Toast.LENGTH_SHORT).show();
+                    loadProducts();
+                } else {
+                    Toast.makeText(requireContext(), "Bạn không có quyền sửa sản phẩm này hoặc lỗi xảy ra!", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -239,11 +248,15 @@ public class AdminHomeFragment extends Fragment {
                 .setTitle("Xác nhận xóa")
                 .setMessage("Bạn có chắc chắn muốn xóa sản phẩm này?")
                 .setPositiveButton("Có", (dialog, which) -> {
-                    productDAO.deleteProduct(product.getProductId());
-                    loadProducts(); // Cập nhật danh sách
-                    Toast.makeText(requireContext(), "Sản phẩm đã bị xóa!", Toast.LENGTH_SHORT).show();
-                    if (currentDialog != null && currentDialog.isShowing()) {
-                        currentDialog.dismiss();
+                    boolean deleted = productDAO.deleteProduct(product.getProductId(), adminId); // Truyền adminId để kiểm tra quyền
+                    if (deleted) {
+                        loadProducts();
+                        Toast.makeText(requireContext(), "Sản phẩm đã bị xóa!", Toast.LENGTH_SHORT).show();
+                        if (currentDialog != null && currentDialog.isShowing()) {
+                            currentDialog.dismiss();
+                        }
+                    } else {
+                        Toast.makeText(requireContext(), "Bạn không có quyền xóa sản phẩm này hoặc lỗi xảy ra!", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .setNegativeButton("Không", (dialog, which) -> dialog.dismiss())
@@ -261,22 +274,8 @@ public class AdminHomeFragment extends Fragment {
         }
     }
 
-    private List<Uri> parseAdditionalImages(String additionalImagesText) {
-        List<Uri> imageUris = new ArrayList<>();
-        if (additionalImagesText != null && !additionalImagesText.trim().isEmpty()) {
-            String[] items = additionalImagesText.split(",");
-            for (String item : items) {
-                String uriStr = item.trim().replaceAll("Item \\d+:\\s*", "").trim();
-                if (!uriStr.isEmpty()) {
-                    imageUris.add(Uri.parse(uriStr));
-                }
-            }
-        }
-        return imageUris;
-    }
-
     private void loadProducts() {
-        List<Product> products = productDAO.getAllProducts();
+        List<Product> products = productDAO.getProductsByAdmin(adminId); // Chỉ lấy sản phẩm của admin hiện tại
         productAdapter.setProductList(products);
 
         if (products.isEmpty()) {
@@ -310,8 +309,8 @@ public class AdminHomeFragment extends Fragment {
             holder.ibRemoveImage.setOnClickListener(v -> {
                 int adapterPosition = holder.getAdapterPosition();
                 if (adapterPosition != RecyclerView.NO_POSITION) {
-                    additionalImageUris.remove(adapterPosition); // Xóa ảnh tại vị trí hiện tại
-                    notifyItemRemoved(adapterPosition); // Cập nhật RecyclerView
+                    additionalImageUris.remove(adapterPosition);
+                    notifyItemRemoved(adapterPosition);
                     Toast.makeText(holder.itemView.getContext(), "Ảnh đã được xóa", Toast.LENGTH_SHORT).show();
                 }
             });

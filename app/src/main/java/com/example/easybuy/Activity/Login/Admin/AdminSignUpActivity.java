@@ -1,6 +1,7 @@
 package com.example.easybuy.Activity.Login.Admin;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -8,14 +9,14 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.easybuy.Database.AdminDAO;
+import com.example.easybuy.Database.DatabaseHelper;
 import com.example.easybuy.Model.Admin;
 import com.example.easybuy.R;
 
 public class AdminSignUpActivity extends AppCompatActivity {
     private EditText edtAdminName, edtAdminEmail, edtAdminPassword, edtRepeatAdminPW;
     private Button btnSignUp;
-    private AdminDAO adminDAO;
+    private DatabaseHelper databaseHelper; // Thay AdminDAO bằng DatabaseHelper
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,9 +30,8 @@ public class AdminSignUpActivity extends AppCompatActivity {
         edtRepeatAdminPW = findViewById(R.id.edtRepeatPW);
         btnSignUp = findViewById(R.id.btnSignUp);
 
-        // Khởi tạo AdminDAO
-        adminDAO = new AdminDAO(this);
-        adminDAO.open(); // Mở database
+        // Khởi tạo DatabaseHelper
+        databaseHelper = new DatabaseHelper(this);
 
         // Xử lý sự kiện đăng ký
         btnSignUp.setOnClickListener(v -> registerAdmin());
@@ -54,16 +54,23 @@ public class AdminSignUpActivity extends AppCompatActivity {
             return;
         }
 
-        if (adminDAO.getAdminByEmail(email) != null) {
+        // Kiểm tra email đã tồn tại
+        if (databaseHelper.checkAdminEmail(email)) { // Sử dụng checkAdminEmail từ DatabaseHelper
             Toast.makeText(this, "Email đã tồn tại!", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // Tạo Admin mới
         Admin newAdmin = new Admin(fullName, email, password);
-        long result = adminDAO.addAdmin(newAdmin);
+        long adminId = databaseHelper.addAdmin(newAdmin);
 
-        if (result > 0) {
+        if (adminId > 0) {
+            // Lưu adminId vào SharedPreferences để sử dụng sau này
+            SharedPreferences prefs = getSharedPreferences("AdminPrefs", MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putInt("adminId", (int) adminId);
+            editor.apply();
+
             Toast.makeText(this, "Đăng ký Admin thành công!", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, AdminLoginActivity.class));
             finish();
@@ -75,6 +82,6 @@ public class AdminSignUpActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        adminDAO.close(); // Đóng database
+        // Không cần close() riêng vì DatabaseHelper tự quản lý kết nối
     }
 }

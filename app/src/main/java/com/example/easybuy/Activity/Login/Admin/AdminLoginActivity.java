@@ -1,6 +1,7 @@
 package com.example.easybuy.Activity.Login.Admin;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Patterns;
 import android.widget.Button;
@@ -12,13 +13,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.easybuy.Activity.Admin.AdminMainActivity;
 import com.example.easybuy.Activity.Login.ForgotPW.ForgotPasswordActivity;
-import com.example.easybuy.Database.AdminDAO;
+import com.example.easybuy.Database.DatabaseHelper;
+import com.example.easybuy.Model.Admin;
 import com.example.easybuy.R;
 
 public class AdminLoginActivity extends AppCompatActivity {
     private EditText edtAdminEmail, edtAdminPassword;
     private Button btnAdminLogin;
-    private AdminDAO adminDAO;
+    private DatabaseHelper databaseHelper; // Thay AdminDAO bằng DatabaseHelper
     private TextView tvSignup;
     private TextView txtForgetPW;
 
@@ -34,9 +36,8 @@ public class AdminLoginActivity extends AppCompatActivity {
         tvSignup = findViewById(R.id.txtSignup);
         txtForgetPW = findViewById(R.id.txtForgetPW);
 
-        // Khởi tạo AdminDAO
-        adminDAO = new AdminDAO(this);
-        adminDAO.open(); // Mở database
+        // Khởi tạo DatabaseHelper
+        databaseHelper = new DatabaseHelper(this);
 
         // Xử lý sự kiện đăng nhập
         btnAdminLogin.setOnClickListener(v -> loginAdmin());
@@ -46,6 +47,7 @@ public class AdminLoginActivity extends AppCompatActivity {
             startActivity(new Intent(this, ForgotPasswordActivity.class));
             finish();
         });
+
         // Xử lý sự kiện đăng ký
         tvSignup.setOnClickListener(v -> {
             startActivity(new Intent(this, AdminSignUpActivity.class));
@@ -60,11 +62,17 @@ public class AdminLoginActivity extends AppCompatActivity {
         if (!validateInputs(email, password)) return;
 
         // Kiểm tra thông tin đăng nhập
-        boolean isAuthenticated = adminDAO.authenticateAdmin(email, password);
+        Admin admin = databaseHelper.getAdminByEmailAndPassword(email, password);
 
-        if (isAuthenticated) {
+        if (admin != null) {
+            // Lưu adminId vào SharedPreferences
+            SharedPreferences prefs = getSharedPreferences("AdminPrefs", MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putInt("adminId", admin.getId());
+            editor.apply();
+
             Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, AdminMainActivity.class)); // Chuyển đến màn hình Admin
+            startActivity(new Intent(this, AdminMainActivity.class));
             finish();
         } else {
             Toast.makeText(this, "Email hoặc mật khẩu không đúng!", Toast.LENGTH_SHORT).show();
@@ -84,9 +92,10 @@ public class AdminLoginActivity extends AppCompatActivity {
 
         return true;
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        adminDAO.close(); // Đóng database
+        // Không cần close() vì DatabaseHelper tự quản lý kết nối
     }
 }

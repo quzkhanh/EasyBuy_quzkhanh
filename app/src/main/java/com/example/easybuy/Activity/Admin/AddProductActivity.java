@@ -6,7 +6,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -27,6 +26,7 @@ import com.example.easybuy.Database.ImageAdapter;
 import com.example.easybuy.Database.ProductDAO;
 import com.example.easybuy.Model.Product;
 import com.example.easybuy.R;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,19 +43,31 @@ public class AddProductActivity extends AppCompatActivity {
     private Button btnSaveProduct;
     private RecyclerView recyclerViewImages;
     private ImageAdapter imageAdapter;
-
     private ActivityResultLauncher<Intent> imagePickerLauncher;
+    private int adminId; // Biến lưu adminId
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_product);
 
+        // Lấy adminId từ Intent hoặc cơ chế đăng nhập
+        adminId = getAdminId();
+
         initViews();
         setupImagePicker();
         setupRecyclerView();
         setupListeners();
         checkAndRequestPermission();
+    }
+
+    private int getAdminId() {
+        // Thay bằng logic thực tế để lấy adminId (ví dụ: từ Intent hoặc SharedPreferences)
+        Intent intent = getIntent();
+        return intent.getIntExtra("adminId", 1); // Mặc định là 1 nếu không tìm thấy
+        // Hoặc dùng SharedPreferences:
+        // SharedPreferences prefs = getSharedPreferences("AdminPrefs", MODE_PRIVATE);
+        // return prefs.getInt("adminId", 1);
     }
 
     private void initViews() {
@@ -208,7 +220,7 @@ public class AddProductActivity extends AppCompatActivity {
                 checkAndRequestPermission();
             }
         } else {
-            Log.e(TAG, "Không tìm thấy ứng dụng hỗ trợ ACTION_GET_CONTENT! Các ứng dụng khả dụng: " + getPackageManager().queryIntentActivities(intent, 0));
+            Log.e(TAG, "Không tìm thấy ứng dụng hỗ trợ ACTION_GET_CONTENT!");
             Toast.makeText(this, "Không tìm thấy ứng dụng hỗ trợ chọn ảnh. Vui lòng cài Google Photos.", Toast.LENGTH_LONG).show();
         }
     }
@@ -232,9 +244,14 @@ public class AddProductActivity extends AppCompatActivity {
             return;
         }
 
-        Product newProduct = new Product(productName, price, mainImageUrl, description);
+        // Sử dụng constructor có createdBy
+        Product newProduct = new Product(productName, price, mainImageUrl, description, adminId);
         ProductDAO productDAO = new ProductDAO(this);
-        long productId = productDAO.addProductWithImages(newProduct, new ArrayList<>(additionalImageUris.stream().map(Uri::toString).collect(Collectors.toList())));
+        long productId = productDAO.addProductWithImages(
+                newProduct,
+                additionalImageUris.stream().map(Uri::toString).collect(Collectors.toList()),
+                adminId
+        );
         Log.d(TAG, "Saved product with ID: " + productId + ", Main Image URL: " + mainImageUrl + ", Additional Images: " + additionalImageUris);
 
         if (productId != -1) {
@@ -244,5 +261,4 @@ public class AddProductActivity extends AppCompatActivity {
             Toast.makeText(this, "Lỗi khi thêm sản phẩm", Toast.LENGTH_SHORT).show();
         }
     }
-
 }
