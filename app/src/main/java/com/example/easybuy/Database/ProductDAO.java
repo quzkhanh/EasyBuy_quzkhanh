@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.util.Log;
 
 import com.example.easybuy.Model.Product;
@@ -147,6 +148,15 @@ public class ProductDAO {
         return productList;
     }
 
-
-
+    public void updateProductImages(int productId, List<Uri> imageUris) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.delete(TABLE_PRODUCT_IMAGES, "product_id = ?", new String[]{String.valueOf(productId)});
+        for (Uri uri : imageUris) {
+            ContentValues values = new ContentValues();
+            values.put("product_id", productId);
+            values.put("image_url", uri.toString());
+            db.insert(TABLE_PRODUCT_IMAGES, null, values);
+        }
+        db.close();
+    }
 }
