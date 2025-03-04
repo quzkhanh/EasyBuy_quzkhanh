@@ -192,4 +192,29 @@ public class ProductDAO {
         }
         db.close();
     }
+    public Product getProductById(int productId) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
+        Product product = null;
+
+        try {
+            cursor = db.rawQuery("SELECT * FROM product WHERE product_id = ?",
+                    new String[]{String.valueOf(productId)});
+
+            if (cursor != null && cursor.moveToFirst()) {
+                product = new Product();
+                product.setProductId(cursor.getInt(cursor.getColumnIndexOrThrow("product_id")));
+                product.setProductName(cursor.getString(cursor.getColumnIndexOrThrow("product_name")));
+                product.setPrice(cursor.getDouble(cursor.getColumnIndexOrThrow("price")));
+                product.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow("image_url")));
+                product.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
+            }
+        } catch (Exception e) {
+            Log.e("ProductDAO", "Error getting product by ID", e);
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+
+        return product;
+    }
 }

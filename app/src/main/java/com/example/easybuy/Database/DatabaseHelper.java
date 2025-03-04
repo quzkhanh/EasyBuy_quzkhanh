@@ -8,17 +8,21 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import com.example.easybuy.Model.Admin;
+import com.example.easybuy.Model.Order;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "easybuy.db";
-    private static final int DATABASE_VERSION = 11;
+    private static final int DATABASE_VERSION = 12; // Tăng version lên 12 để thêm bảng orders
     private static final String TABLE_OTP = "otp_table";
     private static final String TABLE_USERS = "users";
     private static final String TABLE_ADMINS = "admins";
     private static final String TABLE_PRODUCT = "product";
     private static final String TABLE_PRODUCT_IMAGES = "product_images";
+    private static final String TABLE_ORDERS = "orders"; // Thêm bảng orders
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -62,11 +66,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "image_url TEXT NOT NULL, " +
                 "FOREIGN KEY (product_id) REFERENCES " + TABLE_PRODUCT + "(product_id) ON DELETE CASCADE)";
 
+        String CREATE_ORDERS_TABLE = "CREATE TABLE " + TABLE_ORDERS + " (" +
+                "order_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "user_id INTEGER NOT NULL, " +
+                "total_price REAL NOT NULL, " +
+                "status TEXT NOT NULL, " +
+                "order_date TEXT NOT NULL, " +
+                "FOREIGN KEY (user_id) REFERENCES " + TABLE_USERS + "(userId) ON DELETE CASCADE)";
+
         db.execSQL(CREATE_USERS_TABLE);
         db.execSQL(CREATE_ADMINS_TABLE);
         db.execSQL(CREATE_OTP_TABLE);
         db.execSQL(CREATE_PRODUCT_TABLE);
         db.execSQL(CREATE_PRODUCT_IMAGES_TABLE);
+        db.execSQL(CREATE_ORDERS_TABLE);
 
         db.execSQL("INSERT INTO " + TABLE_USERS + " (email, password) VALUES ('seller@easybuy.com', 'seller123')");
         db.execSQL("INSERT INTO " + TABLE_ADMINS + " (email, password, full_name) VALUES ('admin@easybuy.com', 'admin123', 'Admin User')");
@@ -94,7 +107,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 db.execSQL("INSERT INTO " + TABLE_PRODUCT + " SELECT * FROM temp_product");
                 db.execSQL("DROP TABLE temp_product");
                 db.execSQL("PRAGMA foreign_keys=on");
-                Log.d("DatabaseHelper", "Added created_by column to product table");
+            }
+
+            if (oldVersion < 12) {
+                db.execSQL("CREATE TABLE " + TABLE_ORDERS + " (" +
+                        "order_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "user_id INTEGER NOT NULL, " +
+                        "total_price REAL NOT NULL, " +
+                        "status TEXT NOT NULL, " +
+                        "order_date TEXT NOT NULL, " +
+                        "FOREIGN KEY (user_id) REFERENCES " + TABLE_USERS + "(userId) ON DELETE CASCADE)");
+                Log.d("DatabaseHelper", "Created orders table");
             }
 
             backupProductTable(db);
@@ -119,7 +142,109 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.d("DatabaseHelper", "Product table backed up to product_backup");
     }
 
-    // --- Các phương thức cho User ---
+    // --- Các phương thức cho Admin ---
+    public long addAdmin(Admin admin) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("full_name", admin.getFullName());
+        values.put("email", admin.getEmail());
+        values.put("password", admin.getPassword());
+        values.put("role", 1);
+        long id = db.insert(TABLE_ADMINS, null, values);
+        db.close();
+        return id;
+    }
+
+    public Admin getAdminByEmailAndPassword(String email, String password) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ADMINS + " WHERE email = ? AND password = ?",
+                new String[]{email, password});
+        Admin admin = null;
+        if (cursor.moveToFirst()) {
+            admin = new Admin(
+                    cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("full_name")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("email")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("password"))
+            );
+        }
+        cursor.close();
+        db.close();
+        return admin;
+    }
+
+    public boolean checkAdminEmail(String email) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ADMINS + " WHERE email = ?", new String[]{email});
+        boolean exists = cursor.getCount() > 0;
+        cursor.close();
+        db.close();
+        return exists;
+    }
+
+    public boolean updateAdmin(Admin admin) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("full_name", admin.getFullName());
+        values.put("email", admin.getEmail());
+        values.put("password", admin.getPassword());
+        int rowsAffected = db.update(TABLE_ADMINS, values, "id = ?", new String[]{String.valueOf(admin.getId())});
+        db.close();
+        return rowsAffected > 0;
+    }
+
+    public boolean deleteAdmin(int adminId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int rowsAffected = db.delete(TABLE_ADMINS, "id = ?", new String[]{String.valueOf(adminId)});
+        db.close();
+        return rowsAffected > 0;
+    }
+
+    // --- Các phương thức cho Product ---
+    public boolean isProductOwner(int productId, int adminId) {
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+        try {
+            db = this.getReadableDatabase();
+            cursor = db.rawQuery("SELECT * FROM " + TABLE_PRODUCT + " WHERE product_id = ? AND created_by = ?",
+                    new String[]{String.valueOf(productId), String.valueOf(adminId)});
+            return cursor != null && cursor.getCount() > 0;
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error checking product owner", e);
+            return false;
+        } finally {
+            if (cursor != null) cursor.close();
+            if (db != null) db.close();
+        }
+    }
+
+    public long addProduct(String productName, double price, String imageUrl, String description, int adminId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("product_name", productName);
+        values.put("price", price);
+        values.put("image_url", imageUrl);
+        values.put("description", description);
+        values.put("created_by", adminId);
+        long id = db.insert(TABLE_PRODUCT, null, values);
+        db.close();
+        return id;
+    }
+
+    // --- Các phương thức cho Order ---
+    public long addOrder(Order order) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("user_id", order.getUserId());
+        values.put("total_price", order.getTotalPrice());
+        values.put("status", order.getStatus());
+        values.put("order_date", order.getOrderDate());
+        long id = db.insert(TABLE_ORDERS, null, values);
+        db.close();
+        return id;
+    }
+
+    // Các phương thức khác (User, OTP) giữ nguyên
     public boolean checkEmail(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_USERS + " WHERE email = ?", new String[]{email});
@@ -163,91 +288,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return rowsAffected > 0;
     }
 
-    // --- Các phương thức cho Admin ---
-    // Thêm admin mới
-    public long addAdmin(Admin admin) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("full_name", admin.getFullName());
-        values.put("email", admin.getEmail());
-        values.put("password", admin.getPassword());
-        values.put("role", 1); // Role mặc định cho admin
-
-        long id = db.insert(TABLE_ADMINS, null, values);
-        db.close();
-        return id; // Trả về id của admin vừa thêm, hoặc -1 nếu lỗi
-    }
-
-    // Kiểm tra đăng nhập admin
-    public Admin getAdminByEmailAndPassword(String email, String password) {
+    public List<Order> getOrdersByUserId(int userId) {
+        List<Order> orders = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ADMINS + " WHERE email = ? AND password = ?",
-                new String[]{email, password});
-        Admin admin = null;
-        if (cursor.moveToFirst()) {
-            admin = new Admin(
-                    cursor.getInt(cursor.getColumnIndexOrThrow("id")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("full_name")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("email")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("password"))
-            );
+        Cursor cursor = null;
+
+        try {
+            cursor = db.rawQuery("SELECT * FROM orders WHERE user_id = ? ORDER BY order_date DESC",
+                    new String[]{String.valueOf(userId)});
+
+            if (cursor.moveToFirst()) {
+                do {
+                    Order order = new Order();
+                    order.setOrderId(cursor.getInt(cursor.getColumnIndexOrThrow("order_id")));
+                    order.setUserId(cursor.getInt(cursor.getColumnIndexOrThrow("user_id")));
+                    order.setTotalPrice(cursor.getDouble(cursor.getColumnIndexOrThrow("total_price")));
+                    order.setStatus(cursor.getString(cursor.getColumnIndexOrThrow("status")));
+                    order.setOrderDate(cursor.getString(cursor.getColumnIndexOrThrow("order_date")));
+                    orders.add(order);
+                } while (cursor.moveToNext());
+            }
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error getting orders", e);
+        } finally {
+            if (cursor != null) cursor.close();
         }
-        cursor.close();
-        db.close();
-        return admin; // Trả về null nếu không tìm thấy
-    }
 
-    // Kiểm tra email admin đã tồn tại chưa
-    public boolean checkAdminEmail(String email) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ADMINS + " WHERE email = ?", new String[]{email});
-        boolean exists = cursor.getCount() > 0;
-        cursor.close();
-        db.close();
-        return exists;
-    }
-
-    // Cập nhật thông tin admin
-    public boolean updateAdmin(Admin admin) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("full_name", admin.getFullName());
-        values.put("email", admin.getEmail());
-        values.put("password", admin.getPassword());
-        int rowsAffected = db.update(TABLE_ADMINS, values, "id = ?", new String[]{String.valueOf(admin.getId())});
-        db.close();
-        return rowsAffected > 0;
-    }
-
-    // Xóa admin
-    public boolean deleteAdmin(int adminId) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        int rowsAffected = db.delete(TABLE_ADMINS, "id = ?", new String[]{String.valueOf(adminId)});
-        db.close();
-        return rowsAffected > 0;
-    }
-
-    // --- Các phương thức cho Product ---
-    public boolean isProductOwner(int productId, int adminId) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_PRODUCT + " WHERE product_id = ? AND created_by = ?",
-                new String[]{String.valueOf(productId), String.valueOf(adminId)});
-        boolean isOwner = cursor.getCount() > 0;
-        cursor.close();
-        db.close();
-        return isOwner;
-    }
-
-    public long addProduct(String productName, double price, String imageUrl, String description, int adminId) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("product_name", productName);
-        values.put("price", price);
-        values.put("image_url", imageUrl);
-        values.put("description", description);
-        values.put("created_by", adminId);
-        long id = db.insert(TABLE_PRODUCT, null, values);
-        db.close();
-        return id;
+        return orders;
     }
 }

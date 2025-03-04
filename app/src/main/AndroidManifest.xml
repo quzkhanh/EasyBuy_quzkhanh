@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
     <!-- Android 12 trở xuống -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-
-    <!-- Android 13 trở lên -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- Android 13 trở lên -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
 
     <application
         android:allowBackup="true"
@@ -21,6 +18,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.EasyBuy"
         tools:targetApi="31">
+        <activity
+            android:name=".Activity.User.ProductDetailActivity"
+            android:exported="false" />
         <activity
             android:name=".Activity.Login.ForgotPW.PasswordResetSuccessActivity"
             android:exported="false" />
@@ -55,7 +55,6 @@
             android:name=".Activity.Admin.AddProductActivity"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
             android:launchMode="singleTop" />
-
         <activity
             android:name=".Activity.WelcomeActivity"
             android:exported="true">
