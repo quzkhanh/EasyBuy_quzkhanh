@@ -5,6 +5,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
+    app:cardCornerRadius="12dp"
     android:background="@android:color/white">
 
     <!-- Tiêu đề dialog -->
@@ -31,31 +32,15 @@
             android:contentDescription="Hình ảnh sản phẩm"
             android:src="@drawable/product_placeholder" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingTop="8dp">
-
-            <EditText
-                android:id="@+id/etDialogMainImageUrl"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:hint="Đường dẫn ảnh chính"
-                android:background="@drawable/edittext_background"
-                android:padding="8dp"
-                android:enabled="false" />
-
-            <ImageButton
-                android:id="@+id/ibPickDialogImage"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@drawable/ic_image"
-                android:background="?attr/selectableItemBackground"
-                android:contentDescription="Chọn ảnh mới" />
-        </LinearLayout>
+        <ImageButton
+            android:id="@+id/ibPickDialogImage"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_image"
+            android:background="?attr/selectableItemBackground"
+            android:contentDescription="Chọn ảnh chính"
+            android:visibility="gone" />
     </LinearLayout>
 
     <!-- Tên sản phẩm -->
@@ -91,7 +76,7 @@
         android:maxLines="5"
         android:enabled="false" />
 
-    <!-- Phần hiển thị và chỉnh sửa ảnh bổ sung -->
+    <!-- RecyclerView cho ảnh bổ sung -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -99,32 +84,22 @@
         android:textStyle="bold"
         android:paddingTop="8dp" />
 
-    <LinearLayout
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewImages"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:layout_height="120dp"
+        android:padding="8dp"
+        android:scrollbars="vertical" />
 
-        <EditText
-            android:id="@+id/etDialogAdditionalImages"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:hint="Danh sách ảnh bổ sung (phân cách bằng dấu phẩy)"
-            android:background="@drawable/edittext_background"
-            android:padding="8dp"
-            android:enabled="false"
-            android:minLines="2"
-            android:maxLines="3" />
-
-        <ImageButton
-            android:id="@+id/ibPickAdditionalImage"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_image"
-            android:background="?attr/selectableItemBackground"
-            android:contentDescription="Chọn ảnh bổ sung" />
-    </LinearLayout>
+    <ImageButton
+        android:id="@+id/ibPickAdditionalImage"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:src="@drawable/ic_image"
+        android:background="?attr/selectableItemBackground"
+        android:contentDescription="Chọn ảnh bổ sung"
+        android:visibility="gone" />
 
     <!-- Nút Sửa và Xóa -->
     <LinearLayout

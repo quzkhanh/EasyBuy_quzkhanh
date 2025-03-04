@@ -1,35 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="16dp">
-
-    <TextView
-        android:id="@+id/tvEmptyList"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Không có sản phẩm nào!"
-        android:textSize="18sp"
-        android:visibility="gone"
-        android:layout_centerInParent="true" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAddProduct"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="16dp"
-        android:contentDescription="Thêm sản phẩm"
-        android:src="@android:drawable/ic_menu_add" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewProducts"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/fabAddProduct"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp" />
+        android:orientation="vertical">
 
-</RelativeLayout>
+        <!-- Thanh tìm kiếm -->
+    <EditText
+    android:id="@+id/etSearchProduct"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="Tìm sản phẩm theo tên"
+    android:padding="8dp"
+    android:background="@drawable/edittext_background"
+    android:inputType="text"
+    android:maxLines="1" />
+
+        <!-- TextView khi danh sách rỗng -->
+    <TextView
+    android:id="@+id/tvEmptyList"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Không có sản phẩm nào"
+    android:gravity="center"
+    android:visibility="gone"
+    android:padding="16dp" />
+
+        <!-- RecyclerView sản phẩm -->
+    <androidx.recyclerview.widget.RecyclerView
+    android:id="@+id/recyclerViewProducts"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:padding="8dp" />
+
+        <!-- Floating Action Button -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    android:id="@+id/fabAddProduct"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="end"
+    android:layout_margin="16dp"
+    android:src="@android:drawable/ic_input_add"
+    app:fabSize="normal" />
+
+        </LinearLayout>

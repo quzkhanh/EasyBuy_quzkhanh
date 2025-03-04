@@ -6,6 +6,8 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,19 +31,18 @@ import com.example.easybuy.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.List;
-import com.example.easybuy.Model.ProductImage;
-import java.util.ArrayList;
-import java.util.List;
-import android.net.Uri;
+
 public class AdminHomeFragment extends Fragment {
 
     private RecyclerView recyclerViewProducts;
     private TextView tvEmptyList;
+    private EditText etSearchProduct; // Thêm biến cho thanh tìm kiếm
     private FloatingActionButton fabAddProduct;
     private ProductAdapter productAdapter;
     private ProductDAO productDAO;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private AlertDialog currentDialog;
+    private List<Uri> additionalImageUris = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -49,12 +50,14 @@ public class AdminHomeFragment extends Fragment {
 
         recyclerViewProducts = view.findViewById(R.id.recyclerViewProducts);
         tvEmptyList = view.findViewById(R.id.tvEmptyList);
+        etSearchProduct = view.findViewById(R.id.etSearchProduct); // Khởi tạo thanh tìm kiếm
         fabAddProduct = view.findViewById(R.id.fabAddProduct);
 
         productDAO = new ProductDAO(requireContext());
 
         setupImagePicker();
         setupRecyclerView();
+        setupSearchListener(); // Gọi phương thức để thiết lập lắng nghe tìm kiếm
 
         fabAddProduct.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), AddProductActivity.class);
@@ -66,6 +69,33 @@ public class AdminHomeFragment extends Fragment {
         return view;
     }
 
+    private void setupSearchListener() {
+        etSearchProduct.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterProducts(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void filterProducts(String query) {
+        List<Product> allProducts = productDAO.getAllProducts();
+        List<Product> filteredList = new ArrayList<>();
+        for (Product product : allProducts) {
+            if (product.getProductName().toLowerCase().contains(query.toLowerCase())) {
+                filteredList.add(product);
+            }
+        }
+        productAdapter.setProductList(filteredList);
+        tvEmptyList.setVisibility(filteredList.isEmpty() ? View.VISIBLE : View.GONE);
+    }
+
     private void setupImagePicker() {
         imagePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -73,19 +103,17 @@ public class AdminHomeFragment extends Fragment {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Uri selectedUri = result.getData().getData();
                         if (selectedUri != null && currentDialog != null) {
-                            EditText etDialogMainImageUrl = currentDialog.findViewById(R.id.etDialogMainImageUrl);
-                            EditText etDialogAdditionalImages = currentDialog.findViewById(R.id.etDialogAdditionalImages);
                             ImageView ivDialogProductImage = currentDialog.findViewById(R.id.ivDialogProductImage);
-                            View requestingButton = getView().getTag() instanceof View ? (View) getView().getTag() : null;
+                            RecyclerView recyclerViewImages = currentDialog.findViewById(R.id.recyclerViewImages);
+                            ImageButton requestingButton = (ImageButton) getView().getTag();
 
-                            if (requestingButton != null && requestingButton.getId() == R.id.ibPickDialogImage && etDialogMainImageUrl.isEnabled()) {
-                                etDialogMainImageUrl.setText(selectedUri.toString());
+                            if (requestingButton != null && requestingButton.getId() == R.id.ibPickDialogImage) {
                                 Glide.with(this).load(selectedUri).into(ivDialogProductImage);
+                                ivDialogProductImage.setTag(selectedUri.toString()); // Lưu URI mới
                                 Toast.makeText(requireContext(), "Ảnh chính đã được chọn", Toast.LENGTH_SHORT).show();
-                            } else if (requestingButton != null && requestingButton.getId() == R.id.ibPickAdditionalImage && etDialogAdditionalImages.isEnabled()) {
-                                String currentImages = etDialogAdditionalImages.getText().toString().trim();
-                                String newImage = "Item " + (currentImages.isEmpty() ? 0 : currentImages.split(",").length) + ": " + selectedUri.toString() + ", ";
-                                etDialogAdditionalImages.setText(currentImages + newImage);
+                            } else if (requestingButton != null && requestingButton.getId() == R.id.ibPickAdditionalImage) {
+                                additionalImageUris.add(selectedUri);
+                                recyclerViewImages.getAdapter().notifyDataSetChanged(); // Làm mới RecyclerView
                                 Toast.makeText(requireContext(), "Ảnh bổ sung đã được chọn", Toast.LENGTH_SHORT).show();
                             }
                             getView().setTag(null); // Reset tag sau khi xử lý
@@ -111,32 +139,29 @@ public class AdminHomeFragment extends Fragment {
         EditText etDialogProductName = dialogView.findViewById(R.id.etDialogProductName);
         EditText etDialogPrice = dialogView.findViewById(R.id.etDialogPrice);
         EditText etDialogDescription = dialogView.findViewById(R.id.etDialogDescription);
-        EditText etDialogMainImageUrl = dialogView.findViewById(R.id.etDialogMainImageUrl);
         ImageButton ibPickDialogImage = dialogView.findViewById(R.id.ibPickDialogImage);
-        EditText etDialogAdditionalImages = dialogView.findViewById(R.id.etDialogAdditionalImages);
+        RecyclerView recyclerViewImages = dialogView.findViewById(R.id.recyclerViewImages);
         ImageButton ibPickAdditionalImage = dialogView.findViewById(R.id.ibPickAdditionalImage);
         Button btnEditProduct = dialogView.findViewById(R.id.btnEditProduct);
         Button btnDeleteProduct = dialogView.findViewById(R.id.btnDeleteProduct);
 
         // Điền thông tin sản phẩm
         Glide.with(this).load(product.getImageUrl()).into(ivDialogProductImage);
+        ivDialogProductImage.setTag(product.getImageUrl()); // Lưu URI ban đầu
         etDialogProductName.setText(product.getProductName());
         etDialogPrice.setText(String.valueOf(product.getPrice()));
         etDialogDescription.setText(product.getDescription());
-        etDialogMainImageUrl.setText(product.getImageUrl());
 
-        // Lấy và hiển thị ảnh bổ sung
+        // Cấu hình RecyclerView cho ảnh bổ sung
+        additionalImageUris.clear(); // Xóa danh sách cũ
         List<ProductImage> additionalImages = productDAO.getProductImages(product.getProductId());
         if (additionalImages != null && !additionalImages.isEmpty()) {
-            StringBuilder imagesText = new StringBuilder();
-            for (int i = 0; i < additionalImages.size(); i++) {
-                imagesText.append("Item ").append(i).append(": ").append(additionalImages.get(i).getImageUrl()).append(", ");
+            for (ProductImage image : additionalImages) {
+                additionalImageUris.add(Uri.parse(image.getImageUrl()));
             }
-            if (imagesText.length() > 0) {
-                imagesText.setLength(imagesText.length() - 2); // Xóa dấu phẩy cuối
-            }
-            etDialogAdditionalImages.setText(imagesText.length() > 0 ? imagesText.toString() : "Không có ảnh bổ sung");
         }
+        recyclerViewImages.setLayoutManager(new GridLayoutManager(getContext(), 3));
+        recyclerViewImages.setAdapter(new AdditionalImageAdapter());
 
         final boolean[] isEditing = {false};
 
@@ -163,8 +188,6 @@ public class AdminHomeFragment extends Fragment {
                 etDialogProductName.setEnabled(true);
                 etDialogPrice.setEnabled(true);
                 etDialogDescription.setEnabled(true);
-                etDialogMainImageUrl.setEnabled(true);
-                etDialogAdditionalImages.setEnabled(true);
                 ibPickDialogImage.setVisibility(View.VISIBLE);
                 ibPickAdditionalImage.setVisibility(View.VISIBLE);
                 btnEditProduct.setText("Lưu");
@@ -179,18 +202,20 @@ public class AdminHomeFragment extends Fragment {
                     return;
                 }
                 product.setDescription(etDialogDescription.getText().toString().trim());
-                product.setImageUrl(etDialogMainImageUrl.getText().toString().trim());
+                // Cập nhật ảnh chính từ tag của ImageView
+                String newImageUrl = (String) ivDialogProductImage.getTag();
+                if (newImageUrl != null && !newImageUrl.isEmpty()) {
+                    product.setImageUrl(newImageUrl);
+                }
 
-                // Xử lý và cập nhật ảnh bổ sung (chỉ lưu text hiện tại)
-                String additionalImagesText = etDialogAdditionalImages.getText().toString().trim();
-                // TODO: Cần thêm logic để cập nhật bảng product_images nếu có method updateProductImages
+                // Cập nhật ảnh bổ sung vào database
+                List<Uri> additionalUris = new ArrayList<>(additionalImageUris);
+                productDAO.updateProductImages(product.getProductId(), additionalUris); // Giả định có phương thức này
 
                 productDAO.updateProduct(product);
                 etDialogProductName.setEnabled(false);
                 etDialogPrice.setEnabled(false);
                 etDialogDescription.setEnabled(false);
-                etDialogMainImageUrl.setEnabled(false);
-                etDialogAdditionalImages.setEnabled(false);
                 ibPickDialogImage.setVisibility(View.GONE);
                 ibPickAdditionalImage.setVisibility(View.GONE);
                 btnEditProduct.setText("Sửa");
@@ -201,14 +226,29 @@ public class AdminHomeFragment extends Fragment {
         });
 
         btnDeleteProduct.setOnClickListener(v -> {
-            productDAO.deleteProduct(product.getProductId());
-            loadProducts(); // Cập nhật danh sách
-            Toast.makeText(requireContext(), "Sản phẩm đã bị xóa!", Toast.LENGTH_SHORT).show();
+            showDeleteConfirmationDialog(product);
         });
 
         builder.setView(dialogView);
         currentDialog = builder.create();
         currentDialog.show();
+    }
+
+    private void showDeleteConfirmationDialog(Product product) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Xác nhận xóa")
+                .setMessage("Bạn có chắc chắn muốn xóa sản phẩm này?")
+                .setPositiveButton("Có", (dialog, which) -> {
+                    productDAO.deleteProduct(product.getProductId());
+                    loadProducts(); // Cập nhật danh sách
+                    Toast.makeText(requireContext(), "Sản phẩm đã bị xóa!", Toast.LENGTH_SHORT).show();
+                    if (currentDialog != null && currentDialog.isShowing()) {
+                        currentDialog.dismiss();
+                    }
+                })
+                .setNegativeButton("Không", (dialog, which) -> dialog.dismiss())
+                .setCancelable(true)
+                .show();
     }
 
     private void openGallery() {
@@ -252,5 +292,45 @@ public class AdminHomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         loadProducts();
+    }
+
+    // Adapter cho RecyclerView ảnh bổ sung
+    private class AdditionalImageAdapter extends RecyclerView.Adapter<AdditionalImageAdapter.ViewHolder> {
+
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_additional_image, parent, false);
+            return new ViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            Uri imageUri = additionalImageUris.get(position);
+            Glide.with(holder.itemView.getContext()).load(imageUri).into(holder.imageView);
+            holder.ibRemoveImage.setOnClickListener(v -> {
+                int adapterPosition = holder.getAdapterPosition();
+                if (adapterPosition != RecyclerView.NO_POSITION) {
+                    additionalImageUris.remove(adapterPosition); // Xóa ảnh tại vị trí hiện tại
+                    notifyItemRemoved(adapterPosition); // Cập nhật RecyclerView
+                    Toast.makeText(holder.itemView.getContext(), "Ảnh đã được xóa", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return additionalImageUris.size();
+        }
+
+        public class ViewHolder extends RecyclerView.ViewHolder {
+            ImageView imageView;
+            ImageButton ibRemoveImage;
+
+            public ViewHolder(View itemView) {
+                super(itemView);
+                imageView = itemView.findViewById(R.id.ivAdditionalImage);
+                ibRemoveImage = itemView.findViewById(R.id.ibRemoveImage);
+            }
+        }
     }
 }
