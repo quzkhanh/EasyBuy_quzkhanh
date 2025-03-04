@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.example.easybuy.Model.Product;
 import com.example.easybuy.Model.ProductImage;
@@ -58,39 +59,51 @@ public class ProductDAO {
         ContentValues values = new ContentValues();
         values.put("product_name", product.getProductName());
         values.put("price", product.getPrice());
-        values.put("image_url", product.getImageUrl());
+        String imageUrl = product.getImageUrl();
+        if (imageUrl == null || imageUrl.trim().isEmpty()) {
+            Log.w("ProductDAO", "Image URL is null or empty for product: " + product.getProductName());
+            values.put("image_url", ""); // Có thể đặt giá trị mặc định hoặc yêu cầu ảnh
+        } else {
+            values.put("image_url", imageUrl);
+        }
         values.put("description", product.getDescription());
-        return db.insert(TABLE_PRODUCT, null, values);
+
+        long id = db.insert(TABLE_PRODUCT, null, values);
+        Log.d("ProductDAO", "Added product with ID: " + id + ", Image URL: " + imageUrl);
+        db.close();
+        return id;
     }
 
     // ✅ Thêm ảnh mô tả cho sản phẩm
+
     public long addProductImage(int productId, String imageUrl) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("product_id", productId);
         values.put("image_url", imageUrl);
-        return db.insert(TABLE_PRODUCT_IMAGES, null, values);
+        long id = db.insert(TABLE_PRODUCT_IMAGES, null, values);
+        db.close();
+        return id;
+    }
+    // ✅ Cập nhật sản phẩm
+
+    public int updateProduct(Product product) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("product_name", product.getProductName());
+        values.put("price", product.getPrice());
+        values.put("image_url", product.getImageUrl());
+        values.put("description", product.getDescription());
+        int rowsAffected = db.update(TABLE_PRODUCT, values, "product_id = ?", new String[]{String.valueOf(product.getProductId())});
+        db.close();
+        return rowsAffected;
     }
 
-    // ✅ Lấy tất cả sản phẩm
-    public List<Product> getAllProducts() {
-        List<Product> productList = new ArrayList<>();
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_PRODUCT, null);
-
-        if (cursor.moveToFirst()) {
-            do {
-                Product product = new Product();
-                product.setProductId(cursor.getInt(cursor.getColumnIndexOrThrow("product_id")));
-                product.setProductName(cursor.getString(cursor.getColumnIndexOrThrow("product_name")));
-                product.setPrice(cursor.getDouble(cursor.getColumnIndexOrThrow("price")));
-                product.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow("image_url")));
-                product.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
-                productList.add(product);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return productList;
+    // ✅ Xóa sản phẩm (sẽ xóa cả ảnh nhờ ON DELETE CASCADE)
+    public void deleteProduct(int productId) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.delete(TABLE_PRODUCT, "product_id = ?", new String[]{String.valueOf(productId)});
+        db.close();
     }
 
     // ✅ Lấy danh sách ảnh của một sản phẩm
@@ -112,21 +125,28 @@ public class ProductDAO {
         cursor.close();
         return imageList;
     }
+    // ✅ Lấy tất cả sản phẩm
+    public List<Product> getAllProducts() {
+        List<Product> productList = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_PRODUCT, null);
 
-    // ✅ Cập nhật sản phẩm
-    public int updateProduct(Product product) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("product_name", product.getProductName());
-        values.put("price", product.getPrice());
-        values.put("image_url", product.getImageUrl());
-        values.put("description", product.getDescription());
-        return db.update(TABLE_PRODUCT, values, "product_id = ?", new String[]{String.valueOf(product.getProductId())});
+        if (cursor.moveToFirst()) {
+            do {
+                Product product = new Product();
+                product.setProductId(cursor.getInt(cursor.getColumnIndexOrThrow("product_id")));
+                product.setProductName(cursor.getString(cursor.getColumnIndexOrThrow("product_name")));
+                product.setPrice(cursor.getDouble(cursor.getColumnIndexOrThrow("price")));
+                product.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow("image_url")));
+                product.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
+                productList.add(product);
+                Log.d("ProductDAO", "Product ID: " + product.getProductId() + ", Image URL: " + product.getImageUrl());
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return productList;
     }
 
-    // ✅ Xóa sản phẩm (sẽ xóa cả ảnh nhờ ON DELETE CASCADE)
-    public void deleteProduct(int productId) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.delete(TABLE_PRODUCT, "product_id = ?", new String[]{String.valueOf(productId)});
-    }
+
+
 }

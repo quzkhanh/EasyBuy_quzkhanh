@@ -60,14 +60,14 @@
         android:layout_gravity="center_horizontal"
         android:id="@+id/btnAdmin"
         android:layout_width="match_parent"
-        android:layout_marginLeft="40dp"
-        android:layout_marginRight="40dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
         android:layout_height="50dp"
         android:text="Tôi là người bán "
         android:textSize="16sp"
         android:background="@drawable/rounded_button"
         android:textColor="#FFFFFF"
-        app:backgroundTint="#567084"
+        app:backgroundTint="#7CADD7"
         android:layout_marginTop="32dp" />
 
 </LinearLayout>

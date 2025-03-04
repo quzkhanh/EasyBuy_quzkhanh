@@ -1,37 +1,44 @@
 package com.example.easybuy.Database;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.Target;
 import com.example.easybuy.Model.Product;
 import com.example.easybuy.R;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductViewHolder> {
+    private static final String TAG = "ProductAdapter";
     private Context context;
     private List<Product> productList;
-    private OnProductClickListener onProductClickListener; // Thêm listener cho sự kiện click
+    private OnProductClickListener onProductClickListener;
 
-    // Interface cho sự kiện click
     public interface OnProductClickListener {
         void onProductClick(Product product);
     }
 
-    // Constructor với listener tùy chọn
     public ProductAdapter(Context context, List<Product> productList, OnProductClickListener listener) {
         this.context = context;
-        this.productList = productList != null ? productList : new ArrayList<>(); // Đảm bảo không null
+        this.productList = productList != null ? productList : new ArrayList<>();
         this.onProductClickListener = listener;
     }
 
-    // Constructor không có listener (giữ tương thích với code cũ)
     public ProductAdapter(Context context, List<Product> productList) {
         this(context, productList, null);
     }
@@ -42,21 +49,42 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         View view = LayoutInflater.from(context).inflate(R.layout.item_product, parent, false);
         return new ProductViewHolder(view);
     }
-
     @Override
     public void onBindViewHolder(@NonNull ProductViewHolder holder, int position) {
         Product product = productList.get(position);
         holder.tvProductName.setText(product.getProductName());
         holder.tvPrice.setText(String.format("%,.0f VNĐ", product.getPrice()));
 
-        // Load ảnh với Glide, thêm placeholder và error
-        Glide.with(context)
-                .load(product.getImageUrl())
-                .placeholder(R.drawable.product_placeholder) // Ảnh placeholder khi đang tải
-                .error(R.drawable.product_placeholder) // Ảnh mặc định nếu lỗi
-                .into(holder.ivProductImage);
+        String imageUrl = product.getImageUrl();
+        Log.d(TAG, "Loading image for position " + position + ": " + (imageUrl != null ? imageUrl : "null"));
 
-        // Thêm sự kiện click
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(context)
+                    .load(imageUrl)
+                    .apply(new RequestOptions()
+                            .placeholder(R.drawable.product_placeholder)
+                            .error(R.drawable.placeholder_error)
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)) // Cache ảnh để tăng tốc
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            if (e != null) {
+                                Log.e(TAG, "Glide load failed for URL " + imageUrl + ": " + e.getMessage());
+                            }
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            return false;
+                        }
+                    })
+                    .into(holder.ivProductImage);
+        } else {
+            Log.e(TAG, "Image URL is null or empty for product: " + product.getProductName());
+            holder.ivProductImage.setImageResource(R.drawable.placeholder_error);
+        }
+
         holder.itemView.setOnClickListener(v -> {
             if (onProductClickListener != null) {
                 onProductClickListener.onProductClick(product);
@@ -69,13 +97,11 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         return productList.size();
     }
 
-    // Phương thức cập nhật danh sách sản phẩm
     public void setProductList(List<Product> newProductList) {
         this.productList = newProductList != null ? newProductList : new ArrayList<>();
         notifyDataSetChanged();
     }
 
-    // Lấy danh sách sản phẩm hiện tại (nếu cần)
     public List<Product> getProductList() {
         return productList;
     }

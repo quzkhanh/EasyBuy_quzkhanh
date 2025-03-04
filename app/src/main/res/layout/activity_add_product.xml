@@ -47,6 +47,12 @@
             android:src="@drawable/ic_image"
             android:background="?attr/selectableItemBackground"
             android:contentDescription="Chọn ảnh chính" />
+
+        <ImageView
+            android:id="@+id/ivProductImage"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:visibility="gone" />
     </LinearLayout>
 
     <EditText
@@ -73,7 +79,7 @@
         android:layout_marginBottom="20dp">
 
         <ImageButton
-            android:id="@+id/ivProductImage"
+            android:id="@+id/ibPickAdditionalImage"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:src="@drawable/ic_image"

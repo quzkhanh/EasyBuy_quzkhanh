@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -19,20 +20,29 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.easybuy.Database.ImageAdapter;
 import com.example.easybuy.Database.ProductDAO;
 import com.example.easybuy.Model.Product;
 import com.example.easybuy.R;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class AddProductActivity extends AppCompatActivity {
 
     private static final String TAG = "AddProductActivity";
     private static final int STORAGE_PERMISSION_REQUEST_CODE = 100;
-    private Uri selectedImageUri;
-
+    private Uri mainImageUri;
+    private List<Uri> additionalImageUris = new ArrayList<>();
     private EditText etProductName, etPrice, etDescription, etMainImageUrl;
-    private ImageButton ibPickImage;
+    private ImageButton ibPickImage, ibPickAdditionalImage;
     private ImageView ivProductImage;
     private Button btnSaveProduct;
+    private RecyclerView recyclerViewImages;
+    private ImageAdapter imageAdapter;
 
     private ActivityResultLauncher<Intent> imagePickerLauncher;
 
@@ -43,6 +53,7 @@ public class AddProductActivity extends AppCompatActivity {
 
         initViews();
         setupImagePicker();
+        setupRecyclerView();
         setupListeners();
         checkAndRequestPermission();
     }
@@ -53,7 +64,9 @@ public class AddProductActivity extends AppCompatActivity {
         etDescription = findViewById(R.id.etDescription);
         etMainImageUrl = findViewById(R.id.etMainImageUrl);
         ibPickImage = findViewById(R.id.ibPickImage);
+        ibPickAdditionalImage = findViewById(R.id.ibPickAdditionalImage);
         ivProductImage = findViewById(R.id.ivProductImage);
+        recyclerViewImages = findViewById(R.id.recyclerViewImages);
         btnSaveProduct = findViewById(R.id.btnSaveProduct);
     }
 
@@ -65,10 +78,29 @@ public class AddProductActivity extends AppCompatActivity {
                         Uri selectedUri = result.getData().getData();
                         if (selectedUri != null) {
                             try {
-                                selectedImageUri = selectedUri;
-                                ivProductImage.setImageURI(selectedImageUri);
-                                etMainImageUrl.setText(selectedImageUri.toString());
-                                Log.d(TAG, "Hình ảnh đã chọn: " + selectedImageUri.toString());
+                                if (mainImageUri == null) { // Ảnh chính
+                                    mainImageUri = selectedUri;
+                                    ivProductImage.setVisibility(View.VISIBLE);
+                                    ivProductImage.setImageURI(mainImageUri);
+                                    etMainImageUrl.setText(mainImageUri.toString());
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                                        getContentResolver().takePersistableUriPermission(
+                                                mainImageUri,
+                                                Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                        );
+                                    }
+                                    Log.d(TAG, "Ảnh chính đã chọn: " + mainImageUri.toString());
+                                } else { // Ảnh bổ sung
+                                    additionalImageUris.add(selectedUri);
+                                    imageAdapter.notifyDataSetChanged();
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                                        getContentResolver().takePersistableUriPermission(
+                                                selectedUri,
+                                                Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                        );
+                                    }
+                                    Log.d(TAG, "Ảnh bổ sung đã chọn: " + selectedUri.toString());
+                                }
                             } catch (Exception e) {
                                 Log.e(TAG, "Lỗi khi hiển thị ảnh: " + e.getMessage());
                                 Toast.makeText(this, "Lỗi khi hiển thị ảnh", Toast.LENGTH_SHORT).show();
@@ -82,6 +114,12 @@ public class AddProductActivity extends AppCompatActivity {
                     }
                 }
         );
+    }
+
+    private void setupRecyclerView() {
+        recyclerViewImages.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        imageAdapter = new ImageAdapter(additionalImageUris);
+        recyclerViewImages.setAdapter(imageAdapter);
     }
 
     private void checkAndRequestPermission() {
@@ -122,6 +160,18 @@ public class AddProductActivity extends AppCompatActivity {
     private void setupListeners() {
         ibPickImage.setOnClickListener(v -> {
             if (checkPermission()) {
+                if (mainImageUri == null) {
+                    openGallery();
+                } else {
+                    Toast.makeText(this, "Ảnh chính đã được chọn, hãy chọn ảnh bổ sung", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(this, "Cần cấp quyền để chọn ảnh", Toast.LENGTH_SHORT).show();
+                checkAndRequestPermission();
+            }
+        });
+        ibPickAdditionalImage.setOnClickListener(v -> {
+            if (checkPermission()) {
                 openGallery();
             } else {
                 Toast.makeText(this, "Cần cấp quyền để chọn ảnh", Toast.LENGTH_SHORT).show();
@@ -159,7 +209,7 @@ public class AddProductActivity extends AppCompatActivity {
             }
         } else {
             Log.e(TAG, "Không tìm thấy ứng dụng hỗ trợ ACTION_GET_CONTENT! Các ứng dụng khả dụng: " + getPackageManager().queryIntentActivities(intent, 0));
-            Toast.makeText(this, "Không tìm thấy ứng dụng hỗ trợ chọn ảnh. Vui lòng cài Google Photos hoặc ứng dụng quản lý tệp.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Không tìm thấy ứng dụng hỗ trợ chọn ảnh. Vui lòng cài Google Photos.", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -167,10 +217,10 @@ public class AddProductActivity extends AppCompatActivity {
         String productName = etProductName.getText().toString().trim();
         String priceStr = etPrice.getText().toString().trim();
         String description = etDescription.getText().toString().trim();
-        String imageUrl = (selectedImageUri != null) ? selectedImageUri.toString() : "";
+        String mainImageUrl = (mainImageUri != null) ? mainImageUri.toString() : "";
 
-        if (productName.isEmpty() || priceStr.isEmpty() || description.isEmpty() || imageUrl.isEmpty()) {
-            Toast.makeText(this, "Vui lòng điền đầy đủ thông tin và chọn ảnh", Toast.LENGTH_SHORT).show();
+        if (productName.isEmpty() || priceStr.isEmpty() || description.isEmpty() || mainImageUrl.isEmpty()) {
+            Toast.makeText(this, "Vui lòng điền đầy đủ thông tin và chọn ảnh chính", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -182,9 +232,10 @@ public class AddProductActivity extends AppCompatActivity {
             return;
         }
 
-        Product newProduct = new Product(productName, price, imageUrl, description);
+        Product newProduct = new Product(productName, price, mainImageUrl, description);
         ProductDAO productDAO = new ProductDAO(this);
-        long productId = productDAO.addProduct(newProduct);
+        long productId = productDAO.addProductWithImages(newProduct, new ArrayList<>(additionalImageUris.stream().map(Uri::toString).collect(Collectors.toList())));
+        Log.d(TAG, "Saved product with ID: " + productId + ", Main Image URL: " + mainImageUrl + ", Additional Images: " + additionalImageUris);
 
         if (productId != -1) {
             Toast.makeText(this, "Sản phẩm đã được thêm!", Toast.LENGTH_SHORT).show();
@@ -193,4 +244,5 @@ public class AddProductActivity extends AppCompatActivity {
             Toast.makeText(this, "Lỗi khi thêm sản phẩm", Toast.LENGTH_SHORT).show();
         }
     }
+
 }
