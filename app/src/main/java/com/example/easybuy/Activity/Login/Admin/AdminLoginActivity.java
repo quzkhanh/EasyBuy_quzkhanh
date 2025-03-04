@@ -10,7 +10,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.easybuy.Activity.AdminMainActivity;
+import com.example.easybuy.Activity.Admin.AdminMainActivity;
 import com.example.easybuy.Activity.Login.ForgotPW.ForgotPasswordActivity;
 import com.example.easybuy.Database.AdminDAO;
 import com.example.easybuy.R;

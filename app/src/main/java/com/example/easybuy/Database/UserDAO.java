@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.example.easybuy.Models.User;
+import com.example.easybuy.Model.User;
 
 import java.util.ArrayList;
 import java.util.List;

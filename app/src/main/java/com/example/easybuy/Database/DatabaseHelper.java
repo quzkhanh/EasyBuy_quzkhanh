@@ -10,10 +10,12 @@ import java.util.Random;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "easybuy.db";
-    private static final int DATABASE_VERSION = 4; // Cập nhật version để force update database
+    private static final int DATABASE_VERSION = 8;
     private static final String TABLE_OTP = "otp_table";
-    private static final String TABLE_USERS = "users"; // Thêm hằng số cho bảng users
-    private static final String TABLE_ADMINS = "admins"; // Thêm hằng số cho bảng admins
+    private static final String TABLE_USERS = "users";
+    private static final String TABLE_ADMINS = "admins";
+    private static final String TABLE_PRODUCT = "product";
+    private static final String TABLE_PRODUCT_IMAGES = "product_images";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -31,7 +33,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "role INTEGER DEFAULT 0)"; // 0: User
 
         // Tạo bảng admins
-        String CREATE_ADMIN_TABLE = "CREATE TABLE " + TABLE_ADMINS + " (" +
+        String CREATE_ADMINS_TABLE = "CREATE TABLE " + TABLE_ADMINS + " (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "full_name TEXT NOT NULL, " +
                 "email TEXT NOT NULL UNIQUE, " +
@@ -45,9 +47,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "otp TEXT NOT NULL, " +
                 "expiry_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
 
+// Tạo bảng product
+        String CREATE_PRODUCT_TABLE = "CREATE TABLE " + TABLE_PRODUCT + " (" +
+                "product_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "product_name TEXT NOT NULL, " +
+                "price REAL CHECK (price >= 0), " +
+                "image_url TEXT, " +
+                "description TEXT)";
+
+
+        // Tạo bảng product_images
+        String CREATE_PRODUCT_IMAGES_TABLE = "CREATE TABLE " + TABLE_PRODUCT_IMAGES + " (" +
+                "image_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "product_id INTEGER NOT NULL, " +
+                "image_url TEXT NOT NULL, " +
+                "FOREIGN KEY (product_id) REFERENCES " + TABLE_PRODUCT + "(product_id) ON DELETE CASCADE)";
+
         db.execSQL(CREATE_USERS_TABLE);
-        db.execSQL(CREATE_ADMIN_TABLE);
+        db.execSQL(CREATE_ADMINS_TABLE);
         db.execSQL(CREATE_OTP_TABLE);
+        db.execSQL(CREATE_PRODUCT_TABLE); // Thêm bảng product
+        db.execSQL(CREATE_PRODUCT_IMAGES_TABLE); // Thêm bảng product_images
+
+        // Dữ liệu mẫu (tùy chọn)
+        db.execSQL("INSERT INTO " + TABLE_USERS + " (email, password) VALUES ('seller@easybuy.com', 'seller123')");
+        db.execSQL("INSERT INTO " + TABLE_ADMINS + " (email, password, full_name) VALUES ('admin@easybuy.com', 'admin123', 'Admin User')");
     }
 
     @Override
@@ -56,6 +80,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_ADMINS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_OTP);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PRODUCT);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PRODUCT_IMAGES);
         onCreate(db);
     }
 

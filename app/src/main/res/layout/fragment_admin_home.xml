@@ -1,26 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:background="#F5F5F5">
+    android:padding="16dp">
 
     <TextView
+        android:id="@+id/tvEmptyList"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Admin Home"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="#333333" />
+        android:text="Không có sản phẩm nào!"
+        android:textSize="18sp"
+        android:visibility="gone"
+        android:layout_centerInParent="true" />
 
-    <TextView
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddProduct"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Welcome to Admin Dashboard!"
-        android:textSize="16sp"
-        android:textColor="#666666"
-        android:layout_marginTop="16dp" />
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        android:contentDescription="Thêm sản phẩm"
+        android:src="@android:drawable/ic_menu_add" />
 
-    <!-- Thêm các thành phần khác nếu cần, ví dụ: danh sách sản phẩm, nút, v.v. -->
-</LinearLayout>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewProducts"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/fabAddProduct"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp" />
+
+</RelativeLayout>

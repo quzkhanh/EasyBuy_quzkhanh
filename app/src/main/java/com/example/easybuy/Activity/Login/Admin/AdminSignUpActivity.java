@@ -9,7 +9,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.easybuy.Database.AdminDAO;
-import com.example.easybuy.Models.Admin;
+import com.example.easybuy.Model.Admin;
 import com.example.easybuy.R;
 
 public class AdminSignUpActivity extends AppCompatActivity {

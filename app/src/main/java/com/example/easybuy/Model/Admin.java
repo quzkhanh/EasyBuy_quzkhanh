@@ -1,4 +1,4 @@
-package com.example.easybuy.Models;
+package com.example.easybuy.Model;
 
 public class Admin {
     private String fullName;

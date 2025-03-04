@@ -9,7 +9,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.easybuy.Database.UserDAO;
-import com.example.easybuy.Models.User;
+import com.example.easybuy.Model.User;
 import com.example.easybuy.R;
 
 public class UserSignUpActivity extends AppCompatActivity {

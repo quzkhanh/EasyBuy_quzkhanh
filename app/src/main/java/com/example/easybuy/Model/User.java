@@ -1,4 +1,4 @@
-package com.example.easybuy.Models;
+package com.example.easybuy.Model;
 
 public class User {
     private int userId;

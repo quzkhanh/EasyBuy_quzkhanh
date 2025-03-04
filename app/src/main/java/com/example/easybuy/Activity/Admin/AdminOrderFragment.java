@@ -1,4 +1,4 @@
-package com.example.easybuy.Activity;
+package com.example.easybuy.Activity.Admin;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;

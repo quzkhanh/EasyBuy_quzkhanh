@@ -5,7 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.example.easybuy.Models.Admin;
+import com.example.easybuy.Model.Admin;
 
 public class AdminDAO {
     private SQLiteDatabase database;
