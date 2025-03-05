@@ -16,13 +16,13 @@ import java.util.Random;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "easybuy.db";
-    private static final int DATABASE_VERSION = 12; // Tăng version lên 12 để thêm bảng orders
+    private static final int DATABASE_VERSION = 13;
     private static final String TABLE_OTP = "otp_table";
     private static final String TABLE_USERS = "users";
     private static final String TABLE_ADMINS = "admins";
     private static final String TABLE_PRODUCT = "product";
     private static final String TABLE_PRODUCT_IMAGES = "product_images";
-    private static final String TABLE_ORDERS = "orders"; // Thêm bảng orders
+    private static final String TABLE_ORDERS = "orders";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -30,6 +30,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        // Create Tables SQL
         String CREATE_USERS_TABLE = "CREATE TABLE " + TABLE_USERS + " (" +
                 "userId INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "fullName TEXT, " +
@@ -69,11 +70,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String CREATE_ORDERS_TABLE = "CREATE TABLE " + TABLE_ORDERS + " (" +
                 "order_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "user_id INTEGER NOT NULL, " +
+                "product_id INTEGER NOT NULL, " +
+                "quantity INTEGER NOT NULL, " +
                 "total_price REAL NOT NULL, " +
                 "status TEXT NOT NULL, " +
                 "order_date TEXT NOT NULL, " +
-                "FOREIGN KEY (user_id) REFERENCES " + TABLE_USERS + "(userId) ON DELETE CASCADE)";
+                "shipping_address TEXT, " +
+                "phone_number TEXT, " +
+                "payment_method TEXT, " +
+                "FOREIGN KEY (user_id) REFERENCES " + TABLE_USERS + "(userId) ON DELETE CASCADE, " +
+                "FOREIGN KEY (product_id) REFERENCES " + TABLE_PRODUCT + "(product_id) ON DELETE CASCADE)";
 
+        // Execute table creation
         db.execSQL(CREATE_USERS_TABLE);
         db.execSQL(CREATE_ADMINS_TABLE);
         db.execSQL(CREATE_OTP_TABLE);
@@ -81,6 +89,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_PRODUCT_IMAGES_TABLE);
         db.execSQL(CREATE_ORDERS_TABLE);
 
+        // Insert default users
         db.execSQL("INSERT INTO " + TABLE_USERS + " (email, password) VALUES ('seller@easybuy.com', 'seller123')");
         db.execSQL("INSERT INTO " + TABLE_ADMINS + " (email, password, full_name) VALUES ('admin@easybuy.com', 'admin123', 'Admin User')");
     }
@@ -110,6 +119,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
 
             if (oldVersion < 12) {
+                // Tạo bảng orders với cấu trúc cũ (tạm thời)
                 db.execSQL("CREATE TABLE " + TABLE_ORDERS + " (" +
                         "order_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         "user_id INTEGER NOT NULL, " +
@@ -117,8 +127,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         "status TEXT NOT NULL, " +
                         "order_date TEXT NOT NULL, " +
                         "FOREIGN KEY (user_id) REFERENCES " + TABLE_USERS + "(userId) ON DELETE CASCADE)");
-                Log.d("DatabaseHelper", "Created orders table");
+                Log.d("DatabaseHelper", "Created initial orders table");
             }
+
+            if (oldVersion < 13) {
+                // Xóa bảng orders cũ và tạo lại với cấu trúc mới
+                db.execSQL("DROP TABLE IF EXISTS " + TABLE_ORDERS);
+                db.execSQL("CREATE TABLE " + TABLE_ORDERS + " (" +
+                        "order_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "user_id INTEGER NOT NULL, " +
+                        "product_id INTEGER NOT NULL, " +
+                        "quantity INTEGER NOT NULL, " +
+                        "total_price REAL NOT NULL, " +
+                        "status TEXT NOT NULL, " +
+                        "order_date TEXT NOT NULL, " +
+                        "shipping_address TEXT, " +
+                        "phone_number TEXT, " +
+                        "payment_method TEXT, " +
+                        "FOREIGN KEY (user_id) REFERENCES " + TABLE_USERS + "(userId) ON DELETE CASCADE, " +
+                        "FOREIGN KEY (product_id) REFERENCES " + TABLE_PRODUCT + "(product_id) ON DELETE CASCADE)");
+                Log.d("DatabaseHelper", "Upgraded orders table to version 13");
+            }
+
 
             backupProductTable(db);
             db.execSQL("DELETE FROM " + TABLE_PRODUCT_IMAGES);
@@ -142,7 +172,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.d("DatabaseHelper", "Product table backed up to product_backup");
     }
 
-    // --- Các phương thức cho Admin ---
+    // *** ADMIN METHODS ***
     public long addAdmin(Admin admin) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -200,7 +230,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return rowsAffected > 0;
     }
 
-    // --- Các phương thức cho Product ---
+    // *** PRODUCT METHODS ***
     public boolean isProductOwner(int productId, int adminId) {
         SQLiteDatabase db = null;
         Cursor cursor = null;
@@ -231,20 +261,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return id;
     }
 
-    // --- Các phương thức cho Order ---
-    public long addOrder(Order order) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("user_id", order.getUserId());
-        values.put("total_price", order.getTotalPrice());
-        values.put("status", order.getStatus());
-        values.put("order_date", order.getOrderDate());
-        long id = db.insert(TABLE_ORDERS, null, values);
-        db.close();
-        return id;
-    }
-
-    // Các phương thức khác (User, OTP) giữ nguyên
+    // *** OTP AND USER METHODS ***
     public boolean checkEmail(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_USERS + " WHERE email = ?", new String[]{email});
@@ -287,33 +304,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return rowsAffected > 0;
     }
-
-    public List<Order> getOrdersByUserId(int userId) {
-        List<Order> orders = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = null;
-
-        try {
-            cursor = db.rawQuery("SELECT * FROM orders WHERE user_id = ? ORDER BY order_date DESC",
-                    new String[]{String.valueOf(userId)});
-
-            if (cursor.moveToFirst()) {
-                do {
-                    Order order = new Order();
-                    order.setOrderId(cursor.getInt(cursor.getColumnIndexOrThrow("order_id")));
-                    order.setUserId(cursor.getInt(cursor.getColumnIndexOrThrow("user_id")));
-                    order.setTotalPrice(cursor.getDouble(cursor.getColumnIndexOrThrow("total_price")));
-                    order.setStatus(cursor.getString(cursor.getColumnIndexOrThrow("status")));
-                    order.setOrderDate(cursor.getString(cursor.getColumnIndexOrThrow("order_date")));
-                    orders.add(order);
-                } while (cursor.moveToNext());
-            }
-        } catch (Exception e) {
-            Log.e("DatabaseHelper", "Error getting orders", e);
-        } finally {
-            if (cursor != null) cursor.close();
-        }
-
-        return orders;
+    public long addOrder(Order order) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("user_id", order.getUserId());
+        values.put("product_id", order.getProductId());
+        values.put("quantity", order.getQuantity());
+        values.put("total_price", order.getTotalPrice());
+        values.put("status", order.getStatus());
+        values.put("order_date", order.getOrderDate());
+        values.put("shipping_address", order.getShippingAddress());
+        values.put("phone_number", order.getPhoneNumber());
+        values.put("payment_method", order.getPaymentMethod());
+        long id = db.insert(TABLE_ORDERS, null, values);
+        db.close();
+        return id;
     }
 }
+

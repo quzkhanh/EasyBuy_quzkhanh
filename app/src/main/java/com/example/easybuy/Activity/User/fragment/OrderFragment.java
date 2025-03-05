@@ -1,17 +1,20 @@
 package com.example.easybuy.Activity.User.fragment;
 
+import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.easybuy.Database.DatabaseHelper;
+import com.example.easybuy.Database.OrderDAO;
 import com.example.easybuy.Database.OrderAdapter;
 import com.example.easybuy.Model.Order;
 import com.example.easybuy.R;
@@ -19,11 +22,12 @@ import com.example.easybuy.R;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OrderFragment extends Fragment {
+public class OrderFragment extends Fragment implements OrderAdapter.OnOrderCancelListener {
     private RecyclerView recyclerViewOrders;
     private OrderAdapter orderAdapter;
     private TextView tvNoOrders;
-    private DatabaseHelper databaseHelper;
+    private OrderDAO orderDAO;
+    private int userId;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -33,13 +37,15 @@ public class OrderFragment extends Fragment {
         recyclerViewOrders = view.findViewById(R.id.recyclerViewOrders);
         tvNoOrders = view.findViewById(R.id.tvNoOrders);
 
-        // Khởi tạo DatabaseHelper
-        databaseHelper = new DatabaseHelper(requireContext());
+        // Khởi tạo OrderDAO
+        orderDAO = new OrderDAO(requireContext());
+
+        // Lấy userId từ SharedPreferences
+        SharedPreferences prefs = requireContext().getSharedPreferences("UserPrefs", requireContext().MODE_PRIVATE);
+        userId = prefs.getInt("userId", -1);
 
         // Thiết lập RecyclerView
-        recyclerViewOrders.setLayoutManager(new LinearLayoutManager(getContext()));
-        orderAdapter = new OrderAdapter(getContext(), new ArrayList<>());
-        recyclerViewOrders.setAdapter(orderAdapter);
+        setupRecyclerView();
 
         // Tải danh sách đơn hàng
         loadOrders();
@@ -47,14 +53,21 @@ public class OrderFragment extends Fragment {
         return view;
     }
 
-    private void loadOrders() {
-        // Lấy userId từ SharedPreferences
-        SharedPreferences prefs = requireContext().getSharedPreferences("UserPrefs", requireContext().MODE_PRIVATE);
-        int userId = prefs.getInt("userId", -1);
+    private void setupRecyclerView() {
+        recyclerViewOrders.setLayoutManager(new LinearLayoutManager(getContext()));
+        orderAdapter = new OrderAdapter(getContext(), new ArrayList<>(), this);
+        recyclerViewOrders.setAdapter(orderAdapter);
 
+        // Thêm chức năng trượt để hủy đơn
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(
+                new OrderAdapter.SwipeToDeleteCallback(orderAdapter, requireContext())
+        );
+        itemTouchHelper.attachToRecyclerView(recyclerViewOrders);
+    }
+
+    private void loadOrders() {
         if (userId != -1) {
-            // Giả sử bạn có phương thức getOrdersByUserId trong DatabaseHelper
-            List<Order> orders = getOrdersByUserId(userId);
+            List<Order> orders = orderDAO.getOrdersByUserId(userId);
 
             if (orders.isEmpty()) {
                 tvNoOrders.setVisibility(View.VISIBLE);
@@ -64,12 +77,32 @@ public class OrderFragment extends Fragment {
                 recyclerViewOrders.setVisibility(View.VISIBLE);
                 orderAdapter.setOrderList(orders);
             }
+        } else {
+            // Xử lý trường hợp không có userId
+            tvNoOrders.setText("Vui lòng đăng nhập để xem đơn hàng");
+            tvNoOrders.setVisibility(View.VISIBLE);
+            recyclerViewOrders.setVisibility(View.GONE);
         }
     }
 
-    private List<Order> getOrdersByUserId(int userId) {
-        // Thêm phương thức này vào DatabaseHelper
-        return databaseHelper.getOrdersByUserId(userId);
+    @Override
+    public void onOrderCancel(Order order) {
+        // Hiển thị dialog xác nhận hủy đơn
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Hủy đơn hàng")
+                .setMessage("Bạn có chắc chắn muốn hủy đơn hàng #" + order.getOrderId() + "?")
+                .setPositiveButton("Hủy đơn", (dialog, which) -> {
+                    // Thực hiện hủy đơn hàng
+                    boolean isDeleted = orderDAO.deleteOrder(order.getOrderId());
+                    if (isDeleted) {
+                        Toast.makeText(requireContext(), "Đã hủy đơn hàng", Toast.LENGTH_SHORT).show();
+                        loadOrders(); // Tải lại danh sách đơn hàng
+                    } else {
+                        Toast.makeText(requireContext(), "Không thể hủy đơn hàng", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Quay lại", null)
+                .show();
     }
 
     @Override

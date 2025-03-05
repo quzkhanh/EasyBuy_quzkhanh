@@ -14,9 +14,9 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.easybuy.Activity.User.ProductDetailActivity;
-import com.example.easybuy.Database.DatabaseHelper;
-import com.example.easybuy.Database.ProductAdapter;
+import com.example.easybuy.Database.OrderDAO;
 import com.example.easybuy.Database.ProductDAO;
+import com.example.easybuy.Database.ProductAdapter;
 import com.example.easybuy.Model.Order;
 import com.example.easybuy.Model.Product;
 import com.example.easybuy.R;
@@ -31,9 +31,10 @@ public class HomeFragment extends Fragment {
 
     private RecyclerView productRecyclerView;
     private ProductDAO productDAO;
-    private DatabaseHelper databaseHelper; // Thêm DatabaseHelper để xử lý Order
+    private OrderDAO orderDAO;
     private ProductAdapter productAdapter;
     private TextView tvEmptyList;
+    private int userId;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -42,10 +43,25 @@ public class HomeFragment extends Fragment {
         // Khởi tạo các thành phần
         productRecyclerView = view.findViewById(R.id.productRecyclerView);
         tvEmptyList = view.findViewById(R.id.tvEmptyList);
+
+        // Khởi tạo DAO
         productDAO = new ProductDAO(requireContext());
-        databaseHelper = new DatabaseHelper(requireContext());
+        orderDAO = new OrderDAO(requireContext());
+
+        // Lấy userId từ SharedPreferences
+        SharedPreferences prefs = requireContext().getSharedPreferences("UserPrefs", requireContext().MODE_PRIVATE);
+        userId = prefs.getInt("userId", -1);
 
         // Cấu hình RecyclerView với GridLayoutManager (2 cột)
+        setupRecyclerView();
+
+        // Tải danh sách sản phẩm
+        loadProducts();
+
+        return view;
+    }
+
+    private void setupRecyclerView() {
         productRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
         productAdapter = new ProductAdapter(getContext(), new ArrayList<>(), product -> {
             // Chuyển sang ProductDetailActivity
@@ -54,47 +70,60 @@ public class HomeFragment extends Fragment {
             startActivity(intent);
         });
         productRecyclerView.setAdapter(productAdapter);
-
-        // Tải danh sách sản phẩm
-        loadProducts();
-
-        return view;
     }
 
     private void loadProducts() {
         List<Product> products = productDAO.getAllProducts();
-        productAdapter.setProductList(products);
-        tvEmptyList.setVisibility(products.isEmpty() ? View.VISIBLE : View.GONE);
-        productRecyclerView.setVisibility(products.isEmpty() ? View.GONE : View.VISIBLE);
+
+        if (products.isEmpty()) {
+            tvEmptyList.setVisibility(View.VISIBLE);
+            productRecyclerView.setVisibility(View.GONE);
+        } else {
+            tvEmptyList.setVisibility(View.GONE);
+            productRecyclerView.setVisibility(View.VISIBLE);
+            productAdapter.setProductList(products);
+        }
     }
 
     private void placeOrder(Product product) {
-        // Lấy userId từ SharedPreferences (giả định đã lưu khi đăng nhập)
-        SharedPreferences prefs = requireContext().getSharedPreferences("UserPrefs", requireContext().MODE_PRIVATE);
-        int userId = prefs.getInt("userId", -1); // -1 nếu chưa đăng nhập
-
-        if (userId == -1) {
+        // Kiểm tra đăng nhập
+        if (!isUserLoggedIn()) {
             Toast.makeText(getContext(), "Vui lòng đăng nhập để mua hàng!", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // Lấy thời gian hiện tại
-        String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+        String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                .format(new Date());
 
         // Tạo đơn hàng mới
-        Order order = new Order();
-        order.setUserId(userId);
-        order.setTotalPrice(product.getPrice()); // Giả định mua 1 sản phẩm, tổng giá = giá sản phẩm
-        order.setStatus("Pending"); // Trạng thái ban đầu
-        order.setOrderDate(currentDate);
+        Order order = createOrder(product, currentDate);
 
         // Lưu đơn hàng vào database
-        long orderId = databaseHelper.addOrder(order);
+        long orderId = orderDAO.addOrder(order);
+
         if (orderId != -1) {
             Toast.makeText(getContext(), "Đặt hàng thành công: " + product.getProductName(), Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(getContext(), "Lỗi khi đặt hàng!", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private Order createOrder(Product product, String currentDate) {
+        Order order = new Order();
+        order.setUserId(userId);
+        order.setProductId(product.getProductId());
+        order.setQuantity(1); // Mặc định 1 sản phẩm
+        order.setTotalPrice(product.getPrice());
+        order.setStatus("Pending");
+        order.setOrderDate(currentDate);
+
+        // Bạn có thể thêm các thông tin khác như địa chỉ, số điện thoại nếu cần
+        return order;
+    }
+
+    private boolean isUserLoggedIn() {
+        return userId != -1;
     }
 
     @Override

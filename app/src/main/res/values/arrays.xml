@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="payment_methods">
+        <item>Thanh toán khi nhận hàng (COD)</item>
+        <item>Chuyển khoản ngân hàng</item>
+        <item>Thẻ tín dụng/Thẻ ghi nợ</item>
+        <item>Ví điện tử</item>
+    </string-array>
+</resources>

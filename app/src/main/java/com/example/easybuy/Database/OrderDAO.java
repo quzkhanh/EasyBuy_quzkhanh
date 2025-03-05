@@ -4,109 +4,95 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
+
 import com.example.easybuy.Model.Order;
-import com.example.easybuy.Model.OrderDetail;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class OrderDAO {
-    private static final String DATABASE_NAME = "EasyBuy.db";
-    private static final int DATABASE_VERSION = 1;
-    private static final String TABLE_ORDERS = "orders";
-    private static final String TABLE_ORDER_DETAILS = "order_details";
-
-    private SQLiteDatabase database;
     private DatabaseHelper dbHelper;
+    private static final String TABLE_ORDERS = "orders";
 
     public OrderDAO(Context context) {
         dbHelper = new DatabaseHelper(context);
     }
 
-    private static class DatabaseHelper extends SQLiteOpenHelper {
-        public DatabaseHelper(Context context) {
-            super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        }
-
-        @Override
-        public void onCreate(SQLiteDatabase db) {
-            db.execSQL("CREATE TABLE " + TABLE_ORDERS + " (order_id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, total_price REAL, status TEXT, order_date TEXT)");
-            db.execSQL("CREATE TABLE " + TABLE_ORDER_DETAILS + " (detail_id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER, product_id INTEGER, quantity INTEGER, price REAL)");
-        }
-
-        @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            db.execSQL("DROP TABLE IF EXISTS " + TABLE_ORDERS);
-            db.execSQL("DROP TABLE IF EXISTS " + TABLE_ORDER_DETAILS);
-            onCreate(db);
-        }
+    // Thêm đơn hàng mới
+    public long addOrder(Order order) {
+        return dbHelper.addOrder(order);
     }
 
-    public void open() {
-        database = dbHelper.getWritableDatabase();
-    }
-
-    public void close() {
-        dbHelper.close();
-    }
-
-    public long insertOrder(Order order) {
-        ContentValues values = new ContentValues();
-        values.put("user_id", order.getUserId());
-        values.put("total_price", order.getTotalPrice());
-        values.put("status", order.getStatus());
-        values.put("order_date", order.getOrderDate());
-        return database.insert(TABLE_ORDERS, null, values);
-    }
-
-    public void insertOrderDetail(OrderDetail orderDetail) {
-        ContentValues values = new ContentValues();
-        values.put("order_id", orderDetail.getOrderId());
-        values.put("product_id", orderDetail.getProductId());
-        values.put("quantity", orderDetail.getQuantity());
-        values.put("price", orderDetail.getPrice());
-        database.insert(TABLE_ORDER_DETAILS, null, values);
-    }
-
+    // Lấy tất cả đơn hàng
     public List<Order> getAllOrders() {
         List<Order> orders = new ArrayList<>();
-        Cursor cursor = database.rawQuery("SELECT * FROM " + TABLE_ORDERS, null);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ORDERS, null);
+
         if (cursor.moveToFirst()) {
             do {
                 Order order = new Order();
-                order.setOrderId(cursor.getInt(0));
-                order.setUserId(cursor.getInt(1));
-                order.setTotalPrice(cursor.getDouble(2));
-                order.setStatus(cursor.getString(3));
-                order.setOrderDate(cursor.getString(4));
+                order.setOrderId(cursor.getInt(cursor.getColumnIndexOrThrow("order_id")));
+                order.setUserId(cursor.getInt(cursor.getColumnIndexOrThrow("user_id")));
+                order.setProductId(cursor.getInt(cursor.getColumnIndexOrThrow("product_id")));
+                order.setQuantity(cursor.getInt(cursor.getColumnIndexOrThrow("quantity")));
+                order.setTotalPrice(cursor.getDouble(cursor.getColumnIndexOrThrow("total_price")));
+                order.setStatus(cursor.getString(cursor.getColumnIndexOrThrow("status")));
+                order.setOrderDate(cursor.getString(cursor.getColumnIndexOrThrow("order_date")));
+                order.setShippingAddress(cursor.getString(cursor.getColumnIndexOrThrow("shipping_address")));
+                order.setPhoneNumber(cursor.getString(cursor.getColumnIndexOrThrow("phone_number")));
+                order.setPaymentMethod(cursor.getString(cursor.getColumnIndexOrThrow("payment_method")));
                 orders.add(order);
             } while (cursor.moveToNext());
         }
         cursor.close();
+        db.close();
         return orders;
     }
 
-    public List<OrderDetail> getOrderDetails(int orderId) {
-        List<OrderDetail> details = new ArrayList<>();
-        Cursor cursor = database.rawQuery("SELECT * FROM " + TABLE_ORDER_DETAILS + " WHERE order_id = ?", new String[]{String.valueOf(orderId)});
+    // Lấy đơn hàng theo userId
+    public List<Order> getOrdersByUserId(int userId) {
+        List<Order> orders = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ORDERS + " WHERE user_id = ?",
+                new String[]{String.valueOf(userId)});
+
         if (cursor.moveToFirst()) {
             do {
-                OrderDetail detail = new OrderDetail();
-                detail.setDetailId(cursor.getInt(0));
-                detail.setOrderId(cursor.getInt(1));
-                detail.setProductId(cursor.getInt(2));
-                detail.setQuantity(cursor.getInt(3));
-                detail.setPrice(cursor.getDouble(4));
-                details.add(detail);
+                Order order = new Order();
+                order.setOrderId(cursor.getInt(cursor.getColumnIndexOrThrow("order_id")));
+                order.setUserId(cursor.getInt(cursor.getColumnIndexOrThrow("user_id")));
+                order.setProductId(cursor.getInt(cursor.getColumnIndexOrThrow("product_id")));
+                order.setQuantity(cursor.getInt(cursor.getColumnIndexOrThrow("quantity")));
+                order.setTotalPrice(cursor.getDouble(cursor.getColumnIndexOrThrow("total_price")));
+                order.setStatus(cursor.getString(cursor.getColumnIndexOrThrow("status")));
+                order.setOrderDate(cursor.getString(cursor.getColumnIndexOrThrow("order_date")));
+                order.setShippingAddress(cursor.getString(cursor.getColumnIndexOrThrow("shipping_address")));
+                order.setPhoneNumber(cursor.getString(cursor.getColumnIndexOrThrow("phone_number")));
+                order.setPaymentMethod(cursor.getString(cursor.getColumnIndexOrThrow("payment_method")));
+                orders.add(order);
             } while (cursor.moveToNext());
         }
         cursor.close();
-        return details;
+        db.close();
+        return orders;
     }
 
-    public void updateOrderStatus(int orderId, String status) {
+    // Cập nhật trạng thái đơn hàng
+    public boolean updateOrderStatus(int orderId, String status) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("status", status);
-        database.update(TABLE_ORDERS, values, "order_id = ?", new String[]{String.valueOf(orderId)});
+        int rowsAffected = db.update(TABLE_ORDERS, values, "order_id = ?", new String[]{String.valueOf(orderId)});
+        db.close();
+        return rowsAffected > 0;
+    }
+
+    // Xóa đơn hàng
+    public boolean deleteOrder(int orderId) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        int rowsAffected = db.delete(TABLE_ORDERS, "order_id = ?", new String[]{String.valueOf(orderId)});
+        db.close();
+        return rowsAffected > 0;
     }
 }

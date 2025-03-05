@@ -13,6 +13,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -37,22 +38,26 @@ public class AddProductActivity extends AppCompatActivity {
     private static final int STORAGE_PERMISSION_REQUEST_CODE = 100;
     private Uri mainImageUri;
     private List<Uri> additionalImageUris = new ArrayList<>();
-    private EditText etProductName, etPrice, etDescription, etMainImageUrl;
+    private EditText etProductName, etPrice, etDescription;
     private ImageButton ibPickImage, ibPickAdditionalImage;
     private ImageView ivProductImage;
     private Button btnSaveProduct;
     private RecyclerView recyclerViewImages;
     private ImageAdapter imageAdapter;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
-    private int adminId; // Biến lưu adminId
+    private int adminId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_product);
 
-        // Lấy adminId từ Intent hoặc cơ chế đăng nhập
-        adminId = getAdminId();
+        adminId = getIntent().getIntExtra("adminId", -1);
+        if (adminId == -1) {
+            Toast.makeText(this, "Không tìm thấy thông tin admin", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         initViews();
         setupImagePicker();
@@ -61,20 +66,10 @@ public class AddProductActivity extends AppCompatActivity {
         checkAndRequestPermission();
     }
 
-    private int getAdminId() {
-        // Thay bằng logic thực tế để lấy adminId (ví dụ: từ Intent hoặc SharedPreferences)
-        Intent intent = getIntent();
-        return intent.getIntExtra("adminId", 1); // Mặc định là 1 nếu không tìm thấy
-        // Hoặc dùng SharedPreferences:
-        // SharedPreferences prefs = getSharedPreferences("AdminPrefs", MODE_PRIVATE);
-        // return prefs.getInt("adminId", 1);
-    }
-
     private void initViews() {
         etProductName = findViewById(R.id.etProductName);
         etPrice = findViewById(R.id.etPrice);
         etDescription = findViewById(R.id.etDescription);
-        etMainImageUrl = findViewById(R.id.etMainImageUrl);
         ibPickImage = findViewById(R.id.ibPickImage);
         ibPickAdditionalImage = findViewById(R.id.ibPickAdditionalImage);
         ivProductImage = findViewById(R.id.ivProductImage);
@@ -89,149 +84,110 @@ public class AddProductActivity extends AppCompatActivity {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Uri selectedUri = result.getData().getData();
                         if (selectedUri != null) {
-                            try {
-                                if (mainImageUri == null) { // Ảnh chính
-                                    mainImageUri = selectedUri;
-                                    ivProductImage.setVisibility(View.VISIBLE);
-                                    ivProductImage.setImageURI(mainImageUri);
-                                    etMainImageUrl.setText(mainImageUri.toString());
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                                        getContentResolver().takePersistableUriPermission(
-                                                mainImageUri,
-                                                Intent.FLAG_GRANT_READ_URI_PERMISSION
-                                        );
-                                    }
-                                    Log.d(TAG, "Ảnh chính đã chọn: " + mainImageUri.toString());
-                                } else { // Ảnh bổ sung
-                                    additionalImageUris.add(selectedUri);
-                                    imageAdapter.notifyDataSetChanged();
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                                        getContentResolver().takePersistableUriPermission(
-                                                selectedUri,
-                                                Intent.FLAG_GRANT_READ_URI_PERMISSION
-                                        );
-                                    }
-                                    Log.d(TAG, "Ảnh bổ sung đã chọn: " + selectedUri.toString());
-                                }
-                            } catch (Exception e) {
-                                Log.e(TAG, "Lỗi khi hiển thị ảnh: " + e.getMessage());
-                                Toast.makeText(this, "Lỗi khi hiển thị ảnh", Toast.LENGTH_SHORT).show();
-                            }
-                        } else {
-                            Log.e(TAG, "URI ảnh là null!");
-                            Toast.makeText(this, "Không lấy được ảnh", Toast.LENGTH_SHORT).show();
+                            handleImageSelection(selectedUri);
                         }
-                    } else {
-                        Log.e(TAG, "Chọn ảnh bị hủy hoặc có lỗi: resultCode=" + result.getResultCode());
                     }
                 }
         );
     }
 
+    private void handleImageSelection(Uri selectedUri) {
+        try {
+            if (mainImageUri == null) {
+                mainImageUri = selectedUri;
+                ivProductImage.setVisibility(View.VISIBLE);
+                ivProductImage.setImageURI(mainImageUri);
+            } else {
+                additionalImageUris.add(selectedUri);
+                imageAdapter.notifyDataSetChanged();
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                getContentResolver().takePersistableUriPermission(
+                        selectedUri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                );
+            }
+            Log.d(TAG, "Ảnh đã chọn: " + selectedUri.toString());
+        } catch (Exception e) {
+            Log.e(TAG, "Lỗi khi xử lý ảnh: " + e.getMessage());
+            Toast.makeText(this, "Lỗi khi xử lý ảnh", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void setupRecyclerView() {
         recyclerViewImages.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        imageAdapter = new ImageAdapter(additionalImageUris);
+        List<String> imageUrls = additionalImageUris.stream()
+                .map(Uri::toString)
+                .collect(Collectors.toList());
+        // Khởi tạo với listener và isAdmin
+        imageAdapter = new ImageAdapter(imageUrls, new ImageAdapter.OnImageClickListener() {
+            @Override
+            public void onImageClick(String imageUrl) {
+                Toast.makeText(AddProductActivity.this, "Clicked image: " + imageUrl, Toast.LENGTH_SHORT).show();
+                // Thêm logic xử lý khi click ảnh (nếu cần)
+            }
+        }, false); // false cho người mua, true cho admin
         recyclerViewImages.setAdapter(imageAdapter);
     }
 
     private void checkAndRequestPermission() {
-        String[] permissionsToRequest;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissionsToRequest = new String[]{Manifest.permission.READ_MEDIA_IMAGES};
-        } else {
-            permissionsToRequest = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
-        }
+        String permission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ?
+                Manifest.permission.READ_MEDIA_IMAGES :
+                Manifest.permission.READ_EXTERNAL_STORAGE;
 
-        boolean allPermissionsGranted = true;
-        for (String permission : permissionsToRequest) {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                allPermissionsGranted = false;
-                break;
-            }
-        }
-
-        if (!allPermissionsGranted) {
-            ActivityCompat.requestPermissions(this, permissionsToRequest, STORAGE_PERMISSION_REQUEST_CODE);
+        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{permission}, STORAGE_PERMISSION_REQUEST_CODE);
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == STORAGE_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "Quyền truy cập bộ nhớ được cấp!");
-                Toast.makeText(this, "Quyền được cấp, bạn có thể chọn ảnh", Toast.LENGTH_SHORT).show();
+        if (requestCode == STORAGE_PERMISSION_REQUEST_CODE && grantResults.length > 0) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Quyền được cấp", Toast.LENGTH_SHORT).show();
             } else {
-                Log.e(TAG, "Quyền truy cập bộ nhớ bị từ chối!");
-                Toast.makeText(this, "Quyền bị từ chối, không thể chọn ảnh. Vui lòng cấp quyền trong Settings.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Cần quyền truy cập để chọn ảnh", Toast.LENGTH_LONG).show();
             }
         }
     }
 
     private void setupListeners() {
-        ibPickImage.setOnClickListener(v -> {
-            if (checkPermission()) {
-                if (mainImageUri == null) {
-                    openGallery();
-                } else {
-                    Toast.makeText(this, "Ảnh chính đã được chọn, hãy chọn ảnh bổ sung", Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                Toast.makeText(this, "Cần cấp quyền để chọn ảnh", Toast.LENGTH_SHORT).show();
-                checkAndRequestPermission();
-            }
-        });
-        ibPickAdditionalImage.setOnClickListener(v -> {
-            if (checkPermission()) {
-                openGallery();
-            } else {
-                Toast.makeText(this, "Cần cấp quyền để chọn ảnh", Toast.LENGTH_SHORT).show();
-                checkAndRequestPermission();
-            }
-        });
+        ibPickImage.setOnClickListener(v -> pickImage(true));
+        ibPickAdditionalImage.setOnClickListener(v -> pickImage(false));
         btnSaveProduct.setOnClickListener(v -> saveProduct());
     }
 
-    private boolean checkPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES)
-                    == PackageManager.PERMISSION_GRANTED;
-        } else {
-            return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED;
+    private void pickImage(boolean isMainImage) {
+        if (!checkPermission()) {
+            checkAndRequestPermission();
+            return;
         }
-    }
 
-    private void openGallery() {
+        if (isMainImage && mainImageUri != null) {
+            Toast.makeText(this, "Đã chọn ảnh chính", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            if (checkPermission()) {
-                try {
-                    imagePickerLauncher.launch(intent);
-                    Log.d(TAG, "Intent gallery (ACTION_GET_CONTENT) đã được khởi động thành công.");
-                } catch (Exception e) {
-                    Log.e(TAG, "Lỗi khi khởi động Intent gallery: " + e.getMessage());
-                    Toast.makeText(this, "Lỗi khi mở gallery: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                }
-            } else {
-                Toast.makeText(this, "Cần cấp quyền để chọn ảnh", Toast.LENGTH_SHORT).show();
-                checkAndRequestPermission();
-            }
-        } else {
-            Log.e(TAG, "Không tìm thấy ứng dụng hỗ trợ ACTION_GET_CONTENT!");
-            Toast.makeText(this, "Không tìm thấy ứng dụng hỗ trợ chọn ảnh. Vui lòng cài Google Photos.", Toast.LENGTH_LONG).show();
-        }
+        imagePickerLauncher.launch(intent);
+    }
+
+    private boolean checkPermission() {
+        String permission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ?
+                Manifest.permission.READ_MEDIA_IMAGES :
+                Manifest.permission.READ_EXTERNAL_STORAGE;
+        return ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED;
     }
 
     private void saveProduct() {
         String productName = etProductName.getText().toString().trim();
         String priceStr = etPrice.getText().toString().trim();
         String description = etDescription.getText().toString().trim();
-        String mainImageUrl = (mainImageUri != null) ? mainImageUri.toString() : "";
 
-        if (productName.isEmpty() || priceStr.isEmpty() || description.isEmpty() || mainImageUrl.isEmpty()) {
+        if (productName.isEmpty() || priceStr.isEmpty() || description.isEmpty() || mainImageUri == null) {
             Toast.makeText(this, "Vui lòng điền đầy đủ thông tin và chọn ảnh chính", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -244,18 +200,17 @@ public class AddProductActivity extends AppCompatActivity {
             return;
         }
 
-        // Sử dụng constructor có createdBy
-        Product newProduct = new Product(productName, price, mainImageUrl, description, adminId);
+        Product newProduct = new Product(productName, price, mainImageUri.toString(), description, adminId);
         ProductDAO productDAO = new ProductDAO(this);
-        long productId = productDAO.addProductWithImages(
-                newProduct,
-                additionalImageUris.stream().map(Uri::toString).collect(Collectors.toList()),
-                adminId
-        );
-        Log.d(TAG, "Saved product with ID: " + productId + ", Main Image URL: " + mainImageUrl + ", Additional Images: " + additionalImageUris);
+        List<String> additionalImageUrls = additionalImageUris.stream()
+                .map(Uri::toString)
+                .collect(Collectors.toList());
+
+        long productId = productDAO.addProductWithImages(newProduct, additionalImageUrls, adminId);
 
         if (productId != -1) {
-            Toast.makeText(this, "Sản phẩm đã được thêm!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Thêm sản phẩm thành công", Toast.LENGTH_SHORT).show();
+            setResult(RESULT_OK);
             finish();
         } else {
             Toast.makeText(this, "Lỗi khi thêm sản phẩm", Toast.LENGTH_SHORT).show();

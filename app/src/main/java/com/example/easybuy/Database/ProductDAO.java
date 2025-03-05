@@ -31,10 +31,9 @@ public class ProductDAO {
 
     // Phương thức kiểm tra quyền sở hữu sản phẩm
     public boolean isProductOwner(int productId, int adminId) {
-        return dbHelper.isProductOwner(productId, adminId); // Gọi từ DatabaseHelper
+        return dbHelper.isProductOwner(productId, adminId);
     }
 
-    // Các phương thức khác giữ nguyên
     public long addProductWithImages(Product product, List<String> additionalImageUrls, int adminId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -124,7 +123,7 @@ public class ProductDAO {
         Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_PRODUCT_IMAGES + " WHERE product_id = ?",
                 new String[]{String.valueOf(productId)});
 
-        if (cursor.moveToFirst()) {
+        if (cursor != null && cursor.moveToFirst()) {
             do {
                 ProductImage image = new ProductImage();
                 image.setImageId(cursor.getInt(cursor.getColumnIndexOrThrow("image_id")));
@@ -133,7 +132,7 @@ public class ProductDAO {
                 imageList.add(image);
             } while (cursor.moveToNext());
         }
-        cursor.close();
+        if (cursor != null) cursor.close();
         return imageList;
     }
 
@@ -142,7 +141,7 @@ public class ProductDAO {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_PRODUCT, null);
 
-        if (cursor.moveToFirst()) {
+        if (cursor != null && cursor.moveToFirst()) {
             do {
                 Product product = new Product();
                 product.setProductId(cursor.getInt(cursor.getColumnIndexOrThrow("product_id")));
@@ -155,7 +154,7 @@ public class ProductDAO {
                 Log.d("ProductDAO", "Product ID: " + product.getProductId() + ", Image URL: " + product.getImageUrl());
             } while (cursor.moveToNext());
         }
-        cursor.close();
+        if (cursor != null) cursor.close();
         return productList;
     }
 
@@ -165,7 +164,7 @@ public class ProductDAO {
         Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_PRODUCT + " WHERE created_by = ?",
                 new String[]{String.valueOf(adminId)});
 
-        if (cursor.moveToFirst()) {
+        if (cursor != null && cursor.moveToFirst()) {
             do {
                 Product product = new Product();
                 product.setProductId(cursor.getInt(cursor.getColumnIndexOrThrow("product_id")));
@@ -177,7 +176,7 @@ public class ProductDAO {
                 productList.add(product);
             } while (cursor.moveToNext());
         }
-        cursor.close();
+        if (cursor != null) cursor.close();
         return productList;
     }
 
@@ -192,29 +191,48 @@ public class ProductDAO {
         }
         db.close();
     }
+
     public Product getProductById(int productId) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = null;
         Product product = null;
 
         try {
-            cursor = db.rawQuery("SELECT * FROM product WHERE product_id = ?",
+            cursor = db.rawQuery("SELECT * FROM " + TABLE_PRODUCT + " WHERE product_id = ?",
                     new String[]{String.valueOf(productId)});
 
             if (cursor != null && cursor.moveToFirst()) {
                 product = new Product();
-                product.setProductId(cursor.getInt(cursor.getColumnIndexOrThrow("product_id")));
-                product.setProductName(cursor.getString(cursor.getColumnIndexOrThrow("product_name")));
-                product.setPrice(cursor.getDouble(cursor.getColumnIndexOrThrow("price")));
-                product.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow("image_url")));
-                product.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
+                int productIdIndex = cursor.getColumnIndex("product_id");
+                int productNameIndex = cursor.getColumnIndex("product_name");
+                int priceIndex = cursor.getColumnIndex("price");
+                int imageUrlIndex = cursor.getColumnIndex("image_url");
+                int descriptionIndex = cursor.getColumnIndex("description");
+                int createdByIndex = cursor.getColumnIndex("created_by");
+
+                if (productIdIndex != -1 && productNameIndex != -1 && priceIndex != -1 &&
+                        imageUrlIndex != -1 && descriptionIndex != -1 && createdByIndex != -1) {
+                    product.setProductId(cursor.getInt(productIdIndex));
+                    product.setProductName(cursor.getString(productNameIndex));
+                    product.setPrice(cursor.getDouble(priceIndex));
+                    product.setImageUrl(cursor.getString(imageUrlIndex));
+                    product.setDescription(cursor.getString(descriptionIndex));
+                    product.setCreatedBy(cursor.getInt(createdByIndex));
+                } else {
+                    Log.e("ProductDAO", "Một hoặc nhiều cột không tồn tại trong bảng product");
+                }
+            } else {
+                Log.w("ProductDAO", "Không tìm thấy sản phẩm với ID: " + productId);
             }
         } catch (Exception e) {
-            Log.e("ProductDAO", "Error getting product by ID", e);
+            Log.e("ProductDAO", "Lỗi khi lấy sản phẩm theo ID: " + e.getMessage(), e);
         } finally {
-            if (cursor != null) cursor.close();
+            if (cursor != null) {
+                cursor.close();
+            }
         }
 
+        db.close();
         return product;
     }
 }

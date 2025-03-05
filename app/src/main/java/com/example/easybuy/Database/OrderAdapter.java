@@ -1,12 +1,22 @@
 package com.example.easybuy.Database;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.easybuy.Model.Order;
@@ -17,10 +27,18 @@ import java.util.List;
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHolder> {
     private Context context;
     private List<Order> orderList;
+    private DatabaseHelper databaseHelper;
+    private OnOrderCancelListener cancelListener;
 
-    public OrderAdapter(Context context, List<Order> orderList) {
+    public interface OnOrderCancelListener {
+        void onOrderCancel(Order order);
+    }
+
+    public OrderAdapter(Context context, List<Order> orderList, OnOrderCancelListener listener) {
         this.context = context;
         this.orderList = orderList;
+        this.databaseHelper = new DatabaseHelper(context);
+        this.cancelListener = listener;
     }
 
     @NonNull
@@ -49,6 +67,18 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         notifyDataSetChanged();
     }
 
+    public void removeOrder(int position) {
+        if (position >= 0 && position < orderList.size()) {
+            Order order = orderList.get(position);
+            orderList.remove(position);
+            notifyItemRemoved(position);
+
+            if (cancelListener != null) {
+                cancelListener.onOrderCancel(order);
+            }
+        }
+    }
+
     static class OrderViewHolder extends RecyclerView.ViewHolder {
         TextView tvOrderId, tvOrderDate, tvOrderStatus, tvOrderTotal;
 
@@ -58,6 +88,96 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             tvOrderDate = itemView.findViewById(R.id.tvOrderDate);
             tvOrderStatus = itemView.findViewById(R.id.tvOrderStatus);
             tvOrderTotal = itemView.findViewById(R.id.tvOrderTotal);
+        }
+    }
+
+    // Phương thức để tạo SwipeToDeleteCallback
+    public static class SwipeToDeleteCallback extends ItemTouchHelper.SimpleCallback {
+        private OrderAdapter mAdapter;
+        private Drawable deleteIcon;
+        private final ColorDrawable background;
+
+        public SwipeToDeleteCallback(OrderAdapter adapter, Context context) {
+            super(0, ItemTouchHelper.LEFT);
+            mAdapter = adapter;
+            deleteIcon = ContextCompat.getDrawable(context, R.drawable.ic_delete2);
+            background = new ColorDrawable(Color.RED);
+        }
+
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView,
+                              @NonNull RecyclerView.ViewHolder viewHolder,
+                              @NonNull RecyclerView.ViewHolder target) {
+            return false;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            int position = viewHolder.getAdapterPosition();
+            Order order = mAdapter.orderList.get(position);
+
+            // Chỉ cho phép hủy đơn ở trạng thái Pending
+            if ("Pending".equalsIgnoreCase(order.getStatus())) {
+                // Delay để ngăn việc xóa ngay lập tức
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    new AlertDialog.Builder(mAdapter.context)
+                            .setTitle("Xác nhận xóa")
+                            .setMessage("Bạn có chắc muốn xóa đơn hàng này?")
+                            .setPositiveButton("Có", (dialog, which) -> {
+                                mAdapter.removeOrder(position);
+                            })
+                            .setNegativeButton("Không", (dialog, which) -> {
+                                mAdapter.notifyItemChanged(position);
+                            })
+                            .setOnCancelListener(dialog -> {
+                                mAdapter.notifyItemChanged(position);
+                            })
+                            .create()
+                            .show();
+                }, 200); // Delay 200ms để người dùng có thể nhận biết
+            } else {
+                // Thông báo không thể hủy và refresh item
+                Toast.makeText(mAdapter.context,
+                        "Chỉ được hủy đơn hàng ở trạng thái Pending",
+                        Toast.LENGTH_SHORT).show();
+                mAdapter.notifyItemChanged(position);
+            }
+        }
+
+        @Override
+        public void onChildDraw(@NonNull Canvas c,
+                                @NonNull RecyclerView recyclerView,
+                                @NonNull RecyclerView.ViewHolder viewHolder,
+                                float dX, float dY,
+                                int actionState,
+                                boolean isCurrentlyActive) {
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+
+            View itemView = viewHolder.itemView;
+            int backgroundCornerOffset = 20;
+
+            // Vẽ icon và background khi trượt
+            if (dX < 0) { // Trượt sang trái
+                background.setBounds(
+                        itemView.getRight() + (int)dX - backgroundCornerOffset,
+                        itemView.getTop(),
+                        itemView.getRight(),
+                        itemView.getBottom()
+                );
+
+                // Vẽ icon xóa
+                int iconMargin = (itemView.getHeight() - deleteIcon.getIntrinsicHeight()) / 2;
+                int iconTop = itemView.getTop() + iconMargin;
+                int iconBottom = iconTop + deleteIcon.getIntrinsicHeight();
+
+                int iconLeft = itemView.getRight() - iconMargin - deleteIcon.getIntrinsicWidth();
+                int iconRight = itemView.getRight() - iconMargin;
+
+                deleteIcon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
+
+                background.draw(c);
+                deleteIcon.draw(c);
+            }
         }
     }
 }
