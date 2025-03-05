@@ -64,7 +64,7 @@ public class AdminOrderFragment extends Fragment {
         if (orderDAO == null) {
             Toast.makeText(getContext(), "Không thể truy cập dữ liệu đơn hàng", Toast.LENGTH_SHORT).show();
             Log.e(TAG, "OrderDAO is null");
-            return view; // Trả về view để tránh crash, nhưng không hiển thị dữ liệu
+            return view;
         }
 
         setupRecyclerView();
@@ -80,9 +80,9 @@ public class AdminOrderFragment extends Fragment {
         try {
             recyclerViewOrders.setLayoutManager(new LinearLayoutManager(getContext()));
             List<Order> orders = (adminId != -1) ? orderDAO.getOrdersByAdminId(adminId) : new ArrayList<>();
-            orderAdapter = new OrderAdminAdapter(orders, order ->
-                    Toast.makeText(getContext(), "Đơn hàng: " + order.getOrderId(), Toast.LENGTH_SHORT).show()
-            );
+            orderAdapter = new OrderAdminAdapter(orders, order -> {
+                // Không cần Toast nữa, đã xử lý trong dialog
+            }, getContext()); // Truyền Context
             recyclerViewOrders.setAdapter(orderAdapter);
 
             if (orders.isEmpty()) {

@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.fragment.app.Fragment;
 
 import com.example.easybuy.Activity.Login.Admin.AdminLoginActivity;
+import com.example.easybuy.Activity.WelcomeActivity;
 import com.example.easybuy.R;
 import com.example.easybuy.Utils.SessionManager;
 
@@ -46,7 +47,7 @@ public class AdminSettingsFragment extends Fragment {
         sessionManager.logout();
 
         // Chuyển về AdminLoginActivity
-        Intent intent = new Intent(getActivity(), AdminLoginActivity.class);
+        Intent intent = new Intent(getActivity(), WelcomeActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Xóa toàn bộ stack
         startActivity(intent);
         getActivity().finish(); // Đóng AdminMainActivity
