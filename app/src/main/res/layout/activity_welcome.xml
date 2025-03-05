@@ -6,19 +6,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="#FFF0F0"
+    android:background="@color/white"
     tools:ignore="ExtraText"
     android:padding="16dp">
 
     <!-- Hình ảnh minh họa -->
-    <ImageView
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:src="@drawable/welcome_illustration"
-        android:contentDescription="Welcome Illustration"
-        android:scaleType="fitCenter" />
 
     <!-- Tiêu đề -->
+    <ImageView
+        android:layout_width="430dp"
+        android:layout_height="333dp"
+        android:contentDescription="Welcome Illustration"
+        android:scaleType="fitCenter"
+        android:src="@drawable/welcome_illustration" />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -26,12 +27,12 @@
         android:textSize="28sp"
         android:textStyle="bold"
         android:textColor="#333333"
-        android:layout_marginTop="24dp" />
+        android:layout_marginTop="20dp" />
 
     <!-- Mô tả -->
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="321dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:fontFamily="@font/jetbrains_mono_semibold"
@@ -68,6 +69,6 @@
         android:background="@drawable/rounded_button"
         android:textColor="#FFFFFF"
         app:backgroundTint="#7CADD7"
-        android:layout_marginTop="32dp" />
+        android:layout_marginTop="20dp" />
 
 </LinearLayout>
