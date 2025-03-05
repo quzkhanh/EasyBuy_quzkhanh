@@ -1,7 +1,6 @@
 package com.example.easybuy.Activity.Login.Admin;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Patterns;
 import android.widget.Button;
@@ -16,13 +15,14 @@ import com.example.easybuy.Activity.Login.ForgotPW.ForgotPasswordActivity;
 import com.example.easybuy.Database.DatabaseHelper;
 import com.example.easybuy.Model.Admin;
 import com.example.easybuy.R;
+import com.example.easybuy.Utils.SessionManager;
 
 public class AdminLoginActivity extends AppCompatActivity {
     private EditText edtAdminEmail, edtAdminPassword;
     private Button btnAdminLogin;
-    private DatabaseHelper databaseHelper; // Thay AdminDAO bằng DatabaseHelper
-    private TextView tvSignup;
-    private TextView txtForgetPW;
+    private DatabaseHelper databaseHelper;
+    private TextView tvSignup, txtForgetPW;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,23 +36,20 @@ public class AdminLoginActivity extends AppCompatActivity {
         tvSignup = findViewById(R.id.txtSignup);
         txtForgetPW = findViewById(R.id.txtForgetPW);
 
-        // Khởi tạo DatabaseHelper
+        // Khởi tạo DatabaseHelper và SessionManager
         databaseHelper = new DatabaseHelper(this);
+        sessionManager = new SessionManager(this);
 
-        // Xử lý sự kiện đăng nhập
+        // Kiểm tra nếu đã đăng nhập thì chuyển sang AdminMainActivity
+        if (sessionManager.isLoggedIn()) {
+            startActivity(new Intent(this, AdminMainActivity.class));
+            finish();
+            return;
+        }
+
         btnAdminLogin.setOnClickListener(v -> loginAdmin());
-
-        // Xử lý sự kiện quên mật khẩu
-        txtForgetPW.setOnClickListener(v -> {
-            startActivity(new Intent(this, ForgotPasswordActivity.class));
-            finish();
-        });
-
-        // Xử lý sự kiện đăng ký
-        tvSignup.setOnClickListener(v -> {
-            startActivity(new Intent(this, AdminSignUpActivity.class));
-            finish();
-        });
+        txtForgetPW.setOnClickListener(v -> startActivity(new Intent(this, ForgotPasswordActivity.class)));
+        tvSignup.setOnClickListener(v -> startActivity(new Intent(this, AdminSignUpActivity.class)));
     }
 
     private void loginAdmin() {
@@ -61,16 +58,10 @@ public class AdminLoginActivity extends AppCompatActivity {
 
         if (!validateInputs(email, password)) return;
 
-        // Kiểm tra thông tin đăng nhập
         Admin admin = databaseHelper.getAdminByEmailAndPassword(email, password);
 
         if (admin != null) {
-            // Lưu adminId vào SharedPreferences
-            SharedPreferences prefs = getSharedPreferences("AdminPrefs", MODE_PRIVATE);
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putInt("adminId", admin.getId());
-            editor.apply();
-
+            sessionManager.createLoginSession(admin.getId());
             Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, AdminMainActivity.class));
             finish();
@@ -84,18 +75,10 @@ public class AdminLoginActivity extends AppCompatActivity {
             Toast.makeText(this, "Vui lòng điền đầy đủ email và mật khẩu!", Toast.LENGTH_SHORT).show();
             return false;
         }
-
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             Toast.makeText(this, "Vui lòng nhập email hợp lệ!", Toast.LENGTH_SHORT).show();
             return false;
         }
-
         return true;
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // Không cần close() vì DatabaseHelper tự quản lý kết nối
     }
 }

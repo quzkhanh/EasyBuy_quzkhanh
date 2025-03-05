@@ -17,12 +17,12 @@ import java.util.Random;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "easybuy.db";
     private static final int DATABASE_VERSION = 13;
-    private static final String TABLE_OTP = "otp_table";
-    private static final String TABLE_USERS = "users";
-    private static final String TABLE_ADMINS = "admins";
-    private static final String TABLE_PRODUCT = "product";
-    private static final String TABLE_PRODUCT_IMAGES = "product_images";
-    private static final String TABLE_ORDERS = "orders";
+    public static final String TABLE_OTP = "otp_table";
+    public static final String TABLE_USERS = "users";
+    public static final String TABLE_ADMINS = "admins";
+    public static final String TABLE_PRODUCT = "product";
+    public static final String TABLE_PRODUCT_IMAGES = "product_images";
+    public static final String TABLE_ORDERS = "orders";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

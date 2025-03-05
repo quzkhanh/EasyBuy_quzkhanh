@@ -8,7 +8,19 @@ public class Product {
     private String description;
     private int createdBy;
 
-    // Constructor đầy đủ
+    // Default constructor
+    public Product() {}
+
+    // Constructor for adding a new product (no productId since it's auto-incremented)
+    public Product(String productName, double price, String imageUrl, String description, int createdBy) {
+        this.productName = productName;
+        this.price = price;
+        this.imageUrl = imageUrl;
+        this.description = description;
+        this.createdBy = createdBy;
+    }
+
+    // Full constructor (including productId for retrieval from DB)
     public Product(int productId, String productName, double price, String imageUrl, String description, int createdBy) {
         this.productId = productId;
         this.productName = productName;
@@ -18,77 +30,22 @@ public class Product {
         this.createdBy = createdBy;
     }
 
-    // Constructor không có productId, dùng khi thêm mới
-    public Product(String productName, double price, String imageUrl, String description, int createdBy) {
-        this.productName = productName;
-        this.price = price;
-        this.imageUrl = imageUrl;
-        this.description = description;
-        this.createdBy = createdBy;
-    }
+    // Getters and Setters
+    public int getProductId() { return productId; }
+    public void setProductId(int productId) { this.productId = productId; }
 
-    // Constructor không tham số
-    public Product() {
-    }
+    public String getProductName() { return productName; }
+    public void setProductName(String productName) { this.productName = productName; }
 
-    // Getters và Setters
-    public int getProductId() {
-        return productId;
-    }
+    public double getPrice() { return price; }
+    public void setPrice(double price) { this.price = price; }
 
-    public void setProductId(int productId) {
-        this.productId = productId;
-    }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public String getProductName() {
-        return productName;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setProductName(String productName) {
-        this.productName = productName;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public int getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(int createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    @Override
-    public String toString() {
-        return "Product{" +
-                "productId=" + productId +
-                ", productName='" + productName + '\'' +
-                ", price=" + price +
-                ", imageUrl='" + imageUrl + '\'' +
-                ", description='" + description + '\'' +
-                ", createdBy=" + createdBy +
-                '}';
-    }
+    public int getCreatedBy() { return createdBy; }
+    public void setCreatedBy(int createdBy) { this.createdBy = createdBy; }
 }

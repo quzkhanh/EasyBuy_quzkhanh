@@ -14,7 +14,6 @@
         android:textStyle="bold"
         android:textColor="#333333" />
 
-    <!-- RecyclerView để hiển thị danh sách đơn hàng -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewOrders"
         android:layout_width="match_parent"
@@ -29,5 +28,4 @@
         android:text="Xem Chi Tiết Đơn Hàng"
         android:layout_marginTop="16dp"
         android:padding="10dp" />
-
 </LinearLayout>

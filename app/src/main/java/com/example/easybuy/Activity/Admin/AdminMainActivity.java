@@ -1,5 +1,6 @@
 package com.example.easybuy.Activity.Admin;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -8,7 +9,9 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.example.easybuy.Activity.Login.Admin.AdminLoginActivity;
 import com.example.easybuy.R;
+import com.example.easybuy.Utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class AdminMainActivity extends AppCompatActivity {
@@ -16,26 +19,35 @@ public class AdminMainActivity extends AppCompatActivity {
     private BottomNavigationView navView;
     private FragmentManager fragmentManager;
     private Fragment activeFragment;
+    private SessionManager sessionManager;
+    private int adminId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+
+        sessionManager = new SessionManager(this);
+        if (!sessionManager.isLoggedIn()) {
+            startActivity(new Intent(this, AdminLoginActivity.class));
+            finish();
+            return;
+        }
+        adminId = sessionManager.getAdminId();
+
         setContentView(R.layout.activity_admin_main);
 
         navView = findViewById(R.id.nav_view);
         fragmentManager = getSupportFragmentManager();
 
-        // Đặt fragment mặc định là AdminHomeFragment
         setDefaultFragment();
 
-        // Xử lý sự kiện khi chọn item trong BottomNavigationView
         navView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
                 replaceFragment(new AdminHomeFragment());
             } else if (itemId == R.id.nav_products) {
-                replaceFragment(new AdminOrderFragment());
+                replaceFragment(AdminOrderFragment.newInstance(adminId));
             } else if (itemId == R.id.nav_settings) {
                 replaceFragment(new AdminSettingsFragment());
             }
@@ -51,7 +63,7 @@ public class AdminMainActivity extends AppCompatActivity {
         if (activeFragment != fragment) {
             FragmentTransaction transaction = fragmentManager.beginTransaction();
             transaction.replace(R.id.frame_container, fragment);
-            transaction.addToBackStack(null); // Cho phép quay lại fragment trước
+            transaction.addToBackStack(null);
             transaction.commit();
             activeFragment = fragment;
         }

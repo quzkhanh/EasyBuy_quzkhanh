@@ -5,12 +5,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.example.easybuy.Model.Product;
 import com.example.easybuy.Model.ProductImage;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class ProductDAO {
@@ -123,13 +125,21 @@ public class ProductDAO {
         Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_PRODUCT_IMAGES + " WHERE product_id = ?",
                 new String[]{String.valueOf(productId)});
 
+        HashSet<String> uniqueUrls = new HashSet<>();
         if (cursor != null && cursor.moveToFirst()) {
             do {
                 ProductImage image = new ProductImage();
                 image.setImageId(cursor.getInt(cursor.getColumnIndexOrThrow("image_id")));
                 image.setProductId(cursor.getInt(cursor.getColumnIndexOrThrow("product_id")));
-                image.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow("image_url")));
-                imageList.add(image);
+                String url = cursor.getString(cursor.getColumnIndexOrThrow("image_url"));
+                if (!TextUtils.isEmpty(url) && !uniqueUrls.contains(url)) {
+                    image.setImageUrl(url);
+                    imageList.add(image);
+                    uniqueUrls.add(url);
+                    Log.d("ProductDAO", "Added ProductImage: " + image.toString());
+                } else {
+                    Log.w("ProductDAO", "Skipped invalid or duplicate URL: " + (url == null ? "null" : url));
+                }
             } while (cursor.moveToNext());
         }
         if (cursor != null) cursor.close();
@@ -151,10 +161,11 @@ public class ProductDAO {
                 product.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
                 product.setCreatedBy(cursor.getInt(cursor.getColumnIndexOrThrow("created_by")));
                 productList.add(product);
-                Log.d("ProductDAO", "Product ID: " + product.getProductId() + ", Image URL: " + product.getImageUrl());
+                Log.d("ProductDAO", "Fetched Product: " + product.toString());
             } while (cursor.moveToNext());
         }
         if (cursor != null) cursor.close();
+        db.close();
         return productList;
     }
 

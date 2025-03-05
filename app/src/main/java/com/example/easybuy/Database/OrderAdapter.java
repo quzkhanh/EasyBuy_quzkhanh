@@ -28,17 +28,12 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     private Context context;
     private List<Order> orderList;
     private DatabaseHelper databaseHelper;
-    private OnOrderCancelListener cancelListener;
 
-    public interface OnOrderCancelListener {
-        void onOrderCancel(Order order);
-    }
-
-    public OrderAdapter(Context context, List<Order> orderList, OnOrderCancelListener listener) {
+    // Constructor không có OnOrderCancelListener
+    public OrderAdapter(Context context, List<Order> orderList) {
         this.context = context;
         this.orderList = orderList;
         this.databaseHelper = new DatabaseHelper(context);
-        this.cancelListener = listener;
     }
 
     @NonNull
@@ -69,13 +64,8 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
     public void removeOrder(int position) {
         if (position >= 0 && position < orderList.size()) {
-            Order order = orderList.get(position);
             orderList.remove(position);
             notifyItemRemoved(position);
-
-            if (cancelListener != null) {
-                cancelListener.onOrderCancel(order);
-            }
         }
     }
 
@@ -118,13 +108,20 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
             // Chỉ cho phép hủy đơn ở trạng thái Pending
             if ("Pending".equalsIgnoreCase(order.getStatus())) {
-                // Delay để ngăn việc xóa ngay lập tức
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     new AlertDialog.Builder(mAdapter.context)
-                            .setTitle("Xác nhận xóa")
-                            .setMessage("Bạn có chắc muốn xóa đơn hàng này?")
+                            .setTitle("Xác nhận hủy")
+                            .setMessage("Bạn có chắc muốn hủy đơn hàng #" + order.getOrderId() + "?")
                             .setPositiveButton("Có", (dialog, which) -> {
-                                mAdapter.removeOrder(position);
+                                OrderDAO orderDAO = new OrderDAO(mAdapter.context);
+                                boolean isDeleted = orderDAO.deleteOrder(order.getOrderId());
+                                if (isDeleted) {
+                                    mAdapter.removeOrder(position);
+                                    Toast.makeText(mAdapter.context, "Đã hủy đơn hàng", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(mAdapter.context, "Không thể hủy đơn hàng", Toast.LENGTH_SHORT).show();
+                                    mAdapter.notifyItemChanged(position);
+                                }
                             })
                             .setNegativeButton("Không", (dialog, which) -> {
                                 mAdapter.notifyItemChanged(position);
@@ -134,9 +131,8 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                             })
                             .create()
                             .show();
-                }, 200); // Delay 200ms để người dùng có thể nhận biết
+                }, 200);
             } else {
-                // Thông báo không thể hủy và refresh item
                 Toast.makeText(mAdapter.context,
                         "Chỉ được hủy đơn hàng ở trạng thái Pending",
                         Toast.LENGTH_SHORT).show();
@@ -174,7 +170,6 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 int iconRight = itemView.getRight() - iconMargin;
 
                 deleteIcon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
-
                 background.draw(c);
                 deleteIcon.draw(c);
             }

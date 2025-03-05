@@ -1,5 +1,7 @@
 package com.example.easybuy.Database;
 
+import static com.example.easybuy.Database.DatabaseHelper.TABLE_PRODUCT;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -94,5 +96,38 @@ public class OrderDAO {
         int rowsAffected = db.delete(TABLE_ORDERS, "order_id = ?", new String[]{String.valueOf(orderId)});
         db.close();
         return rowsAffected > 0;
+    }
+
+    // Lấy đơn hàng theo adminId (người tạo sản phẩm)
+    public List<Order> getOrdersByAdminId(int adminId) {
+        List<Order> orders = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String query = "SELECT o.* FROM " + TABLE_ORDERS + " o " +
+                "INNER JOIN " + DatabaseHelper.TABLE_PRODUCT + " p ON o.product_id = p.product_id " +
+                "WHERE p.created_by = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(adminId)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                Order order = new Order();
+                order.setOrderId(cursor.getInt(cursor.getColumnIndexOrThrow("order_id")));
+                order.setUserId(cursor.getInt(cursor.getColumnIndexOrThrow("user_id")));
+                order.setProductId(cursor.getInt(cursor.getColumnIndexOrThrow("product_id")));
+                order.setQuantity(cursor.getInt(cursor.getColumnIndexOrThrow("quantity")));
+                order.setTotalPrice(cursor.getDouble(cursor.getColumnIndexOrThrow("total_price")));
+                order.setStatus(cursor.getString(cursor.getColumnIndexOrThrow("status")));
+                order.setOrderDate(cursor.getString(cursor.getColumnIndexOrThrow("order_date")));
+                order.setShippingAddress(cursor.getString(cursor.getColumnIndexOrThrow("shipping_address")));
+                order.setPhoneNumber(cursor.getString(cursor.getColumnIndexOrThrow("phone_number")));
+                order.setPaymentMethod(cursor.getString(cursor.getColumnIndexOrThrow("payment_method")));
+                orders.add(order);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+        return orders;
     }
 }
