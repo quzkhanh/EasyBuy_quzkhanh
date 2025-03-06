@@ -99,6 +99,27 @@ public class AdminDAO {
         return admin;
     }
 
+    public Admin getAdminById(int adminId) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
+        Admin admin = null;
+        try {
+            cursor = db.rawQuery("SELECT id, full_name, email, password FROM " + DatabaseHelper.TABLE_ADMINS + " WHERE id = ?", new String[]{String.valueOf(adminId)});
+            if (cursor != null && cursor.moveToFirst()) {
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                String fullName = cursor.getString(cursor.getColumnIndexOrThrow("full_name"));
+                String email = cursor.getString(cursor.getColumnIndexOrThrow("email"));
+                String storedPassword = cursor.getString(cursor.getColumnIndexOrThrow("password"));
+                admin = new Admin(id, fullName, email, storedPassword);
+            }
+        } catch (Exception e) {
+            Log.e("AdminDAO", "Error in getAdminById: " + e.getMessage());
+        } finally {
+            if (cursor != null) cursor.close();
+            db.close();
+        }
+        return admin;
+    }
     public boolean deleteAdmin(int adminId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         int rowsAffected = db.delete(DatabaseHelper.TABLE_ADMINS, "id = ?", new String[]{String.valueOf(adminId)});

@@ -13,11 +13,14 @@ import com.example.easybuy.Activity.WelcomeActivity;
 import com.example.easybuy.R;
 import com.example.easybuy.Utils.SessionManager;
 
-public class ProfileUserFragment extends Fragment {
+public class UserSettingsFragment extends Fragment {
     private TextView btnLogout;
+    private TextView tvUserName;
+    private TextView tvPassword;
+    private TextView tvEmail;
     private SessionManager sessionManager;
 
-    public ProfileUserFragment() {
+    public UserSettingsFragment() {
         // Required empty public constructor
     }
 
@@ -29,16 +32,17 @@ public class ProfileUserFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_user_profile, container, false);
+        View view = inflater.inflate(R.layout.fragment_user_settings, container, false);
 
-        // Ánh xạ btnLogout
+        // Ánh xạ các view
         btnLogout = view.findViewById(R.id.btnLogout);
-
-        // Thêm sự kiện đăng xuất
-        btnLogout.setOnClickListener(v -> logout());
+        tvUserName = view.findViewById(R.id.tvUserName);
+        tvPassword = view.findViewById(R.id.tvPassword);
+        tvEmail = view.findViewById(R.id.tvEmail);
 
         return view;
     }
+
 
     private void logout() {
         // Xóa phiên đăng nhập
@@ -48,6 +52,4 @@ public class ProfileUserFragment extends Fragment {
         startActivity(intent);
         getActivity().finish();
     }
-
-    
 }

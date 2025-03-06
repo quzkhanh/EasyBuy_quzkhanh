@@ -7,7 +7,7 @@ public class SessionManager {
     private static final String PREF_NAME = "UserSession";
     private static final String KEY_ADMIN_ID = "admin_id";
     private static final String KEY_USER_NAME = "user_name";
-    private static final String KEY_EMAIL = "email"; // Thêm key cho email
+    private static final String KEY_EMAIL = "email";
     private SharedPreferences pref;
     private SharedPreferences.Editor editor;
     private Context context;
@@ -40,6 +40,11 @@ public class SessionManager {
 
     public String getAdminEmail() {
         return pref.getString(KEY_EMAIL, "");
+    }
+
+    public void setAdminEmail(String email) {
+        editor.putString(KEY_EMAIL, email);
+        editor.apply();
     }
 
     public void logout() {

@@ -28,7 +28,7 @@
         android:id="@+id/tvAccountTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Tài Khoản Người Dùng "
+        android:text="Tài Khoản Người Dùng"
         android:fontFamily="@font/jetbrains_mono_extrabold"
         android:textFontWeight="@integer/material_motion_duration_long_1"
         android:textColor="#A9A9A9"
@@ -96,27 +96,22 @@
         android:gravity="center_vertical">
 
         <ImageView
-            android:id="@+id/imgNotificationIcon"
+            android:id="@+id/icEmail"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/ic_notifications"
+            android:src="@drawable/ic_email"
             android:layout_marginEnd="16dp" />
 
         <TextView
-            android:id="@+id/tvNotification"
+            android:id="@+id/tvEmail"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Nhận Thông Báo"
+            android:text="Email"
             android:textStyle="bold"
             android:textColor="#000000"
             android:textSize="18sp" />
 
-        <Switch
-            android:id="@+id/switchNotification"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true" />
     </LinearLayout>
 
     <LinearLayout

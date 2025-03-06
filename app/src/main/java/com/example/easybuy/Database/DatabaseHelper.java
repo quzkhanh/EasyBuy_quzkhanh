@@ -18,7 +18,7 @@ import java.util.Random;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "easybuy.db";
-    private static final int DATABASE_VERSION = 4; // Giữ nguyên hoặc tăng lên nếu cần
+    private static final int DATABASE_VERSION = 4;
     public static final String TABLE_OTP = "otp_table";
     public static final String TABLE_USERS = "users";
     public static final String TABLE_ADMINS = "admins";

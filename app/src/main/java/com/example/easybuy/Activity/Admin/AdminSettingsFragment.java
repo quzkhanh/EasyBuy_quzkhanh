@@ -15,6 +15,7 @@ import com.example.easybuy.Activity.WelcomeActivity;
 import com.example.easybuy.Database.AdminDAO;
 import com.example.easybuy.Model.Admin;
 import com.example.easybuy.R;
+import com.example.easybuy.Utils.CustomDialogEmail;
 import com.example.easybuy.Utils.CustomDialogName;
 import com.example.easybuy.Utils.CustomDialogPassword;
 import com.example.easybuy.Utils.SessionManager;
@@ -24,7 +25,7 @@ public class AdminSettingsFragment extends Fragment {
     private TextView btnLogout;
     private TextView tvUserName;
     private TextView tvPassword;
-    private TextView tvNotification;
+    private TextView tvEmail;
     private SessionManager sessionManager;
 
     public AdminSettingsFragment() {
@@ -43,11 +44,12 @@ public class AdminSettingsFragment extends Fragment {
 
         btnLogout = view.findViewById(R.id.btnLogout);
         tvUserName = view.findViewById(R.id.tvUserName);
-        tvPassword = view.findViewById(R.id.tvPassword); // Khởi tạo tvPassword
-        tvNotification = view.findViewById(R.id.tvNotification); // Khởi tạo tvNotification (nếu có)
+        tvPassword = view.findViewById(R.id.tvPassword);
+        tvEmail = view.findViewById(R.id.tvEmail);
 
-        // Cập nhật tvUserName từ SessionManager
+        // Cập nhật tvUserName và tvEmail
         updateUserName();
+        updateEmail();
 
         btnLogout.setOnClickListener(v -> logout());
 
@@ -56,6 +58,9 @@ public class AdminSettingsFragment extends Fragment {
 
         // Hiển thị dialog đổi mật khẩu khi nhấn vào tvPassword
         tvPassword.setOnClickListener(v -> showChangePasswordDialog());
+
+        // Hiển thị dialog đổi email khi nhấn vào tvEmail
+        tvEmail.setOnClickListener(v -> showChangeEmailDialog());
 
         return view;
     }
@@ -78,6 +83,15 @@ public class AdminSettingsFragment extends Fragment {
             } else {
                 Log.e("AdminSettingsFragment", "Admin email not found in SessionManager");
             }
+        }
+    }
+
+    private void updateEmail() {
+        String email = sessionManager.getAdminEmail();
+        if (!email.isEmpty()) {
+            tvEmail.setText(email);
+        } else {
+            tvEmail.setText("Chưa có email");
         }
     }
 
@@ -107,6 +121,13 @@ public class AdminSettingsFragment extends Fragment {
     private void showChangePasswordDialog() {
         CustomDialogPassword dialog = new CustomDialogPassword(requireContext());
         dialog.show();
+    }
+
+    private void showChangeEmailDialog() {
+        CustomDialogEmail dialog = new CustomDialogEmail(requireContext(), newEmail -> {
+            tvEmail.setText(newEmail); // Cập nhật UI
+        });
+        dialog.show(sessionManager.getAdminEmail());
     }
 
     private void logout() {
