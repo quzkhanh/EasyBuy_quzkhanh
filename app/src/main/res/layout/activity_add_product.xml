@@ -5,6 +5,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
+    android:background="@color/white"
     android:layout_marginTop="40dp">
 
     <EditText
