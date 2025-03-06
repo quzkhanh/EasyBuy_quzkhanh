@@ -3,6 +3,8 @@ package com.example.easybuy.Utils;
 import android.app.Dialog;
 import android.content.Context;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -28,8 +30,17 @@ public class CustomDialogName {
     public void show(String currentName) {
         dialog = new Dialog(context);
         dialog.setContentView(R.layout.dialog_edit_name);
-        dialog.setCancelable(false); // Không thể tắt khi bấm ra ngoài
+        dialog.setCancelable(true);
         dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+        // Thiết lập kích thước cho dialog
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(
+                    (int) (context.getResources().getDisplayMetrics().widthPixels * 0.8), // 80% chiều rộng
+                    WindowManager.LayoutParams.WRAP_CONTENT // Chiều cao tự động
+            );
+        }
 
         edtName = dialog.findViewById(R.id.edtName);
         btnSave = dialog.findViewById(R.id.btnSave);

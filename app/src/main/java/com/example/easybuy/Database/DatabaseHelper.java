@@ -18,7 +18,7 @@ import java.util.Random;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "easybuy.db";
-    private static final int DATABASE_VERSION = 13;
+    private static final int DATABASE_VERSION = 4; // Giữ nguyên hoặc tăng lên nếu cần
     public static final String TABLE_OTP = "otp_table";
     public static final String TABLE_USERS = "users";
     public static final String TABLE_ADMINS = "admins";
@@ -47,7 +47,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "email TEXT NOT NULL UNIQUE, " +
                 "password TEXT NOT NULL, " +
                 "role INTEGER DEFAULT 1)";
-
 
         String CREATE_OTP_TABLE = "CREATE TABLE " + TABLE_OTP + " (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -92,11 +91,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_PRODUCT_IMAGES_TABLE);
         db.execSQL(CREATE_ORDERS_TABLE);
 
-        // Insert default users
-        db.execSQL("INSERT INTO " + TABLE_USERS + " (email, password) VALUES ('seller@easybuy.com', 'seller123')");
-        // Thêm dữ liệu mẫu với mật khẩu đã hash
-        String hashedPassword = BCrypt.hashpw("12345", BCrypt.gensalt()); // Hash mật khẩu mẫu
-        db.execSQL("INSERT INTO " + TABLE_ADMINS + " (email, password, full_name, role) VALUES ('admin@easybuy.com', '" + hashedPassword + "', 'Admin User', 1)");
+        // Insert default users với mật khẩu đã hash
+        String userHashedPassword = BCrypt.hashpw("seller123", BCrypt.gensalt());
+        db.execSQL("INSERT INTO " + TABLE_USERS + " (email, password) VALUES ('seller@easybuy.com', '" + userHashedPassword + "')");
+
+        // Thêm dữ liệu mẫu với mật khẩu đã hash cho admin
+        String adminHashedPassword = BCrypt.hashpw("12345", BCrypt.gensalt());
+        db.execSQL("INSERT INTO " + TABLE_ADMINS + " (email, password, full_name, role) VALUES ('admin@easybuy.com', '" + adminHashedPassword + "', 'Admin User', 1)");
     }
 
     @Override
@@ -104,8 +105,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.d("DatabaseHelper", "Upgrading database from version " + oldVersion + " to " + newVersion);
 
         try {
+            // Chỉ thực hiện nâng cấp nếu cần thiết
             if (oldVersion < 11) {
-                db.execSQL("ALTER TABLE " + TABLE_PRODUCT + " ADD COLUMN created_by INTEGER");
+                // Bỏ qua lệnh ALTER TABLE vì cột created_by đã có trong onCreate
+                // db.execSQL("ALTER TABLE " + TABLE_PRODUCT + " ADD COLUMN created_by INTEGER"); // Comment hoặc xóa dòng này
                 db.execSQL("UPDATE " + TABLE_PRODUCT + " SET created_by = 1 WHERE created_by IS NULL");
                 db.execSQL("PRAGMA foreign_keys=off");
                 db.execSQL("CREATE TABLE temp_product AS SELECT * FROM " + TABLE_PRODUCT);
@@ -123,8 +126,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 db.execSQL("PRAGMA foreign_keys=on");
             }
 
-            if (oldVersion < 12) {
-                // Tạo bảng orders với cấu trúc cũ (tạm thời)
+            if (oldVersion < 2) {
                 db.execSQL("CREATE TABLE " + TABLE_ORDERS + " (" +
                         "order_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         "user_id INTEGER NOT NULL, " +
@@ -136,7 +138,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
 
             if (oldVersion < 13) {
-                // Xóa bảng orders cũ và tạo lại với cấu trúc mới
                 db.execSQL("DROP TABLE IF EXISTS " + TABLE_ORDERS);
                 db.execSQL("CREATE TABLE " + TABLE_ORDERS + " (" +
                         "order_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -153,7 +154,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         "FOREIGN KEY (product_id) REFERENCES " + TABLE_PRODUCT + "(product_id) ON DELETE CASCADE)");
                 Log.d("DatabaseHelper", "Upgraded orders table to version 13");
             }
-
 
             backupProductTable(db);
             db.execSQL("DELETE FROM " + TABLE_PRODUCT_IMAGES);
@@ -176,7 +176,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("INSERT INTO product_backup SELECT * FROM " + TABLE_PRODUCT);
         Log.d("DatabaseHelper", "Product table backed up to product_backup");
     }
-
 
     // *** PRODUCT METHODS ***
     public boolean isProductOwner(int productId, int adminId) {
@@ -247,11 +246,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public boolean updatePassword(String email, String newPassword) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put("password", newPassword);
+        values.put("password", BCrypt.hashpw(newPassword, BCrypt.gensalt())); // Hash mật khẩu mới
         int rowsAffected = db.update(TABLE_USERS, values, "email = ?", new String[]{email});
         db.close();
         return rowsAffected > 0;
     }
+
     public long addOrder(Order order) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -269,4 +269,3 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return id;
     }
 }
-

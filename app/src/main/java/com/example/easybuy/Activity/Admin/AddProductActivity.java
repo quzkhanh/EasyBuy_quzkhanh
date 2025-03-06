@@ -30,7 +30,6 @@ import com.example.easybuy.R;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class AddProductActivity extends AppCompatActivity {
 
@@ -99,7 +98,7 @@ public class AddProductActivity extends AppCompatActivity {
                 ivProductImage.setImageURI(mainImageUri);
             } else {
                 additionalImageUris.add(selectedUri);
-                imageAdapter.notifyDataSetChanged();
+                updateImageAdapter(); // Cập nhật adapter với danh sách mới
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -117,18 +116,19 @@ public class AddProductActivity extends AppCompatActivity {
 
     private void setupRecyclerView() {
         recyclerViewImages.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        List<String> imageUrls = additionalImageUris.stream()
-                .map(Uri::toString)
-                .collect(Collectors.toList());
-        // Khởi tạo với listener và isAdmin
-        imageAdapter = new ImageAdapter(imageUrls, new ImageAdapter.OnImageClickListener() {
-            @Override
-            public void onImageClick(String imageUrl) {
-                Toast.makeText(AddProductActivity.this, "Clicked image: " + imageUrl, Toast.LENGTH_SHORT).show();
-                // Thêm logic xử lý khi click ảnh (nếu cần)
-            }
-        }, false); // false cho người mua, true cho admin
+        imageAdapter = new ImageAdapter(new ArrayList<>(), imageUrl -> {
+            Toast.makeText(this, "Clicked image: " + imageUrl, Toast.LENGTH_SHORT).show();
+        }, true); // true cho admin
         recyclerViewImages.setAdapter(imageAdapter);
+        updateImageAdapter(); // Khởi tạo với danh sách hiện tại
+    }
+
+    private void updateImageAdapter() {
+        List<String> imageUrls = new ArrayList<>();
+        for (Uri uri : additionalImageUris) {
+            imageUrls.add(uri.toString());
+        }
+        imageAdapter.updateImages(imageUrls); // Cập nhật adapter
     }
 
     private void checkAndRequestPermission() {
@@ -202,9 +202,10 @@ public class AddProductActivity extends AppCompatActivity {
 
         Product newProduct = new Product(productName, price, mainImageUri.toString(), description, adminId);
         ProductDAO productDAO = new ProductDAO(this);
-        List<String> additionalImageUrls = additionalImageUris.stream()
-                .map(Uri::toString)
-                .collect(Collectors.toList());
+        List<String> additionalImageUrls = new ArrayList<>();
+        for (Uri uri : additionalImageUris) {
+            additionalImageUrls.add(uri.toString());
+        }
 
         long productId = productDAO.addProductWithImages(newProduct, additionalImageUrls, adminId);
 

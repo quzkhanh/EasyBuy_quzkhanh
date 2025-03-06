@@ -4,40 +4,50 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 public class SessionManager {
-    private static final String PREF_NAME = "AdminSession";
-    private static final String KEY_ADMIN_ID = "adminId";
-    private static final String KEY_IS_LOGGED_IN = "isLoggedIn";
-
-    private SharedPreferences prefs;
+    private static final String PREF_NAME = "UserSession";
+    private static final String KEY_ADMIN_ID = "admin_id";
+    private static final String KEY_USER_NAME = "user_name";
+    private static final String KEY_EMAIL = "email"; // Thêm key cho email
+    private SharedPreferences pref;
     private SharedPreferences.Editor editor;
     private Context context;
 
     public SessionManager(Context context) {
         this.context = context;
-        prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        editor = prefs.edit();
+        pref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        editor = pref.edit();
     }
 
-    // Lưu thông tin khi admin đăng nhập
-    public void createLoginSession(int adminId) {
-        editor.putBoolean(KEY_IS_LOGGED_IN, true);
+    public void createLoginSession(int adminId, String email, String fullName) {
         editor.putInt(KEY_ADMIN_ID, adminId);
+        editor.putString(KEY_EMAIL, email);
+        editor.putString(KEY_USER_NAME, fullName);
         editor.apply();
     }
 
-    // Lấy adminId
     public int getAdminId() {
-        return prefs.getInt(KEY_ADMIN_ID, -1); // -1 nếu chưa đăng nhập
+        return pref.getInt(KEY_ADMIN_ID, -1);
     }
 
-    // Kiểm tra xem admin đã đăng nhập chưa
-    public boolean isLoggedIn() {
-        return prefs.getBoolean(KEY_IS_LOGGED_IN, false);
+    public String getUserName() {
+        return pref.getString(KEY_USER_NAME, "");
     }
 
-    // Đăng xuất
+    public void setUserName(String userName) {
+        editor.putString(KEY_USER_NAME, userName);
+        editor.apply();
+    }
+
+    public String getAdminEmail() {
+        return pref.getString(KEY_EMAIL, "");
+    }
+
     public void logout() {
         editor.clear();
         editor.apply();
+    }
+
+    public boolean isLoggedIn() {
+        return pref.getInt(KEY_ADMIN_ID, -1) != -1;
     }
 }

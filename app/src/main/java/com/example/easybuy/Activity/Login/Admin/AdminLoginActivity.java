@@ -63,13 +63,18 @@ public class AdminLoginActivity extends AppCompatActivity {
 
         try {
             Admin admin = adminDAO.getAdminByEmail(email);
-            if (admin != null && BCrypt.checkpw(password, admin.getPassword())) {
-                sessionManager.createLoginSession(admin.getId());
-                Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(this, AdminMainActivity.class));
-                finish();
+            if (admin != null) {
+                Log.d("AdminLogin", "Stored password hash: " + admin.getPassword());
+                if (BCrypt.checkpw(password, admin.getPassword())) {
+                    sessionManager.createLoginSession(admin.getId(), admin.getEmail(), admin.getFullName());
+                    Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(this, AdminMainActivity.class));
+                    finish();
+                } else {
+                    Toast.makeText(this, "Email hoặc mật khẩu không đúng!", Toast.LENGTH_SHORT).show();
+                }
             } else {
-                Toast.makeText(this, "Email hoặc mật khẩu không đúng!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Email không tồn tại!", Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
             Toast.makeText(this, "Lỗi khi đăng nhập: " + e.getMessage(), Toast.LENGTH_SHORT).show();
