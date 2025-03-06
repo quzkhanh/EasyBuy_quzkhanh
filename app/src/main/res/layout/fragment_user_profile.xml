@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F7FA">
+    android:background="@color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -28,7 +28,7 @@
         android:id="@+id/tvAccountTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Tài Khoản "
+        android:text="Tài Khoản Người Dùng "
         android:fontFamily="@font/jetbrains_mono_extrabold"
         android:textFontWeight="@integer/material_motion_duration_long_1"
         android:textColor="#A9A9A9"

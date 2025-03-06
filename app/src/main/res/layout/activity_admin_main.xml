@@ -4,9 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/admin_main"
+    android:background="@color/white"
     android:orientation="vertical">
 
     <FrameLayout
+        android:background="@color/white"
         android:layout_marginTop="36.6dp"
         android:id="@+id/frame_container"
         android:layout_width="match_parent"

@@ -13,11 +13,11 @@ import com.example.easybuy.Activity.WelcomeActivity;
 import com.example.easybuy.R;
 import com.example.easybuy.Utils.SessionManager;
 
-public class ProfileFragment extends Fragment {
+public class ProfileUserFragment extends Fragment {
     private TextView btnLogout;
     private SessionManager sessionManager;
 
-    public ProfileFragment() {
+    public ProfileUserFragment() {
         // Required empty public constructor
     }
 
@@ -29,7 +29,7 @@ public class ProfileFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_admin_settings, container, false);
+        View view = inflater.inflate(R.layout.fragment_user_profile, container, false);
 
         // Ánh xạ btnLogout
         btnLogout = view.findViewById(R.id.btnLogout);
@@ -43,10 +43,11 @@ public class ProfileFragment extends Fragment {
     private void logout() {
         // Xóa phiên đăng nhập
         sessionManager.logout();
-
         Intent intent = new Intent(getActivity(), WelcomeActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Xóa toàn bộ stack
         startActivity(intent);
         getActivity().finish();
     }
+
+    
 }
