@@ -172,63 +172,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.d("DatabaseHelper", "Product table backed up to product_backup");
     }
 
-    // *** ADMIN METHODS ***
-    public long addAdmin(Admin admin) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("full_name", admin.getFullName());
-        values.put("email", admin.getEmail());
-        values.put("password", admin.getPassword());
-        values.put("role", 1);
-        long id = db.insert(TABLE_ADMINS, null, values);
-        db.close();
-        return id;
-    }
-
-    public Admin getAdminByEmailAndPassword(String email, String password) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ADMINS + " WHERE email = ? AND password = ?",
-                new String[]{email, password});
-        Admin admin = null;
-        if (cursor.moveToFirst()) {
-            admin = new Admin(
-                    cursor.getInt(cursor.getColumnIndexOrThrow("id")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("full_name")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("email")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("password"))
-            );
-        }
-        cursor.close();
-        db.close();
-        return admin;
-    }
-
-    public boolean checkAdminEmail(String email) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ADMINS + " WHERE email = ?", new String[]{email});
-        boolean exists = cursor.getCount() > 0;
-        cursor.close();
-        db.close();
-        return exists;
-    }
-
-    public boolean updateAdmin(Admin admin) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("full_name", admin.getFullName());
-        values.put("email", admin.getEmail());
-        values.put("password", admin.getPassword());
-        int rowsAffected = db.update(TABLE_ADMINS, values, "id = ?", new String[]{String.valueOf(admin.getId())});
-        db.close();
-        return rowsAffected > 0;
-    }
-
-    public boolean deleteAdmin(int adminId) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        int rowsAffected = db.delete(TABLE_ADMINS, "id = ?", new String[]{String.valueOf(adminId)});
-        db.close();
-        return rowsAffected > 0;
-    }
 
     // *** PRODUCT METHODS ***
     public boolean isProductOwner(int productId, int adminId) {

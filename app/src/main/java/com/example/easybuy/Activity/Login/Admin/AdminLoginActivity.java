@@ -12,17 +12,19 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.easybuy.Activity.Admin.AdminMainActivity;
 import com.example.easybuy.Activity.Login.ForgotPW.ForgotPasswordActivity;
-import com.example.easybuy.Database.DatabaseHelper;
+import com.example.easybuy.Database.AdminDAO;
 import com.example.easybuy.Model.Admin;
 import com.example.easybuy.R;
 import com.example.easybuy.Utils.SessionManager;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 public class AdminLoginActivity extends AppCompatActivity {
     private EditText edtAdminEmail, edtAdminPassword;
     private Button btnAdminLogin;
-    private DatabaseHelper databaseHelper;
     private TextView tvSignup, txtForgetPW;
     private SessionManager sessionManager;
+    private AdminDAO adminDAO;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,11 +38,11 @@ public class AdminLoginActivity extends AppCompatActivity {
         tvSignup = findViewById(R.id.txtSignup);
         txtForgetPW = findViewById(R.id.txtForgetPW);
 
-        // Khởi tạo DatabaseHelper và SessionManager
-        databaseHelper = new DatabaseHelper(this);
+        // Khởi tạo DAO và SessionManager
+        adminDAO = new AdminDAO(this);
         sessionManager = new SessionManager(this);
 
-        // Kiểm tra nếu đã đăng nhập thì chuyển sang AdminMainActivity
+        // Nếu đã đăng nhập, chuyển hướng sang AdminMainActivity
         if (sessionManager.isLoggedIn()) {
             startActivity(new Intent(this, AdminMainActivity.class));
             finish();
@@ -58,9 +60,10 @@ public class AdminLoginActivity extends AppCompatActivity {
 
         if (!validateInputs(email, password)) return;
 
-        Admin admin = databaseHelper.getAdminByEmailAndPassword(email, password);
+        // Lấy admin từ database
+        Admin admin = adminDAO.getAdminByEmail(email);
 
-        if (admin != null) {
+        if (admin != null && BCrypt.checkpw(password, admin.getPassword())) {
             sessionManager.createLoginSession(admin.getId());
             Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, AdminMainActivity.class));
@@ -70,9 +73,10 @@ public class AdminLoginActivity extends AppCompatActivity {
         }
     }
 
+
     private boolean validateInputs(String email, String password) {
         if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Vui lòng điền đầy đủ email và mật khẩu!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng nhập email và mật khẩu!", Toast.LENGTH_SHORT).show();
             return false;
         }
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
