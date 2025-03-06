@@ -2,6 +2,7 @@ package com.example.easybuy.Activity.Login.Admin;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
@@ -60,19 +61,21 @@ public class AdminLoginActivity extends AppCompatActivity {
 
         if (!validateInputs(email, password)) return;
 
-        // Lấy admin từ database
-        Admin admin = adminDAO.getAdminByEmail(email);
-
-        if (admin != null && BCrypt.checkpw(password, admin.getPassword())) {
-            sessionManager.createLoginSession(admin.getId());
-            Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, AdminMainActivity.class));
-            finish();
-        } else {
-            Toast.makeText(this, "Email hoặc mật khẩu không đúng!", Toast.LENGTH_SHORT).show();
+        try {
+            Admin admin = adminDAO.getAdminByEmail(email);
+            if (admin != null && BCrypt.checkpw(password, admin.getPassword())) {
+                sessionManager.createLoginSession(admin.getId());
+                Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, AdminMainActivity.class));
+                finish();
+            } else {
+                Toast.makeText(this, "Email hoặc mật khẩu không đúng!", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Lỗi khi đăng nhập: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.e("AdminLogin", "Login error: " + e.getMessage());
         }
     }
-
 
     private boolean validateInputs(String email, String password) {
         if (email.isEmpty() || password.isEmpty()) {

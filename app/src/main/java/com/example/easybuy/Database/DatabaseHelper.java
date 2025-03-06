@@ -10,6 +10,8 @@ import android.util.Log;
 import com.example.easybuy.Model.Admin;
 import com.example.easybuy.Model.Order;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -45,6 +47,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "email TEXT NOT NULL UNIQUE, " +
                 "password TEXT NOT NULL, " +
                 "role INTEGER DEFAULT 1)";
+
 
         String CREATE_OTP_TABLE = "CREATE TABLE " + TABLE_OTP + " (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -91,7 +94,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         // Insert default users
         db.execSQL("INSERT INTO " + TABLE_USERS + " (email, password) VALUES ('seller@easybuy.com', 'seller123')");
-        db.execSQL("INSERT INTO " + TABLE_ADMINS + " (email, password, full_name) VALUES ('admin@easybuy.com', 'admin123', 'Admin User')");
+        // Thêm dữ liệu mẫu với mật khẩu đã hash
+        String hashedPassword = BCrypt.hashpw("12345", BCrypt.gensalt()); // Hash mật khẩu mẫu
+        db.execSQL("INSERT INTO " + TABLE_ADMINS + " (email, password, full_name, role) VALUES ('admin@easybuy.com', '" + hashedPassword + "', 'Admin User', 1)");
     }
 
     @Override
