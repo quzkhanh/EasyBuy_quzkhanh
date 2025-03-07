@@ -4,7 +4,6 @@ import static android.app.Activity.RESULT_OK;
 
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
@@ -18,18 +17,22 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.example.easybuy.Database.ProductAdapter;
 import com.example.easybuy.Database.ProductDAO;
 import com.example.easybuy.Model.Product;
 import com.example.easybuy.Model.ProductImage;
 import com.example.easybuy.R;
+import com.example.easybuy.Utils.SessionManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,27 +47,40 @@ public class AdminHomeFragment extends Fragment {
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private AlertDialog currentDialog;
     private List<Uri> additionalImageUris = new ArrayList<>();
-    private int adminId; // Thêm biến để lưu adminId
+    private SessionManager sessionManager;
+    private int adminId;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_admin_home, container, false);
 
+        // Khởi tạo các thành phần UI
         recyclerViewProducts = view.findViewById(R.id.recyclerViewProducts);
         tvEmptyList = view.findViewById(R.id.tvEmptyList);
         etSearchProduct = view.findViewById(R.id.etSearchProduct);
         fabAddProduct = view.findViewById(R.id.fabAddProduct);
 
-        productDAO = new ProductDAO(requireContext());
-        adminId = getAdminId(); // Lấy adminId
+        // Khởi tạo SessionManager trước khi sử dụng
+        sessionManager = new SessionManager(requireContext());
+        adminId = getAdminId(); // Lấy adminId sau khi sessionManager đã khởi tạo
 
+        // Kiểm tra đăng nhập
+        if (adminId == -1) {
+            Toast.makeText(requireContext(), "Vui lòng đăng nhập với tư cách admin!", Toast.LENGTH_SHORT).show();
+            return view; // Dừng xử lý nếu chưa đăng nhập
+        }
+
+        // Khởi tạo ProductDAO
+        productDAO = new ProductDAO(requireContext());
+
+        // Thiết lập các chức năng
         setupImagePicker();
         setupRecyclerView();
         setupSearchListener();
 
         fabAddProduct.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), AddProductActivity.class);
-            intent.putExtra("adminId", adminId); // Truyền adminId sang AddProductActivity
+            intent.putExtra("adminId", adminId);
             startActivity(intent);
         });
 
@@ -74,9 +90,11 @@ public class AdminHomeFragment extends Fragment {
     }
 
     private int getAdminId() {
-        // Lấy adminId từ SharedPreferences (hoặc cơ chế đăng nhập khác)
-        SharedPreferences prefs = requireContext().getSharedPreferences("AdminPrefs", requireContext().MODE_PRIVATE);
-        return prefs.getInt("adminId", 1); // Mặc định là 1 nếu không tìm thấy
+        int adminId = sessionManager.getAdminId();
+        if (adminId == -1) {
+            Toast.makeText(getContext(), "Không tìm thấy thông tin admin!", Toast.LENGTH_SHORT).show();
+        }
+        return adminId;
     }
 
     private void setupSearchListener() {
@@ -95,7 +113,7 @@ public class AdminHomeFragment extends Fragment {
     }
 
     private void filterProducts(String query) {
-        List<Product> allProducts = productDAO.getProductsByAdmin(adminId); // Chỉ lấy sản phẩm của admin hiện tại
+        List<Product> allProducts = productDAO.getProductsByAdmin(adminId);
         List<Product> filteredList = new ArrayList<>();
         for (Product product : allProducts) {
             if (product.getProductName().toLowerCase().contains(query.toLowerCase())) {
@@ -135,8 +153,18 @@ public class AdminHomeFragment extends Fragment {
 
     private void setupRecyclerView() {
         recyclerViewProducts.setLayoutManager(new GridLayoutManager(getContext(), 2));
-        List<Product> initialProducts = productDAO.getProductsByAdmin(adminId); // Chỉ lấy sản phẩm của admin hiện tại
-        productAdapter = new ProductAdapter(getContext(), initialProducts, product -> showProductDialog(product));
+
+        // Lấy currentAdminId từ SessionManager
+        int currentAdminId = sessionManager.getAdminId();
+
+        // Lấy danh sách sản phẩm của admin hiện tại
+        List<Product> initialProducts = productDAO.getProductsByAdmin(adminId);
+
+        // Khởi tạo ProductAdapter với currentAdminId
+        productAdapter = new ProductAdapter(getContext(), initialProducts, currentAdminId, product -> {
+            showProductDialog(product);
+        });
+
         recyclerViewProducts.setAdapter(productAdapter);
     }
 
@@ -217,7 +245,7 @@ public class AdminHomeFragment extends Fragment {
                 List<Uri> additionalUris = new ArrayList<>(additionalImageUris);
                 productDAO.updateProductImages(product.getProductId(), additionalUris);
 
-                int rowsAffected = productDAO.updateProduct(product, adminId); // Truyền adminId để kiểm tra quyền
+                int rowsAffected = productDAO.updateProduct(product, adminId);
                 if (rowsAffected > 0) {
                     etDialogProductName.setEnabled(false);
                     etDialogPrice.setEnabled(false);
@@ -248,7 +276,7 @@ public class AdminHomeFragment extends Fragment {
                 .setTitle("Xác nhận xóa")
                 .setMessage("Bạn có chắc chắn muốn xóa sản phẩm này?")
                 .setPositiveButton("Có", (dialog, which) -> {
-                    boolean deleted = productDAO.deleteProduct(product.getProductId(), adminId); // Truyền adminId để kiểm tra quyền
+                    boolean deleted = productDAO.deleteProduct(product.getProductId(), adminId);
                     if (deleted) {
                         loadProducts();
                         Toast.makeText(requireContext(), "Sản phẩm đã bị xóa!", Toast.LENGTH_SHORT).show();
@@ -275,7 +303,7 @@ public class AdminHomeFragment extends Fragment {
     }
 
     private void loadProducts() {
-        List<Product> products = productDAO.getProductsByAdmin(adminId); // Chỉ lấy sản phẩm của admin hiện tại
+        List<Product> products = productDAO.getProductsByAdmin(adminId);
         productAdapter.setProductList(products);
 
         if (products.isEmpty()) {
@@ -293,9 +321,7 @@ public class AdminHomeFragment extends Fragment {
         loadProducts();
     }
 
-    // Adapter cho RecyclerView ảnh bổ sung
     private class AdditionalImageAdapter extends RecyclerView.Adapter<AdditionalImageAdapter.ViewHolder> {
-
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_additional_image, parent, false);

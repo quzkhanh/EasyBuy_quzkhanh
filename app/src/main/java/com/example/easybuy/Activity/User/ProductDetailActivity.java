@@ -1,7 +1,6 @@
 package com.example.easybuy.Activity.User;
 
 import android.app.Dialog;
-import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -33,6 +32,7 @@ import com.example.easybuy.Model.Order;
 import com.example.easybuy.Model.Product;
 import com.example.easybuy.Model.ProductImage;
 import com.example.easybuy.R;
+import com.example.easybuy.Utils.SessionManager;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -51,7 +51,6 @@ public class ProductDetailActivity extends AppCompatActivity {
     private RecyclerView recyclerViewImages;
     private Button btnBuyNow, btnDecrease, btnIncrease;
     private TextView tvTotalPrice;
-    // Note: etDialogDescription đã bị xóa khỏi layout
 
     // Data
     private Product product;
@@ -60,13 +59,15 @@ public class ProductDetailActivity extends AppCompatActivity {
     private ImageAdapter imageAdapter;
     private int quantity = 1;
     private double totalPrice;
+    private SessionManager sessionManager; // Thêm SessionManager
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_detail);
 
-        // Khởi tạo DAO
+        // Khởi tạo SessionManager và DAO
+        sessionManager = new SessionManager(this);
         orderDAO = new OrderDAO(this);
         productDAO = new ProductDAO(this);
 
@@ -227,7 +228,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                 Log.w(TAG, "Main image URL is empty or null, skipping addition to RecyclerView");
             }
 
-            boolean isAdmin = getIntent().getBooleanExtra("IS_ADMIN", false);
+            boolean isAdmin = sessionManager.getAdminId() != -1; // Sử dụng SessionManager để kiểm tra admin
             imageAdapter = new ImageAdapter(imageUrls, new ImageAdapter.OnImageClickListener() {
                 @Override
                 public void onImageClick(String imageUrl) {
@@ -256,8 +257,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     }
 
     private void showOrderConfirmationDialog() {
-        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        int userId = prefs.getInt("userId", -1);
+        int userId = sessionManager.getUserId(); // Lấy userId từ SessionManager
 
         if (userId == -1) {
             Toast.makeText(this, "Vui lòng đăng nhập để mua hàng!", Toast.LENGTH_SHORT).show();

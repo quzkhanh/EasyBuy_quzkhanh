@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.easybuy.Activity.User.fragment.UserFavoriteFragment;
 import com.example.easybuy.Activity.User.fragment.UserHomeFragment;
-import com.example.easybuy.Activity.User.fragment.OrderFragment;
+import com.example.easybuy.Activity.User.fragment.UserOrderFragment;
 import com.example.easybuy.Activity.User.fragment.UserSettingsFragment;
 import com.example.easybuy.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -49,7 +49,7 @@ public class UserMainActivity extends AppCompatActivity {
                 if (item.getItemId() == R.id.nav_home) {
                     selectedFragment = new UserHomeFragment();
                 } else if (item.getItemId() == R.id.nav_order) {
-                    selectedFragment = new OrderFragment();
+                    selectedFragment = new UserOrderFragment();
                 } else if (item.getItemId() == R.id.nav_favorite) {
                     selectedFragment = new UserFavoriteFragment();
                 } else if (item.getItemId() == R.id.nav_profile) {

@@ -1,6 +1,5 @@
 package com.example.easybuy.Activity.User.fragment;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,16 +15,18 @@ import com.example.easybuy.Database.OrderDAO;
 import com.example.easybuy.Database.OrderAdapter;
 import com.example.easybuy.Model.Order;
 import com.example.easybuy.R;
+import com.example.easybuy.Utils.SessionManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class OrderFragment extends Fragment {
+public class UserOrderFragment extends Fragment {
     private RecyclerView recyclerViewOrders;
     private OrderAdapter orderAdapter;
     private TextView tvNoOrders;
     private OrderDAO orderDAO;
     private int userId;
+    private SessionManager sessionManager; // Thêm SessionManager
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -34,10 +35,12 @@ public class OrderFragment extends Fragment {
         recyclerViewOrders = view.findViewById(R.id.recyclerViewOrders);
         tvNoOrders = view.findViewById(R.id.tvNoOrders);
 
+        // Khởi tạo SessionManager và OrderDAO
+        sessionManager = new SessionManager(requireContext());
         orderDAO = new OrderDAO(requireContext());
 
-        SharedPreferences prefs = requireContext().getSharedPreferences("UserPrefs", requireContext().MODE_PRIVATE);
-        userId = prefs.getInt("userId", -1);
+        // Lấy userId từ SessionManager
+        userId = sessionManager.getUserId();
 
         setupRecyclerView();
         loadOrders();

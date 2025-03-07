@@ -8,7 +8,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import com.example.easybuy.Model.Admin;
+import com.example.easybuy.Model.Favorite;
 import com.example.easybuy.Model.Order;
+import com.example.easybuy.Model.Product;
 
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -18,13 +20,14 @@ import java.util.Random;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "easybuy.db";
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5; // Giữ nguyên version vì đã thêm favorites
     public static final String TABLE_OTP = "otp_table";
     public static final String TABLE_USERS = "users";
     public static final String TABLE_ADMINS = "admins";
     public static final String TABLE_PRODUCT = "product";
     public static final String TABLE_PRODUCT_IMAGES = "product_images";
     public static final String TABLE_ORDERS = "orders";
+    public static final String TABLE_FAVORITES = "favorites"; // Bảng favorites
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -32,7 +35,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Create Tables SQL
+        // Create Tables SQL (Giữ nguyên như bạn đã cung cấp)
         String CREATE_USERS_TABLE = "CREATE TABLE " + TABLE_USERS + " (" +
                 "userId INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "fullName TEXT, " +
@@ -83,6 +86,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "FOREIGN KEY (user_id) REFERENCES " + TABLE_USERS + "(userId) ON DELETE CASCADE, " +
                 "FOREIGN KEY (product_id) REFERENCES " + TABLE_PRODUCT + "(product_id) ON DELETE CASCADE)";
 
+        String CREATE_FAVORITES_TABLE = "CREATE TABLE " + TABLE_FAVORITES + " (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "user_id INTEGER NOT NULL, " +
+                "product_id INTEGER NOT NULL, " +
+                "FOREIGN KEY (user_id) REFERENCES " + TABLE_USERS + "(userId) ON DELETE CASCADE, " +
+                "FOREIGN KEY (product_id) REFERENCES " + TABLE_PRODUCT + "(product_id) ON DELETE CASCADE)";
+
         // Execute table creation
         db.execSQL(CREATE_USERS_TABLE);
         db.execSQL(CREATE_ADMINS_TABLE);
@@ -90,6 +100,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_PRODUCT_TABLE);
         db.execSQL(CREATE_PRODUCT_IMAGES_TABLE);
         db.execSQL(CREATE_ORDERS_TABLE);
+        db.execSQL(CREATE_FAVORITES_TABLE);
 
         // Insert default users với mật khẩu đã hash
         String userHashedPassword = BCrypt.hashpw("seller123", BCrypt.gensalt());
@@ -102,13 +113,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        // Giữ nguyên logic onUpgrade của bạn
         Log.d("DatabaseHelper", "Upgrading database from version " + oldVersion + " to " + newVersion);
 
         try {
-            // Chỉ thực hiện nâng cấp nếu cần thiết
+            if (oldVersion < 5) {
+                String CREATE_FAVORITES_TABLE = "CREATE TABLE " + TABLE_FAVORITES + " (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "user_id INTEGER NOT NULL, " +
+                        "product_id INTEGER NOT NULL, " +
+                        "FOREIGN KEY (user_id) REFERENCES " + TABLE_USERS + "(userId) ON DELETE CASCADE, " +
+                        "FOREIGN KEY (product_id) REFERENCES " + TABLE_PRODUCT + "(product_id) ON DELETE CASCADE)";
+                db.execSQL(CREATE_FAVORITES_TABLE);
+                Log.d("DatabaseHelper", "Created favorites table in upgrade");
+            }
+
             if (oldVersion < 11) {
-                // Bỏ qua lệnh ALTER TABLE vì cột created_by đã có trong onCreate
-                // db.execSQL("ALTER TABLE " + TABLE_PRODUCT + " ADD COLUMN created_by INTEGER"); // Comment hoặc xóa dòng này
                 db.execSQL("UPDATE " + TABLE_PRODUCT + " SET created_by = 1 WHERE created_by IS NULL");
                 db.execSQL("PRAGMA foreign_keys=off");
                 db.execSQL("CREATE TABLE temp_product AS SELECT * FROM " + TABLE_PRODUCT);
@@ -177,7 +197,69 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.d("DatabaseHelper", "Product table backed up to product_backup");
     }
 
-    // *** PRODUCT METHODS ***
+    // --- Các phương thức mới cho bảng favorites ---
+
+    // Thêm sản phẩm vào danh sách yêu thích
+    public long addFavorite(int userId, int productId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("user_id", userId);
+        values.put("product_id", productId);
+
+        // Kiểm tra xem sản phẩm đã có trong danh sách yêu thích của người dùng chưa
+        Cursor cursor = db.rawQuery("SELECT id FROM " + TABLE_FAVORITES + " WHERE user_id = ? AND product_id = ?",
+                new String[]{String.valueOf(userId), String.valueOf(productId)});
+        if (cursor.getCount() > 0) {
+            cursor.close();
+            db.close();
+            return -1; // Đã tồn tại, không thêm lại
+        }
+        cursor.close();
+
+        long id = db.insert(TABLE_FAVORITES, null, values);
+        db.close();
+        return id;
+    }
+
+    // Lấy danh sách sản phẩm yêu thích theo userId
+    public List<Favorite> getFavoritesByUserId(int userId) {
+        List<Favorite> favorites = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT f.id, f.user_id, f.product_id, p.product_name, p.price, p.image_url " +
+                "FROM " + TABLE_FAVORITES + " f " +
+                "JOIN " + TABLE_PRODUCT + " p ON f.product_id = p.product_id " +
+                "WHERE f.user_id = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                int favoriteId = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                int productId = cursor.getInt(cursor.getColumnIndexOrThrow("product_id"));
+                String productName = cursor.getString(cursor.getColumnIndexOrThrow("product_name"));
+                double price = cursor.getDouble(cursor.getColumnIndexOrThrow("price"));
+                String imageUrl = cursor.getString(cursor.getColumnIndexOrThrow("image_url"));
+
+                Favorite favorite = new Favorite(favoriteId, userId, productId, productName, price, imageUrl);
+                favorites.add(favorite);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+        return favorites;
+    }
+
+    // Xóa sản phẩm khỏi danh sách yêu thích
+    public boolean deleteFavorite(int favoriteId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int rowsAffected = db.delete(TABLE_FAVORITES, "id = ?", new String[]{String.valueOf(favoriteId)});
+        db.close();
+        return rowsAffected > 0;
+    }
+
+    // --- Các phương thức cũ giữ nguyên ---
     public boolean isProductOwner(int productId, int adminId) {
         SQLiteDatabase db = null;
         Cursor cursor = null;
@@ -208,7 +290,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return id;
     }
 
-    // *** OTP AND USER METHODS ***
     public boolean checkEmail(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_USERS + " WHERE email = ?", new String[]{email});
@@ -246,7 +327,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public boolean updatePassword(String email, String newPassword) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put("password", BCrypt.hashpw(newPassword, BCrypt.gensalt())); // Hash mật khẩu mới
+        values.put("password", BCrypt.hashpw(newPassword, BCrypt.gensalt()));
         int rowsAffected = db.update(TABLE_USERS, values, "email = ?", new String[]{email});
         db.close();
         return rowsAffected > 0;

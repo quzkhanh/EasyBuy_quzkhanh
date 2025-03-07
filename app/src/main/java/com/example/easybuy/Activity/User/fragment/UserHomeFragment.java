@@ -2,9 +2,12 @@ package com.example.easybuy.Activity.User.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -14,8 +17,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.easybuy.Activity.User.ProductDetailActivity;
 import com.example.easybuy.Database.OrderDAO;
-import com.example.easybuy.Database.ProductDAO;
 import com.example.easybuy.Database.ProductAdapter;
+import com.example.easybuy.Database.ProductDAO;
 import com.example.easybuy.Model.Order;
 import com.example.easybuy.Model.Product;
 import com.example.easybuy.R;
@@ -34,7 +37,9 @@ public class UserHomeFragment extends Fragment {
     private OrderDAO orderDAO;
     private ProductAdapter productAdapter;
     private TextView tvEmptyList;
+    private EditText searchBar; // Thay SearchView bằng EditText
     private SessionManager sessionManager;
+    private List<Product> allProducts; // Danh sách đầy đủ để lọc
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -43,6 +48,7 @@ public class UserHomeFragment extends Fragment {
         // Khởi tạo các thành phần
         productRecyclerView = view.findViewById(R.id.productRecyclerView);
         tvEmptyList = view.findViewById(R.id.tvEmptyList);
+        searchBar = view.findViewById(R.id.searchBar);
 
         // Khởi tạo DAO
         productDAO = new ProductDAO(requireContext());
@@ -51,18 +57,29 @@ public class UserHomeFragment extends Fragment {
         // Khởi tạo SessionManager
         sessionManager = new SessionManager(requireContext());
 
+        // Lưu danh sách đầy đủ sản phẩm
+        allProducts = new ArrayList<>();
+
         // Cấu hình RecyclerView với GridLayoutManager (2 cột)
         setupRecyclerView();
 
         // Tải danh sách sản phẩm
         loadProducts();
 
+        // Thiết lập sự kiện tìm kiếm
+        setupSearchBar();
+
         return view;
     }
 
     private void setupRecyclerView() {
         productRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
-        productAdapter = new ProductAdapter(getContext(), new ArrayList<>(), product -> {
+
+        // Lấy currentUserId từ SessionManager
+        int currentUserId = sessionManager.getUserId();
+
+        // Khởi tạo ProductAdapter với currentUserId
+        productAdapter = new ProductAdapter(getContext(), new ArrayList<>(), currentUserId, product -> {
             // Chuyển sang ProductDetailActivity
             Intent intent = new Intent(getContext(), ProductDetailActivity.class);
             intent.putExtra("PRODUCT_ID", product.getProductId());
@@ -72,15 +89,62 @@ public class UserHomeFragment extends Fragment {
     }
 
     private void loadProducts() {
-        List<Product> products = productDAO.getAllProducts();
+        allProducts = productDAO.getAllProducts();
 
-        if (products.isEmpty()) {
+        if (allProducts.isEmpty()) {
             tvEmptyList.setVisibility(View.VISIBLE);
             productRecyclerView.setVisibility(View.GONE);
         } else {
             tvEmptyList.setVisibility(View.GONE);
             productRecyclerView.setVisibility(View.VISIBLE);
-            productAdapter.setProductList(products);
+            productAdapter.setProductList(allProducts);
+        }
+    }
+
+    private void setupSearchBar() {
+        searchBar.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // Không cần xử lý
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Không cần xử lý
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                filterProducts(s.toString()); // Lọc sản phẩm khi người dùng nhập
+            }
+        });
+    }
+
+    private void filterProducts(String query) {
+        List<Product> filteredList = new ArrayList<>();
+
+        // Nếu query rỗng, hiển thị toàn bộ danh sách
+        if (query == null || query.trim().isEmpty()) {
+            filteredList.addAll(allProducts);
+        } else {
+            // Lọc sản phẩm theo tên (không phân biệt hoa thường)
+            String lowerCaseQuery = query.toLowerCase(Locale.getDefault());
+            for (Product product : allProducts) {
+                if (product.getProductName().toLowerCase(Locale.getDefault()).contains(lowerCaseQuery)) {
+                    filteredList.add(product);
+                }
+            }
+        }
+
+        // Cập nhật giao diện
+        if (filteredList.isEmpty()) {
+            tvEmptyList.setVisibility(View.VISIBLE);
+            productRecyclerView.setVisibility(View.GONE);
+            tvEmptyList.setText("Không tìm thấy sản phẩm nào");
+        } else {
+            tvEmptyList.setVisibility(View.GONE);
+            productRecyclerView.setVisibility(View.VISIBLE);
+            productAdapter.setProductList(filteredList);
         }
     }
 
