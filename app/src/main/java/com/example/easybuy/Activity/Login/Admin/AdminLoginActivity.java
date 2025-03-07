@@ -70,14 +70,20 @@ public class AdminLoginActivity extends AppCompatActivity {
             if (admin != null) {
                 Log.d("AdminLogin", "Stored password hash: " + admin.getPassword());
                 if (BCrypt.checkpw(password, admin.getPassword())) {
-                    // Chỉ lưu phiên nếu CheckBox được chọn
-                    if (btnSaveLogin.isChecked()) {
+                    // Luôn lưu adminId vào tempAdminId, chỉ lưu vào SharedPreferences nếu chọn lưu
+                    sessionManager.createAdminLoginSession(admin.getId(), admin.getEmail(), admin.getFullName());
+                    if (!btnSaveLogin.isChecked()) {
+                        // Nếu không lưu phiên, xóa dữ liệu trong SharedPreferences nhưng giữ tempAdminId
+                        sessionManager.logout();
                         sessionManager.createAdminLoginSession(admin.getId(), admin.getEmail(), admin.getFullName());
                     }
                     Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(this, AdminMainActivity.class));
+                    Intent intent = new Intent(this, AdminMainActivity.class);
+                    startActivity(intent);
+                    Log.d("AdminLogin", "Starting AdminMainActivity and finishing AdminLoginActivity");
                     finish();
                 } else {
+                    Log.d("AdminLogin", "Password mismatch");
                     Toast.makeText(this, "Email hoặc mật khẩu không đúng!", Toast.LENGTH_SHORT).show();
                 }
             } else {

@@ -28,12 +28,15 @@ public class AdminMainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
 
         sessionManager = new SessionManager(this);
-        if (!sessionManager.isLoggedIn()) {
-            startActivity(new Intent(this, AdminLoginActivity.class));
+        adminId = sessionManager.getAdminId();
+
+        // Chỉ chuyển hướng nếu không có phiên đăng nhập nào (bao gồm cả tạm thời)
+        if (!sessionManager.isLoggedIn() || adminId == -1) {
+            Intent intent = new Intent(this, AdminLoginActivity.class);
+            startActivity(intent);
             finish();
             return;
         }
-        adminId = sessionManager.getAdminId();
 
         setContentView(R.layout.activity_admin_main);
 

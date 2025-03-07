@@ -24,7 +24,6 @@ public class AdminOrderFragment extends Fragment {
 
     private static final String TAG = "AdminOrderFragment";
     private RecyclerView recyclerViewOrders;
-    private Button btnViewOrderDetails;
     private OrderAdminAdapter orderAdapter;
     private OrderDAO orderDAO;
     private int adminId;
@@ -59,7 +58,6 @@ public class AdminOrderFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_admin_order, container, false);
 
         recyclerViewOrders = view.findViewById(R.id.recyclerViewOrders);
-        btnViewOrderDetails = view.findViewById(R.id.btnViewOrderDetails);
 
         if (orderDAO == null) {
             Toast.makeText(getContext(), "Không thể truy cập dữ liệu đơn hàng", Toast.LENGTH_SHORT).show();
@@ -69,9 +67,6 @@ public class AdminOrderFragment extends Fragment {
 
         setupRecyclerView();
 
-        btnViewOrderDetails.setOnClickListener(v ->
-                Toast.makeText(getContext(), "Chức năng xem chi tiết đang phát triển", Toast.LENGTH_SHORT).show()
-        );
 
         return view;
     }
