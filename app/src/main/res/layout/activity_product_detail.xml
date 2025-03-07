@@ -22,7 +22,7 @@
             android:background="@drawable/rounded_image_background"
             android:contentDescription="Hình ảnh sản phẩm"
             android:elevation="4dp"
-            android:scaleType="centerCrop"
+            android:scaleType="fitCenter"
             android:src="@drawable/product_placeholder" />
 
         <!-- RecyclerView cho ảnh bổ sung -->
