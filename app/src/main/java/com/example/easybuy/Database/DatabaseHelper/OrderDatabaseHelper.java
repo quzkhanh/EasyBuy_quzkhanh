@@ -1,35 +1,49 @@
-package com.example.easybuy.Database;
-
-import static com.example.easybuy.Database.DatabaseHelper.TABLE_PRODUCT;
+package com.example.easybuy.Database.DatabaseHelper;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.example.easybuy.Database.DatabaseHelper.DatabaseHelper;
 import com.example.easybuy.Model.Order;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class OrderDAO {
-    private DatabaseHelper dbHelper;
-    private static final String TABLE_ORDERS = "orders";
+public class OrderDatabaseHelper {
+    private final DatabaseHelper dbHelper;
 
-    public OrderDAO(Context context) {
-        dbHelper = new DatabaseHelper(context);
+    public OrderDatabaseHelper(DatabaseHelper dbHelper) {
+        this.dbHelper = dbHelper;
     }
 
-    // Thêm đơn hàng mới
+    public SQLiteDatabase getWritableDatabase() {
+        return dbHelper.getWritableDatabase();
+    }
+
+    public SQLiteDatabase getReadableDatabase() {
+        return dbHelper.getReadableDatabase();
+    }
+
     public long addOrder(Order order) {
-        return dbHelper.addOrder(order);
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("user_id", order.getUserId());
+        values.put("product_id", order.getProductId());
+        values.put("quantity", order.getQuantity());
+        values.put("total_price", order.getTotalPrice());
+        values.put("status", order.getStatus());
+        values.put("order_date", order.getOrderDate());
+        values.put("shipping_address", order.getShippingAddress());
+        values.put("phone_number", order.getPhoneNumber());
+        values.put("payment_method", order.getPaymentMethod());
+        return db.insert(DatabaseHelper.TABLE_ORDERS, null, values);
     }
 
-    // Lấy tất cả đơn hàng
     public List<Order> getAllOrders() {
         List<Order> orders = new ArrayList<>();
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ORDERS, null);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_ORDERS, null);
 
         if (cursor.moveToFirst()) {
             do {
@@ -48,15 +62,13 @@ public class OrderDAO {
             } while (cursor.moveToNext());
         }
         cursor.close();
-        db.close();
         return orders;
     }
 
-    // Lấy đơn hàng theo userId
     public List<Order> getOrdersByUserId(int userId) {
         List<Order> orders = new ArrayList<>();
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ORDERS + " WHERE user_id = ?",
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_ORDERS + " WHERE user_id = ?",
                 new String[]{String.valueOf(userId)});
 
         if (cursor.moveToFirst()) {
@@ -76,34 +88,30 @@ public class OrderDAO {
             } while (cursor.moveToNext());
         }
         cursor.close();
-        db.close();
         return orders;
     }
 
-    // Cập nhật trạng thái đơn hàng
     public boolean updateOrderStatus(int orderId, String status) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("status", status);
-        int rowsAffected = db.update(TABLE_ORDERS, values, "order_id = ?", new String[]{String.valueOf(orderId)});
-        db.close();
+        int rowsAffected = db.update(DatabaseHelper.TABLE_ORDERS, values, "order_id = ?",
+                new String[]{String.valueOf(orderId)});
         return rowsAffected > 0;
     }
 
-    // Xóa đơn hàng
     public boolean deleteOrder(int orderId) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        int rowsAffected = db.delete(TABLE_ORDERS, "order_id = ?", new String[]{String.valueOf(orderId)});
-        db.close();
+        SQLiteDatabase db = getWritableDatabase();
+        int rowsAffected = db.delete(DatabaseHelper.TABLE_ORDERS, "order_id = ?",
+                new String[]{String.valueOf(orderId)});
         return rowsAffected > 0;
     }
 
-    // Lấy đơn hàng theo adminId (người tạo sản phẩm)
     public List<Order> getOrdersByAdminId(int adminId) {
         List<Order> orders = new ArrayList<>();
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        SQLiteDatabase db = getReadableDatabase();
 
-        String query = "SELECT o.* FROM " + TABLE_ORDERS + " o " +
+        String query = "SELECT o.* FROM " + DatabaseHelper.TABLE_ORDERS + " o " +
                 "INNER JOIN " + DatabaseHelper.TABLE_PRODUCT + " p ON o.product_id = p.product_id " +
                 "WHERE p.created_by = ?";
 
@@ -125,9 +133,7 @@ public class OrderDAO {
                 orders.add(order);
             } while (cursor.moveToNext());
         }
-
         cursor.close();
-        db.close();
         return orders;
     }
 }

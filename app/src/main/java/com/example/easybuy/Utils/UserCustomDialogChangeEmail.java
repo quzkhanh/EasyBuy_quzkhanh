@@ -6,7 +6,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.easybuy.Database.UserDAO;
+import com.example.easybuy.Database.DAO.UserDAO;
 import com.example.easybuy.Model.User;
 import com.example.easybuy.R;
 
@@ -17,6 +17,7 @@ public class UserCustomDialogChangeEmail {
     private Button btnCancelEmail, btnChangeEmail;
     private SessionManager sessionManager;
     private OnEmailChangeListener listener;
+    private UserDAO userDAO; // Quản lý UserDAO như một trường
 
     public interface OnEmailChangeListener {
         void onEmailChanged(String newEmail);
@@ -26,11 +27,12 @@ public class UserCustomDialogChangeEmail {
         this.context = context;
         this.sessionManager = new SessionManager(context);
         this.listener = listener;
+        this.userDAO = new UserDAO(context); // Khởi tạo UserDAO một lần
     }
 
     public void show(String currentEmail) {
         dialog = new Dialog(context);
-        dialog.setContentView(R.layout.dialog_admin_change_email); // Bạn cần tạo layout này
+        dialog.setContentView(R.layout.dialog_admin_change_email); // Đảm bảo layout tồn tại
         dialog.setCancelable(true);
         dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
@@ -66,19 +68,25 @@ public class UserCustomDialogChangeEmail {
             Toast.makeText(context, "Email không hợp lệ!", Toast.LENGTH_SHORT).show();
             return false;
         }
+        // Kiểm tra email đã tồn tại (trừ email hiện tại của người dùng)
+        if (userDAO.isEmailExists(email)) {
+            int currentUserId = sessionManager.getUserId();
+            User currentUser = userDAO.getUserById(currentUserId);
+            if (currentUser != null && !currentUser.getEmail().equals(email)) {
+                Toast.makeText(context, "Email đã được sử dụng bởi người khác!", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        }
         return true;
     }
 
     private void changeEmail(String newEmail) {
         int userId = sessionManager.getUserId();
         if (userId != -1) {
-            UserDAO userDAO = new UserDAO(context);
-            userDAO.open();
             User user = userDAO.getUserById(userId);
             if (user != null) {
                 user.setEmail(newEmail);
                 int rowsAffected = userDAO.updateUser(user);
-                userDAO.close();
                 if (rowsAffected > 0) {
                     sessionManager.setEmail(newEmail); // Cập nhật session
                     listener.onEmailChanged(newEmail); // Cập nhật UI
@@ -89,10 +97,19 @@ public class UserCustomDialogChangeEmail {
                 }
             } else {
                 Toast.makeText(context, "Người dùng không tồn tại!", Toast.LENGTH_SHORT).show();
-                userDAO.close();
             }
         } else {
             Toast.makeText(context, "Không tìm thấy ID người dùng!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // Đóng tài nguyên khi Dialog bị hủy
+    public void dismiss() {
+        if (dialog != null && dialog.isShowing()) {
+            dialog.dismiss();
+        }
+        if (userDAO != null) {
+            userDAO.close(); // Đóng UserDAO khi Dialog bị hủy
         }
     }
 }

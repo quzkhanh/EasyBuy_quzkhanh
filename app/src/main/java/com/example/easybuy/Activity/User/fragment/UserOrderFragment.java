@@ -11,8 +11,8 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.easybuy.Database.OrderDAO;
-import com.example.easybuy.Database.OrderAdapter;
+import com.example.easybuy.Database.DAO.OrderDAO;
+import com.example.easybuy.Database.Adapter.OrderAdapter;
 import com.example.easybuy.Model.Order;
 import com.example.easybuy.R;
 import com.example.easybuy.Utils.SessionManager;

@@ -5,15 +5,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.easybuy.Database.OrderAdminAdapter;
-import com.example.easybuy.Database.OrderDAO;
+import com.example.easybuy.Database.Adapter.OrderAdminAdapter;
+import com.example.easybuy.Database.DAO.OrderDAO;
 import com.example.easybuy.Model.Order;
 import com.example.easybuy.R;
 

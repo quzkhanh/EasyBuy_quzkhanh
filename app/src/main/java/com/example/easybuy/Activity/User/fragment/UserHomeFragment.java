@@ -16,9 +16,9 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.easybuy.Activity.User.ProductDetailActivity;
-import com.example.easybuy.Database.OrderDAO;
-import com.example.easybuy.Database.ProductAdapter;
-import com.example.easybuy.Database.ProductDAO;
+import com.example.easybuy.Database.DAO.OrderDAO;
+import com.example.easybuy.Database.Adapter.ProductAdapter;
+import com.example.easybuy.Database.DAO.ProductDAO;
 import com.example.easybuy.Model.Order;
 import com.example.easybuy.Model.Product;
 import com.example.easybuy.R;

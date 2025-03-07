@@ -23,8 +23,8 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.easybuy.Database.ImageAdapter;
-import com.example.easybuy.Database.ProductDAO;
+import com.example.easybuy.Database.Adapter.ImageAdapter;
+import com.example.easybuy.Database.DAO.ProductDAO;
 import com.example.easybuy.Model.Product;
 import com.example.easybuy.R;
 

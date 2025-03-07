@@ -7,11 +7,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
 import com.example.easybuy.Activity.WelcomeActivity;
-import com.example.easybuy.Database.UserDAO;
+import com.example.easybuy.Database.DAO.UserDAO;
 import com.example.easybuy.Model.User;
 import com.example.easybuy.R;
 import com.example.easybuy.Utils.SessionManager;
@@ -22,9 +23,10 @@ import com.example.easybuy.Utils.UserCustomDialogChangePassword;
 public class UserSettingsFragment extends Fragment {
     private TextView btnLogout;
     private TextView tvUserName;
-    private TextView tvPassword;
+    private TextView tvPassword; // Có thể loại bỏ nếu không cần hiển thị
     private TextView tvEmail;
     private SessionManager sessionManager;
+    private UserDAO userDAO; // Khai báo UserDAO như một trường
 
     public UserSettingsFragment() {
         // Required empty public constructor
@@ -34,6 +36,7 @@ public class UserSettingsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sessionManager = new SessionManager(requireContext());
+        userDAO = new UserDAO(requireContext()); // Khởi tạo UserDAO một lần
     }
 
     @Override
@@ -43,7 +46,7 @@ public class UserSettingsFragment extends Fragment {
         // Ánh xạ các view
         btnLogout = view.findViewById(R.id.btnLogout);
         tvUserName = view.findViewById(R.id.tvUserName);
-        tvPassword = view.findViewById(R.id.tvPassword);
+        tvPassword = view.findViewById(R.id.tvPassword); // Có thể ẩn hoặc loại bỏ
         tvEmail = view.findViewById(R.id.tvEmail);
 
         // Cập nhật thông tin người dùng
@@ -70,8 +73,6 @@ public class UserSettingsFragment extends Fragment {
         if (!userName.isEmpty()) {
             tvUserName.setText(userName);
         } else {
-            UserDAO userDAO = new UserDAO(requireContext());
-            userDAO.open();
             int userId = sessionManager.getUserId();
             if (userId != -1) {
                 User user = userDAO.getUserById(userId);
@@ -86,7 +87,6 @@ public class UserSettingsFragment extends Fragment {
                 tvUserName.setText("Người dùng");
                 Log.e("UserSettingsFragment", "User ID not found in SessionManager");
             }
-            userDAO.close();
         }
     }
 
@@ -95,8 +95,6 @@ public class UserSettingsFragment extends Fragment {
         if (!email.isEmpty()) {
             tvEmail.setText(email);
         } else {
-            UserDAO userDAO = new UserDAO(requireContext());
-            userDAO.open();
             int userId = sessionManager.getUserId();
             if (userId != -1) {
                 User user = userDAO.getUserById(userId);
@@ -111,7 +109,6 @@ public class UserSettingsFragment extends Fragment {
                 tvEmail.setText("Chưa có email");
                 Log.e("UserSettingsFragment", "User ID not found in SessionManager");
             }
-            userDAO.close();
         }
     }
 
@@ -119,6 +116,15 @@ public class UserSettingsFragment extends Fragment {
         UserCustomDialogName dialog = new UserCustomDialogName(requireContext(), newName -> {
             tvUserName.setText(newName);
             sessionManager.setUserName(newName);
+            // Cập nhật tên vào database (nếu cần)
+            int userId = sessionManager.getUserId();
+            if (userId != -1) {
+                User user = userDAO.getUserById(userId);
+                if (user != null) {
+                    user.setFullName(newName);
+                    userDAO.updateUser(user); // Cập nhật database
+                }
+            }
         });
         dialog.show(sessionManager.getUserName());
     }
@@ -127,6 +133,15 @@ public class UserSettingsFragment extends Fragment {
         UserCustomDialogChangeEmail dialog = new UserCustomDialogChangeEmail(requireContext(), newEmail -> {
             tvEmail.setText(newEmail);
             sessionManager.setEmail(newEmail);
+            // Cập nhật email vào database (nếu cần)
+            int userId = sessionManager.getUserId();
+            if (userId != -1) {
+                User user = userDAO.getUserById(userId);
+                if (user != null) {
+                    user.setEmail(newEmail);
+                    userDAO.updateUser(user); // Cập nhật database
+                }
+            }
         });
         dialog.show(sessionManager.getEmail());
     }
@@ -134,6 +149,9 @@ public class UserSettingsFragment extends Fragment {
     private void showEditPasswordDialog() {
         UserCustomDialogChangePassword dialog = new UserCustomDialogChangePassword(requireContext(), () -> {
             // Không cần cập nhật UI cho mật khẩu, chỉ thông báo thành công
+            Toast.makeText(requireContext(), "Mật khẩu đã được thay đổi!", Toast.LENGTH_SHORT).show();
+            // Cập nhật mật khẩu vào database (nếu cần qua dialog)
+            // Lưu ý: Dialog cần trả về mật khẩu mới để cập nhật
         });
         dialog.show();
     }
@@ -143,6 +161,16 @@ public class UserSettingsFragment extends Fragment {
         Intent intent = new Intent(getActivity(), WelcomeActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
-        getActivity().finish();
+        if (getActivity() != null) {
+            getActivity().finish();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (userDAO != null) {
+            userDAO.close(); // Đóng UserDAO khi Fragment bị hủy
+        }
     }
 }

@@ -8,7 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.easybuy.Database.AdminDAO;
+import com.example.easybuy.Database.DAO.AdminDAO;
 import com.example.easybuy.Model.Admin;
 import com.example.easybuy.R;
 

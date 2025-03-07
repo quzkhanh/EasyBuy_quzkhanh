@@ -14,8 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.easybuy.Activity.Admin.AdminMainActivity;
 import com.example.easybuy.Activity.Login.ForgotPW.ForgotPasswordActivity;
-import com.example.easybuy.Activity.Login.User.UserSignUpActivity;
-import com.example.easybuy.Database.AdminDAO;
+import com.example.easybuy.Database.DAO.AdminDAO;
 import com.example.easybuy.Model.Admin;
 import com.example.easybuy.R;
 import com.example.easybuy.Utils.SessionManager;

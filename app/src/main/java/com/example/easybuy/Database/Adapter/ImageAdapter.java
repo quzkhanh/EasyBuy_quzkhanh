@@ -1,4 +1,4 @@
-package com.example.easybuy.Database;
+package com.example.easybuy.Database.Adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;

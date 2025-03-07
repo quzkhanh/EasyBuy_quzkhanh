@@ -1,4 +1,4 @@
-package com.example.easybuy.Database;
+package com.example.easybuy.Database.Adapter;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.easybuy.Database.DAO.FavoriteDAO;
 import com.example.easybuy.Model.Favorite;
 import com.example.easybuy.R;
 
@@ -24,10 +25,12 @@ import java.util.List;
 public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.FavoriteViewHolder> {
     private Context context;
     private List<Favorite> favoriteList;
+    private FavoriteDAO favoriteDAO;
 
     public FavoriteAdapter(Context context, List<Favorite> favoriteList) {
         this.context = context;
         this.favoriteList = favoriteList;
+        this.favoriteDAO = new FavoriteDAO(context); // Khởi tạo FavoriteDAO
     }
 
     public void setFavoriteList(List<Favorite> favoriteList) {
@@ -62,6 +65,9 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.Favori
         return favoriteList != null ? favoriteList.size() : 0;
     }
 
+    // Xóa phương thức addFavorite vì nó không thuộc về Adapter
+    // Logic này nên nằm trong FavoriteDAO hoặc FavoriteDatabaseHelper
+
     public static class FavoriteViewHolder extends RecyclerView.ViewHolder {
         ImageView ivFavoriteImage;
         TextView tvFavoriteName, tvFavoritePrice;
@@ -83,7 +89,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.Favori
         public SwipeToDeleteCallback(FavoriteAdapter adapter, Context context) {
             super(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
             this.adapter = adapter;
-            this.favoriteDAO = new FavoriteDAO(context);
+            this.favoriteDAO = new FavoriteDAO(context); // Sử dụng FavoriteDAO
             this.context = context;
         }
 
@@ -122,7 +128,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.Favori
                             adapter.notifyItemChanged(position);
                         }
                     })
-                    .setCancelable(false) // Không cho phép thoát dialog bằng nút back
+                    .setCancelable(false)
                     .show();
         }
     }

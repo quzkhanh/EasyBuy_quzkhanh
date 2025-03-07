@@ -1,7 +1,6 @@
-package com.example.easybuy.Database;
+package com.example.easybuy.Database.DatabaseHelper;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
@@ -15,29 +14,51 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-public class ProductDAO {
-    private DatabaseHelper dbHelper;
-    private Context context;
+public class ProductDatabaseHelper {
+    private final DatabaseHelper dbHelper;
 
-    private static final String TABLE_PRODUCT = "product";
-    private static final String TABLE_PRODUCT_IMAGES = "product_images";
-
-    public ProductDAO(Context context) {
-        this.context = context;
-        dbHelper = new DatabaseHelper(context);
+    public ProductDatabaseHelper(DatabaseHelper dbHelper) {
+        this.dbHelper = dbHelper;
     }
 
-    public Context getContext() {
-        return context;
+    public SQLiteDatabase getWritableDatabase() {
+        return dbHelper.getWritableDatabase();
     }
 
-    // Phương thức kiểm tra quyền sở hữu sản phẩm
+    public SQLiteDatabase getReadableDatabase() {
+        return dbHelper.getReadableDatabase();
+    }
+
     public boolean isProductOwner(int productId, int adminId) {
-        return dbHelper.isProductOwner(productId, adminId);
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+        try {
+            db = getReadableDatabase();
+            cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_PRODUCT +
+                            " WHERE product_id = ? AND created_by = ?",
+                    new String[]{String.valueOf(productId), String.valueOf(adminId)});
+            return cursor != null && cursor.getCount() > 0;
+        } catch (Exception e) {
+            Log.e("ProductDatabaseHelper", "Error checking product owner", e);
+            return false;
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+    }
+
+    public long addProduct(String productName, double price, String imageUrl, String description, int adminId) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("product_name", productName);
+        values.put("price", price);
+        values.put("image_url", imageUrl);
+        values.put("description", description);
+        values.put("created_by", adminId);
+        return db.insert(DatabaseHelper.TABLE_PRODUCT, null, values);
     }
 
     public long addProductWithImages(Product product, List<String> additionalImageUrls, int adminId) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("product_name", product.getProductName());
         values.put("price", product.getPrice());
@@ -45,85 +66,58 @@ public class ProductDAO {
         values.put("description", product.getDescription());
         values.put("created_by", adminId);
 
-        long productId = db.insert(TABLE_PRODUCT, null, values);
+        long productId = db.insert(DatabaseHelper.TABLE_PRODUCT, null, values);
 
         if (productId != -1 && additionalImageUrls != null) {
             for (String imageUrl : additionalImageUrls) {
                 ContentValues imageValues = new ContentValues();
                 imageValues.put("product_id", productId);
                 imageValues.put("image_url", imageUrl);
-                db.insert(TABLE_PRODUCT_IMAGES, null, imageValues);
+                db.insert(DatabaseHelper.TABLE_PRODUCT_IMAGES, null, imageValues);
             }
         }
-        db.close();
         return productId;
     }
 
-    public long addProduct(Product product, int adminId) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("product_name", product.getProductName());
-        values.put("price", product.getPrice());
-        String imageUrl = product.getImageUrl();
-        if (imageUrl == null || imageUrl.trim().isEmpty()) {
-            Log.w("ProductDAO", "Image URL is null or empty for product: " + product.getProductName());
-            values.put("image_url", "");
-        } else {
-            values.put("image_url", imageUrl);
-        }
-        values.put("description", product.getDescription());
-        values.put("created_by", adminId);
-
-        long id = db.insert(TABLE_PRODUCT, null, values);
-        Log.d("ProductDAO", "Added product with ID: " + id + ", Image URL: " + imageUrl);
-        db.close();
-        return id;
-    }
-
     public long addProductImage(int productId, String imageUrl) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("product_id", productId);
         values.put("image_url", imageUrl);
-        long id = db.insert(TABLE_PRODUCT_IMAGES, null, values);
-        db.close();
-        return id;
+        return db.insert(DatabaseHelper.TABLE_PRODUCT_IMAGES, null, values);
     }
 
     public int updateProduct(Product product, int adminId) {
-        if (!dbHelper.isProductOwner(product.getProductId(), adminId)) {
-            Log.w("ProductDAO", "Admin " + adminId + " does not have permission to update product " + product.getProductId());
+        if (!isProductOwner(product.getProductId(), adminId)) {
+            Log.w("ProductDatabaseHelper", "Admin " + adminId + " does not have permission to update product " + product.getProductId());
             return 0;
         }
-
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("product_name", product.getProductName());
         values.put("price", product.getPrice());
         values.put("image_url", product.getImageUrl());
         values.put("description", product.getDescription());
-        int rowsAffected = db.update(TABLE_PRODUCT, values, "product_id = ?", new String[]{String.valueOf(product.getProductId())});
-        db.close();
-        return rowsAffected;
+        return db.update(DatabaseHelper.TABLE_PRODUCT, values, "product_id = ?",
+                new String[]{String.valueOf(product.getProductId())});
     }
 
     public boolean deleteProduct(int productId, int adminId) {
-        if (!dbHelper.isProductOwner(productId, adminId)) {
-            Log.w("ProductDAO", "Admin " + adminId + " does not have permission to delete product " + productId);
+        if (!isProductOwner(productId, adminId)) {
+            Log.w("ProductDatabaseHelper", "Admin " + adminId + " does not have permission to delete product " + productId);
             return false;
         }
-
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        int rowsAffected = db.delete(TABLE_PRODUCT, "product_id = ?", new String[]{String.valueOf(productId)});
-        db.close();
+        SQLiteDatabase db = getWritableDatabase();
+        int rowsAffected = db.delete(DatabaseHelper.TABLE_PRODUCT, "product_id = ?",
+                new String[]{String.valueOf(productId)});
         return rowsAffected > 0;
     }
 
     public List<ProductImage> getProductImages(int productId) {
         List<ProductImage> imageList = new ArrayList<>();
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_PRODUCT_IMAGES + " WHERE product_id = ?",
-                new String[]{String.valueOf(productId)});
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_PRODUCT_IMAGES +
+                " WHERE product_id = ?", new String[]{String.valueOf(productId)});
 
         HashSet<String> uniqueUrls = new HashSet<>();
         if (cursor != null && cursor.moveToFirst()) {
@@ -136,9 +130,9 @@ public class ProductDAO {
                     image.setImageUrl(url);
                     imageList.add(image);
                     uniqueUrls.add(url);
-                    Log.d("ProductDAO", "Added ProductImage: " + image.toString());
+                    Log.d("ProductDatabaseHelper", "Added ProductImage: " + image.toString());
                 } else {
-                    Log.w("ProductDAO", "Skipped invalid or duplicate URL: " + (url == null ? "null" : url));
+                    Log.w("ProductDatabaseHelper", "Skipped invalid or duplicate URL: " + (url == null ? "null" : url));
                 }
             } while (cursor.moveToNext());
         }
@@ -148,8 +142,8 @@ public class ProductDAO {
 
     public List<Product> getAllProducts() {
         List<Product> productList = new ArrayList<>();
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_PRODUCT, null);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_PRODUCT, null);
 
         if (cursor != null && cursor.moveToFirst()) {
             do {
@@ -161,19 +155,18 @@ public class ProductDAO {
                 product.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
                 product.setCreatedBy(cursor.getInt(cursor.getColumnIndexOrThrow("created_by")));
                 productList.add(product);
-                Log.d("ProductDAO", "Fetched Product: " + product.toString());
+                Log.d("ProductDatabaseHelper", "Fetched Product: " + product.toString());
             } while (cursor.moveToNext());
         }
         if (cursor != null) cursor.close();
-        db.close();
         return productList;
     }
 
     public List<Product> getProductsByAdmin(int adminId) {
         List<Product> productList = new ArrayList<>();
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_PRODUCT + " WHERE created_by = ?",
-                new String[]{String.valueOf(adminId)});
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_PRODUCT +
+                " WHERE created_by = ?", new String[]{String.valueOf(adminId)});
 
         if (cursor != null && cursor.moveToFirst()) {
             do {
@@ -192,25 +185,25 @@ public class ProductDAO {
     }
 
     public void updateProductImages(int productId, List<Uri> imageUris) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.delete(TABLE_PRODUCT_IMAGES, "product_id = ?", new String[]{String.valueOf(productId)});
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(DatabaseHelper.TABLE_PRODUCT_IMAGES, "product_id = ?",
+                new String[]{String.valueOf(productId)});
         for (Uri uri : imageUris) {
             ContentValues values = new ContentValues();
             values.put("product_id", productId);
             values.put("image_url", uri.toString());
-            db.insert(TABLE_PRODUCT_IMAGES, null, values);
+            db.insert(DatabaseHelper.TABLE_PRODUCT_IMAGES, null, values);
         }
-        db.close();
     }
 
     public Product getProductById(int productId) {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = null;
         Product product = null;
 
         try {
-            cursor = db.rawQuery("SELECT * FROM " + TABLE_PRODUCT + " WHERE product_id = ?",
-                    new String[]{String.valueOf(productId)});
+            cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_PRODUCT +
+                    " WHERE product_id = ?", new String[]{String.valueOf(productId)});
 
             if (cursor != null && cursor.moveToFirst()) {
                 product = new Product();
@@ -230,20 +223,18 @@ public class ProductDAO {
                     product.setDescription(cursor.getString(descriptionIndex));
                     product.setCreatedBy(cursor.getInt(createdByIndex));
                 } else {
-                    Log.e("ProductDAO", "Một hoặc nhiều cột không tồn tại trong bảng product");
+                    Log.e("ProductDatabaseHelper", "One or more columns not found in product table");
                 }
             } else {
-                Log.w("ProductDAO", "Không tìm thấy sản phẩm với ID: " + productId);
+                Log.w("ProductDatabaseHelper", "Product not found with ID: " + productId);
             }
         } catch (Exception e) {
-            Log.e("ProductDAO", "Lỗi khi lấy sản phẩm theo ID: " + e.getMessage(), e);
+            Log.e("ProductDatabaseHelper", "Error retrieving product by ID: " + e.getMessage(), e);
         } finally {
             if (cursor != null) {
                 cursor.close();
             }
         }
-
-        db.close();
         return product;
     }
 }

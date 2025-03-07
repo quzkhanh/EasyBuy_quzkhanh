@@ -1,4 +1,4 @@
-package com.example.easybuy.Database;
+package com.example.easybuy.Database.Adapter;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -19,6 +19,8 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.easybuy.Database.DAO.OrderDAO;
+import com.example.easybuy.Database.DatabaseHelper.DatabaseHelper;
 import com.example.easybuy.Model.Order;
 import com.example.easybuy.R;
 

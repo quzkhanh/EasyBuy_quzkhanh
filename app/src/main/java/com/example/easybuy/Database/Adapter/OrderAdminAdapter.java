@@ -1,4 +1,4 @@
-package com.example.easybuy.Database;
+package com.example.easybuy.Database.Adapter;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -14,7 +14,11 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.easybuy.Database.DAO.OrderDAO;
+import com.example.easybuy.Database.DatabaseHelper.DatabaseHelper;
+import com.example.easybuy.Database.DatabaseHelper.UserDatabaseHelper;
 import com.example.easybuy.Model.Order;
+import com.example.easybuy.Model.User;
 import com.example.easybuy.R;
 
 import java.util.List;
@@ -25,6 +29,7 @@ public class OrderAdminAdapter extends RecyclerView.Adapter<OrderAdminAdapter.Or
     private OnOrderClickListener listener;
     private OrderDAO orderDAO;
     private Context context;
+    private UserDatabaseHelper userDbHelper;
 
     public interface OnOrderClickListener {
         void onOrderClick(Order order);
@@ -35,6 +40,8 @@ public class OrderAdminAdapter extends RecyclerView.Adapter<OrderAdminAdapter.Or
         this.listener = listener;
         this.context = context;
         this.orderDAO = new OrderDAO(context);
+        DatabaseHelper dbHelper = new DatabaseHelper(context);
+        this.userDbHelper = new UserDatabaseHelper(dbHelper);
     }
 
     @NonNull
@@ -76,8 +83,11 @@ public class OrderAdminAdapter extends RecyclerView.Adapter<OrderAdminAdapter.Or
         }
 
         void bind(Order order) {
+            User user = userDbHelper.getUserById(order.getUserId());
+            String userName = (user != null) ? user.getFullName() : "Không xác định";
+
             tvOrderId.setText("Mã đơn: " + order.getOrderId());
-            tvUserId.setText("Người dùng: " + order.getUserId());
+            tvUserId.setText("Người dùng: " + userName);
             tvProductId.setText("Sản phẩm: " + order.getProductId());
             tvStatus.setText("Trạng thái: " + order.getStatus());
             tvOrderDate.setText("Ngày đặt: " + order.getOrderDate());
@@ -103,9 +113,11 @@ public class OrderAdminAdapter extends RecyclerView.Adapter<OrderAdminAdapter.Or
             Button btnCancelOrder = dialogView.findViewById(R.id.btnCancelOrder);
             Button btnCloseDialog = dialogView.findViewById(R.id.btnCloseDialog);
 
-            // Đổ dữ liệu vào dialog
+            User user = userDbHelper.getUserById(order.getUserId());
+            String userName = (user != null) ? user.getFullName() : "Không xác định";
+
             tvOrderId.setText("Mã đơn: " + order.getOrderId());
-            tvUserId.setText("Người dùng: " + order.getUserId());
+            tvUserId.setText("Người dùng: " + userName);
             tvProductId.setText("Sản phẩm: " + order.getProductId());
             tvQuantity.setText("Số lượng: " + order.getQuantity());
             tvTotalPrice.setText("Tổng giá: " + order.getTotalPrice());
@@ -115,12 +127,14 @@ public class OrderAdminAdapter extends RecyclerView.Adapter<OrderAdminAdapter.Or
             tvPhoneNumber.setText("Số điện thoại: " + order.getPhoneNumber());
             tvPaymentMethod.setText("Phương thức thanh toán: " + order.getPaymentMethod());
 
-            // Cài đặt Spinner
             ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(context,
                     R.array.order_status_array, android.R.layout.simple_spinner_item);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinnerStatus.setAdapter(adapter);
             spinnerStatus.setSelection(getIndex(spinnerStatus, order.getStatus()));
+
+            // Tạo và lưu instance dialog
+            AlertDialog dialog = builder.create();
 
             // Xử lý cập nhật trạng thái
             btnUpdateStatus.setOnClickListener(v -> {
@@ -141,20 +155,17 @@ public class OrderAdminAdapter extends RecyclerView.Adapter<OrderAdminAdapter.Or
                     orderList.remove(order);
                     notifyDataSetChanged();
                     Toast.makeText(context, "Hủy đơn hàng thành công", Toast.LENGTH_SHORT).show();
-                    builder.create().dismiss(); // Đóng dialog khi hủy thành công
+                    dialog.dismiss(); // Đóng dialog đang hiển thị
                 } else {
                     Toast.makeText(context, "Hủy đơn hàng thất bại", Toast.LENGTH_SHORT).show();
                 }
             });
 
             // Đóng dialog
-            btnCloseDialog.setOnClickListener(v -> {
-                AlertDialog dialog = builder.create(); // Tạo và lưu instance dialog
-                dialog.dismiss(); // Đóng dialog
-            });
+            btnCloseDialog.setOnClickListener(v -> dialog.dismiss()); // Sử dụng instance dialog đã tạo
 
-            AlertDialog dialog = builder.create(); // Tạo instance dialog
-            dialog.show(); // Hiển thị dialog
+            // Hiển thị dialog
+            dialog.show();
         }
 
         private int getIndex(Spinner spinner, String value) {
@@ -164,6 +175,14 @@ public class OrderAdminAdapter extends RecyclerView.Adapter<OrderAdminAdapter.Or
                 }
             }
             return 0;
+        }
+    }
+
+    @Override
+    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView);
+        if (userDbHelper != null) {
+            userDbHelper.close();
         }
     }
 }

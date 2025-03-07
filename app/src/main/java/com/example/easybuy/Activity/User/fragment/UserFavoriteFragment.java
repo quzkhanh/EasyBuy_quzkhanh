@@ -11,8 +11,8 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.easybuy.Database.FavoriteAdapter;
-import com.example.easybuy.Database.FavoriteDAO;
+import com.example.easybuy.Database.Adapter.FavoriteAdapter;
+import com.example.easybuy.Database.DAO.FavoriteDAO;
 import com.example.easybuy.Model.Favorite;
 import com.example.easybuy.R;
 import com.example.easybuy.Utils.SessionManager;

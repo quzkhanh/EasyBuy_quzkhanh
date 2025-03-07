@@ -2,13 +2,14 @@ package com.example.easybuy.Activity.Login.User;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.easybuy.Database.UserDAO;
+import com.example.easybuy.Database.DAO.UserDAO;
 import com.example.easybuy.Model.User;
 import com.example.easybuy.R;
 
@@ -30,8 +31,7 @@ public class UserSignUpActivity extends AppCompatActivity {
         btnSignUp = findViewById(R.id.btnSignUp);
 
         // Khởi tạo UserDAO
-        userDAO = new UserDAO(this);
-        userDAO.open(); // Mở database
+        userDAO = new UserDAO(this); // Không cần gọi open()
 
         // Xử lý sự kiện click vào nút đăng ký
         btnSignUp.setOnClickListener(v -> registerUser());
@@ -49,6 +49,12 @@ public class UserSignUpActivity extends AppCompatActivity {
             return;
         }
 
+        // Kiểm tra định dạng email
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(this, "Vui lòng nhập email hợp lệ!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         // Kiểm tra mật khẩu nhập lại
         if (!password.equals(repeatPassword)) {
             Toast.makeText(this, "Mật khẩu không khớp!", Toast.LENGTH_SHORT).show();
@@ -56,13 +62,13 @@ public class UserSignUpActivity extends AppCompatActivity {
         }
 
         // Kiểm tra email đã tồn tại chưa
-        if (userDAO.getUserByEmail(email) != null) {
+        if (userDAO.isEmailExists(email)) {
             Toast.makeText(this, "Email đã tồn tại!", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // Tạo đối tượng User và thêm vào database
-        User newUser = new User(0, fullName, email, password, "");
+        User newUser = new User(0, fullName, email, password, ""); // userId = 0 sẽ được tự động tăng trong DB
         long result = userDAO.addUser(newUser);
 
         if (result > 0) {
@@ -77,6 +83,8 @@ public class UserSignUpActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        userDAO.close(); // Đóng database khi activity bị hủy
+        if (userDAO != null) {
+            userDAO.close(); // Đóng database khi activity bị hủy
+        }
     }
 }

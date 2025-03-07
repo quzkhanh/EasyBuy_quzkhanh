@@ -9,9 +9,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.easybuy.Database.DatabaseHelper;
+import com.example.easybuy.Database.DatabaseHelper.DatabaseHelper;
+import com.example.easybuy.Database.DatabaseHelper.UserDatabaseHelper;
 import com.example.easybuy.R;
-
 
 public class ForgotPasswordActivity extends AppCompatActivity {
 
@@ -19,13 +19,16 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     private Button btnResetPassword;
     private ImageButton btnBack;
     private DatabaseHelper dbHelper;
+    private UserDatabaseHelper userDbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forgot_password);
 
+        // Khởi tạo DatabaseHelper và UserDatabaseHelper
         dbHelper = new DatabaseHelper(this);
+        userDbHelper = new UserDatabaseHelper(dbHelper);
 
         etEmail = findViewById(R.id.etEmail);
         btnResetPassword = findViewById(R.id.btnResetPassword);
@@ -36,12 +39,15 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         btnResetPassword.setOnClickListener(v -> {
             String email = etEmail.getText().toString().trim();
             if (isValidEmail(email)) {
-                if (dbHelper.checkEmail(email)) {
-                    String otp = dbHelper.generateAndSaveOTP(email); // Lưu OTP vào SQLite
-                    Toast.makeText(this, "Mã OTP đã được tạo: " + otp, Toast.LENGTH_SHORT).show(); // Hiển thị OTP (cho test)
-                    Intent intent = new Intent(ForgotPasswordActivity.this, CheckEmailActivity.class);
-                    intent.putExtra("email", email);
-                    startActivity(intent);
+                if (userDbHelper.checkEmail(email)) {
+                    if (userDbHelper.generateAndSaveOTP(email)) {
+                        Toast.makeText(this, "Mã OTP đã được gửi (kiểm tra email để lấy OTP)", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(ForgotPasswordActivity.this, CheckEmailActivity.class);
+                        intent.putExtra("email", email);
+                        startActivity(intent);
+                    } else {
+                        Toast.makeText(this, "Không thể tạo OTP, vui lòng thử lại!", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
                     Toast.makeText(this, "Email không tồn tại!", Toast.LENGTH_SHORT).show();
                 }
@@ -54,5 +60,13 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     private boolean isValidEmail(String email) {
         String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
         return email.matches(emailPattern) && !email.isEmpty();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (userDbHelper != null) {
+            userDbHelper.close(); // Đóng UserDatabaseHelper
+        }
     }
 }

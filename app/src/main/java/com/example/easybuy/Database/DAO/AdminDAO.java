@@ -1,4 +1,4 @@
-package com.example.easybuy.Database;
+package com.example.easybuy.Database.DAO;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import org.mindrot.jbcrypt.BCrypt;
+
+import com.example.easybuy.Database.DatabaseHelper.DatabaseHelper;
 import com.example.easybuy.Model.Admin;
 
 public class AdminDAO {

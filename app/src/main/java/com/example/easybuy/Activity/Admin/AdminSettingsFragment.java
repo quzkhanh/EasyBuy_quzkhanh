@@ -12,7 +12,7 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 
 import com.example.easybuy.Activity.WelcomeActivity;
-import com.example.easybuy.Database.AdminDAO;
+import com.example.easybuy.Database.DAO.AdminDAO;
 import com.example.easybuy.Model.Admin;
 import com.example.easybuy.R;
 import com.example.easybuy.Utils.AdminCustomDialogEmail;
