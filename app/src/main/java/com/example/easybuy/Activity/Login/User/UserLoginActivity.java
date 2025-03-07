@@ -4,53 +4,53 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Patterns;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.easybuy.Activity.User.UserMainActivity;
-import com.example.easybuy.Database.UserDAO;
-import com.example.easybuy.Model.User;
+import com.example.easybuy.Database.DatabaseHelper;
 import com.example.easybuy.R;
 import com.example.easybuy.Utils.SessionManager;
-import com.google.android.material.textfield.TextInputEditText;
+
+import org.mindrot.jbcrypt.BCrypt;
 
 public class UserLoginActivity extends AppCompatActivity {
-    private UserDAO userDAO;
-    private TextInputEditText edtUserEmail, edtUserPassword;
-    private Button btnLogin;
-    private TextView tvSignup;
+    private EditText edtUserEmail, edtUserPassword;
+    private Button btnUserLogin;
+    private CheckBox btnSaveLogin; // Ánh xạ CheckBox
     private SessionManager sessionManager;
+    private DatabaseHelper dbHelper;
+    private TextView tvSignup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_login);
 
-        userDAO = new UserDAO(this);
-        userDAO.open();
+        // Ánh xạ View
+        edtUserEmail = findViewById(R.id.edtUserEmail);
+        edtUserPassword = findViewById(R.id.edtUserPassword);
+        btnUserLogin = findViewById(R.id.btnLogin);
+        btnSaveLogin = findViewById(R.id.btnSaveLogin); // Ánh xạ CheckBox
+        tvSignup = findViewById(R.id.tvSignup);
 
+        // Khởi tạo DAO và SessionManager
+        dbHelper = new DatabaseHelper(this);
         sessionManager = new SessionManager(this);
 
-        // Kiểm tra nếu đã đăng nhập, chuyển hướng sang UserMainActivity
+        // Nếu đã đăng nhập và phiên được lưu, chuyển hướng sang MainActivity
         if (sessionManager.isLoggedIn()) {
             startActivity(new Intent(this, UserMainActivity.class));
             finish();
             return;
         }
 
-        edtUserEmail = findViewById(R.id.edtUserEmail);
-        edtUserPassword = findViewById(R.id.edtUserPassword);
-        btnLogin = findViewById(R.id.btnLogin);
-        tvSignup = findViewById(R.id.tvSignup);
-
-        btnLogin.setOnClickListener(v -> loginUser());
-
-        tvSignup.setOnClickListener(v -> {
-            startActivity(new Intent(this, UserSignUpActivity.class));
-            finish();
-        });
+        btnUserLogin.setOnClickListener(v -> loginUser());
+        tvSignup.setOnClickListener(v -> startActivity(new Intent(this, com.example.easybuy.Activity.Login.User.UserSignUpActivity.class)));
     }
 
     private void loginUser() {
@@ -59,36 +59,29 @@ public class UserLoginActivity extends AppCompatActivity {
 
         if (!validateInputs(email, password)) return;
 
-        User user = userDAO.checkLogin(email, password);
-        if (user != null) {
-            // Sử dụng SessionManager để lưu phiên đăng nhập
-            sessionManager.createUserLoginSession(user.getUserId(), user.getEmail(), user.getFullName());
-
+        int userId = dbHelper.checkUserLogin(email, password);
+        if (userId != -1) {
+            // Chỉ lưu phiên nếu CheckBox được chọn
+            if (btnSaveLogin.isChecked()) {
+                sessionManager.createUserLoginSession(userId, email, "User Name"); // Thay "User Name" bằng tên thật từ DB
+            }
             Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, UserMainActivity.class));
             finish();
         } else {
-            Toast.makeText(this, "Sai email hoặc mật khẩu!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Email hoặc mật khẩu không đúng!", Toast.LENGTH_SHORT).show();
         }
     }
 
     private boolean validateInputs(String email, String password) {
         if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Vui lòng điền đầy đủ email và mật khẩu!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng nhập email và mật khẩu!", Toast.LENGTH_SHORT).show();
             return false;
         }
-
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             Toast.makeText(this, "Vui lòng nhập email hợp lệ!", Toast.LENGTH_SHORT).show();
             return false;
         }
-
         return true;
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        userDAO.close();
     }
 }

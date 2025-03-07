@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.Patterns;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -13,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.easybuy.Activity.Admin.AdminMainActivity;
 import com.example.easybuy.Activity.Login.ForgotPW.ForgotPasswordActivity;
+import com.example.easybuy.Activity.Login.User.UserSignUpActivity;
 import com.example.easybuy.Database.AdminDAO;
 import com.example.easybuy.Model.Admin;
 import com.example.easybuy.R;
@@ -24,6 +26,7 @@ public class AdminLoginActivity extends AppCompatActivity {
     private EditText edtAdminEmail, edtAdminPassword;
     private Button btnAdminLogin;
     private TextView tvSignup, txtForgetPW;
+    private CheckBox btnSaveLogin; // Ánh xạ CheckBox
     private SessionManager sessionManager;
     private AdminDAO adminDAO;
 
@@ -38,12 +41,13 @@ public class AdminLoginActivity extends AppCompatActivity {
         btnAdminLogin = findViewById(R.id.btnLogin);
         tvSignup = findViewById(R.id.txtSignup);
         txtForgetPW = findViewById(R.id.txtForgetPW);
+        btnSaveLogin = findViewById(R.id.btnSaveLogin); // Ánh xạ CheckBox
 
         // Khởi tạo DAO và SessionManager
         adminDAO = new AdminDAO(this);
         sessionManager = new SessionManager(this);
 
-        // Nếu đã đăng nhập, chuyển hướng sang AdminMainActivity
+        // Nếu đã đăng nhập và phiên được lưu, chuyển hướng sang AdminMainActivity
         if (sessionManager.isLoggedIn()) {
             startActivity(new Intent(this, AdminMainActivity.class));
             finish();
@@ -52,7 +56,7 @@ public class AdminLoginActivity extends AppCompatActivity {
 
         btnAdminLogin.setOnClickListener(v -> loginAdmin());
         txtForgetPW.setOnClickListener(v -> startActivity(new Intent(this, ForgotPasswordActivity.class)));
-        tvSignup.setOnClickListener(v -> startActivity(new Intent(this, AdminSignUpActivity.class)));
+        tvSignup.setOnClickListener(v -> startActivity(new Intent(this, com.example.easybuy.Activity.Login.Admin.AdminSignUpActivity.class)));
     }
 
     private void loginAdmin() {
@@ -66,7 +70,10 @@ public class AdminLoginActivity extends AppCompatActivity {
             if (admin != null) {
                 Log.d("AdminLogin", "Stored password hash: " + admin.getPassword());
                 if (BCrypt.checkpw(password, admin.getPassword())) {
-                    sessionManager.createAdminLoginSession(admin.getId(), admin.getEmail(), admin.getFullName());
+                    // Chỉ lưu phiên nếu CheckBox được chọn
+                    if (btnSaveLogin.isChecked()) {
+                        sessionManager.createAdminLoginSession(admin.getId(), admin.getEmail(), admin.getFullName());
+                    }
                     Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(this, AdminMainActivity.class));
                     finish();

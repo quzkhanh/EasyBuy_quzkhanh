@@ -3,7 +3,7 @@
     android:shape="rectangle">
 
     <!-- Màu nền của hình -->
-    <solid android:color="#F5F5F5" /> <!-- Màu xám nhạt -->
+    <solid android:color="#FFFFFF" /> <!-- Màu xám nhạt -->
 
     <!-- Bo góc -->
     <corners android:radius="25dp" /> <!-- Góc tròn 25dp -->

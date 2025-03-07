@@ -197,22 +197,41 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.d("DatabaseHelper", "Product table backed up to product_backup");
     }
 
-    // --- Các phương thức mới cho bảng favorites ---
+    // --- Phương thức mới: Kiểm tra đăng nhập người dùng ---
+    public int checkUserLogin(String email, String password) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT userId, password, fullName FROM " + TABLE_USERS + " WHERE email = ?",
+                new String[]{email});
 
-    // Thêm sản phẩm vào danh sách yêu thích
+        if (cursor.moveToFirst()) {
+            String storedPassword = cursor.getString(cursor.getColumnIndexOrThrow("password"));
+            if (BCrypt.checkpw(password, storedPassword)) {
+                int userId = cursor.getInt(cursor.getColumnIndexOrThrow("userId"));
+                cursor.close();
+                db.close();
+                return userId; // Trả về userId nếu mật khẩu đúng
+            }
+        }
+
+        cursor.close();
+        db.close();
+        return -1; // Trả về -1 nếu email không tồn tại hoặc mật khẩu sai
+    }
+
+    // --- Các phương thức cho bảng favorites ---
+
     public long addFavorite(int userId, int productId) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("user_id", userId);
         values.put("product_id", productId);
 
-        // Kiểm tra xem sản phẩm đã có trong danh sách yêu thích của người dùng chưa
         Cursor cursor = db.rawQuery("SELECT id FROM " + TABLE_FAVORITES + " WHERE user_id = ? AND product_id = ?",
                 new String[]{String.valueOf(userId), String.valueOf(productId)});
         if (cursor.getCount() > 0) {
             cursor.close();
             db.close();
-            return -1; // Đã tồn tại, không thêm lại
+            return -1; // Đã tồn tại
         }
         cursor.close();
 
@@ -221,7 +240,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return id;
     }
 
-    // Lấy danh sách sản phẩm yêu thích theo userId
     public List<Favorite> getFavoritesByUserId(int userId) {
         List<Favorite> favorites = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -251,7 +269,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return favorites;
     }
 
-    // Xóa sản phẩm khỏi danh sách yêu thích
     public boolean deleteFavorite(int favoriteId) {
         SQLiteDatabase db = this.getWritableDatabase();
         int rowsAffected = db.delete(TABLE_FAVORITES, "id = ?", new String[]{String.valueOf(favoriteId)});
