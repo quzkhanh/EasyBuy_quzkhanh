@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
+    android:layout_marginTop="20dp"
+    android:paddingTop="20dp"
     android:layout_height="wrap_content"
+    android:backgroundTint="@color/white"
+    android:background="@drawable/bg_dialog"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="20dp">
 
@@ -20,12 +25,16 @@
         android:gravity="center">
 
         <Button
+            app:backgroundTint="@color/cancel"
+            android:background="@drawable/rounded_button"
             android:id="@+id/btnCancelLogout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Hủy" />
 
         <Button
+            app:backgroundTint="@color/save"
+            android:background="@drawable/rounded_button"
             android:id="@+id/btnConfirmLogout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

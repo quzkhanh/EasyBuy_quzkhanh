@@ -154,14 +154,14 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSignUp"
-        android:layout_width="200dp"
+        android:layout_width="140dp"
         android:layout_height="50dp"
         android:layout_gravity="center_horizontal"
         android:background="@drawable/rounded_button"
-        app:backgroundTint="#322D2D"
+        app:backgroundTint="@color/blue"
         android:fontFamily="@font/jetbrains_mono_semibold"
         android:text="Đăng Ký"
-        android:textSize="16sp" />
+        android:textSize="18sp" />
 
     <LinearLayout
         android:layout_width="match_parent"

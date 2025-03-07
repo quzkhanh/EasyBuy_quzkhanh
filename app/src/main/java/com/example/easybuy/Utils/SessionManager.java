@@ -2,6 +2,7 @@ package com.example.easybuy.Utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
 public class SessionManager {
     private static final String PREF_NAME = "UserSession";
     private static final String KEY_ADMIN_ID = "admin_id";
@@ -12,8 +13,8 @@ public class SessionManager {
     private SharedPreferences pref;
     private SharedPreferences.Editor editor;
     private Context context;
-    public int tempAdminId = -1; // Đổi thành public
-    public int tempUserId = -1;  // Đổi thành public
+    private int tempAdminId = -1; // Biến tạm để lưu adminId khi không lưu phiên
+    private int tempUserId = -1;  // Biến tạm để lưu userId khi không lưu phiên
 
     public SessionManager(Context context) {
         this.context = context;
@@ -27,7 +28,7 @@ public class SessionManager {
         editor.putString(KEY_USER_NAME, fullName);
         editor.putInt(KEY_USER_ID, -1);
         editor.apply();
-        tempAdminId = adminId;
+        tempAdminId = adminId; // Lưu tạm thời
     }
 
     public void createUserLoginSession(int userId, String email, String fullName) {
@@ -36,17 +37,17 @@ public class SessionManager {
         editor.putString(KEY_USER_NAME, fullName);
         editor.putInt(KEY_ADMIN_ID, -1);
         editor.apply();
-        tempUserId = userId;
+        tempUserId = userId; // Lưu tạm thời
     }
 
     public int getAdminId() {
         int savedAdminId = pref.getInt(KEY_ADMIN_ID, -1);
-        return savedAdminId != -1 ? savedAdminId : tempAdminId;
+        return savedAdminId != -1 ? savedAdminId : tempAdminId; // Ưu tiên SharedPreferences
     }
 
     public int getUserId() {
         int savedUserId = pref.getInt(KEY_USER_ID, -1);
-        return savedUserId != -1 ? savedUserId : tempUserId;
+        return savedUserId != -1 ? savedUserId : tempUserId; // Ưu tiên SharedPreferences
     }
 
     public String getUserName() {
@@ -70,7 +71,7 @@ public class SessionManager {
     public void logout() {
         editor.clear();
         editor.apply();
-        tempAdminId = -1;
+        tempAdminId = -1; // Xóa tạm thời
         tempUserId = -1;
     }
 

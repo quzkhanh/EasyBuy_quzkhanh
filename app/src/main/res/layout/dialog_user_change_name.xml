@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:paddingTop="20dp"
     android:layout_gravity="center_horizontal"
     android:layout_width="320dp"
@@ -30,12 +31,16 @@
         android:paddingTop="10dp">
 
         <Button
+            app:backgroundTint="@color/cancel"
+            android:background="@drawable/rounded_button"
             android:id="@+id/btnCancelName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Hủy" />
 
         <Button
+            app:backgroundTint="@color/save"
+            android:background="@drawable/rounded_button"
             android:id="@+id/btnChangeName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

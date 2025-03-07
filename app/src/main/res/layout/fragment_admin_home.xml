@@ -8,14 +8,14 @@
 
         <!-- Thanh tìm kiếm -->
     <EditText
-    android:id="@+id/etSearchProduct"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:hint="Tìm sản phẩm theo tên"
-    android:padding="8dp"
-    android:background="@drawable/edittext_background"
-    android:inputType="text"
-    android:maxLines="1" />
+        android:id="@+id/etSearchProduct"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@drawable/edittext_background"
+        android:hint="Tìm sản phẩm theo tên"
+        android:inputType="text"
+        android:maxLines="1"
+        android:padding="8dp" />
 
         <!-- TextView khi danh sách rỗng -->
     <TextView

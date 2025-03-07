@@ -16,10 +16,10 @@
         android:layout_marginStart="20dp"
         android:layout_marginTop="70dp"
         android:layout_marginBottom="20dp"
+        android:background="@color/white"
         android:fontFamily="@font/jetbrains_mono_extrabold"
         android:text="Đăng Ký"
-        android:background="@color/white"
-        android:textColor="@color/black"
+        android:textColor="@color/blue"
         android:textSize="36sp"
         android:textStyle="bold" />
 
@@ -156,7 +156,7 @@
         android:layout_height="50dp"
         android:layout_gravity="center_horizontal"
         android:background="@drawable/rounded_button"
-        app:backgroundTint="#322D2D"
+        app:backgroundTint="@color/blue"
         android:fontFamily="@font/jetbrains_mono_semibold"
         android:text="Đăng Ký"
         android:textSize="16sp" />

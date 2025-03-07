@@ -17,7 +17,7 @@
         android:layout_marginTop="70dp"
         android:layout_marginBottom="20dp"
         android:fontFamily="@font/jetbrains_mono_extrabold"
-        android:textColor="@color/black"
+        android:textColor="@color/blue"
         android:textStyle="bold"
         android:text="Đăng Nhập"
         android:textSize="36sp" />
@@ -30,6 +30,7 @@
         android:paddingTop="12dp"
         android:text="Mua sắm tiện lợi và thông minh."
         android:textSize="20sp"
+        android:textColor="@color/black_light"
         android:fontFamily="@font/jetbrains_mono_semibold"
         android:textStyle="bold" />
 
@@ -125,7 +126,7 @@
         android:layout_gravity="center_horizontal"
         android:background="@drawable/rounded_button"
         android:fontFamily="@font/jetbrains_mono_semibold"
-        app:backgroundTint="#322D2D"
+        app:backgroundTint="@color/blue"
         android:text="Đăng Nhập"
         android:textSize="16sp" />
 
