@@ -1,7 +1,6 @@
 package com.example.easybuy.Activity.Login.User;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Patterns;
 import android.widget.Button;
@@ -14,6 +13,7 @@ import com.example.easybuy.Activity.User.UserMainActivity;
 import com.example.easybuy.Database.UserDAO;
 import com.example.easybuy.Model.User;
 import com.example.easybuy.R;
+import com.example.easybuy.Utils.SessionManager;
 import com.google.android.material.textfield.TextInputEditText;
 
 public class UserLoginActivity extends AppCompatActivity {
@@ -21,6 +21,7 @@ public class UserLoginActivity extends AppCompatActivity {
     private TextInputEditText edtUserEmail, edtUserPassword;
     private Button btnLogin;
     private TextView tvSignup;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,29 +31,21 @@ public class UserLoginActivity extends AppCompatActivity {
         userDAO = new UserDAO(this);
         userDAO.open();
 
+        sessionManager = new SessionManager(this);
+
+        // Kiểm tra nếu đã đăng nhập, chuyển hướng sang UserMainActivity
+        if (sessionManager.isLoggedIn()) {
+            startActivity(new Intent(this, UserMainActivity.class));
+            finish();
+            return;
+        }
+
         edtUserEmail = findViewById(R.id.edtUserEmail);
         edtUserPassword = findViewById(R.id.edtUserPassword);
         btnLogin = findViewById(R.id.btnLogin);
         tvSignup = findViewById(R.id.tvSignup);
 
-        btnLogin.setOnClickListener(v -> {
-            String email = edtUserEmail.getText().toString().trim();
-            String password = edtUserPassword.getText().toString().trim();
-
-            if (!validateInputs(email, password)) return;
-
-            User user = userDAO.checkLogin(email, password);
-            if (user != null) {
-                // Lưu UserId vào SharedPreferences
-                saveUserIdToPreferences(user.getUserId());
-
-                Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(this, UserMainActivity.class));
-                finish();
-            } else {
-                Toast.makeText(this, "Sai email hoặc mật khẩu!", Toast.LENGTH_SHORT).show();
-            }
-        });
+        btnLogin.setOnClickListener(v -> loginUser());
 
         tvSignup.setOnClickListener(v -> {
             startActivity(new Intent(this, UserSignUpActivity.class));
@@ -60,12 +53,23 @@ public class UserLoginActivity extends AppCompatActivity {
         });
     }
 
-    // Phương thức lưu UserId vào SharedPreferences
-    private void saveUserIdToPreferences(int userId) {
-        SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("userId", userId);
-        editor.apply(); // sử dụng apply() để không chặn luồng chính
+    private void loginUser() {
+        String email = edtUserEmail.getText().toString().trim();
+        String password = edtUserPassword.getText().toString().trim();
+
+        if (!validateInputs(email, password)) return;
+
+        User user = userDAO.checkLogin(email, password);
+        if (user != null) {
+            // Sử dụng SessionManager để lưu phiên đăng nhập
+            sessionManager.createUserLoginSession(user.getUserId(), user.getEmail(), user.getFullName());
+
+            Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, UserMainActivity.class));
+            finish();
+        } else {
+            Toast.makeText(this, "Sai email hoặc mật khẩu!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private boolean validateInputs(String email, String password) {

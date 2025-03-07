@@ -15,9 +15,9 @@ import com.example.easybuy.Activity.WelcomeActivity;
 import com.example.easybuy.Database.AdminDAO;
 import com.example.easybuy.Model.Admin;
 import com.example.easybuy.R;
-import com.example.easybuy.Utils.CustomDialogEmail;
-import com.example.easybuy.Utils.CustomDialogName;
-import com.example.easybuy.Utils.CustomDialogPassword;
+import com.example.easybuy.Utils.AdminCustomDialogEmail;
+import com.example.easybuy.Utils.AdminCustomDialogName;
+import com.example.easybuy.Utils.AdminCustomDialogPassword;
 import com.example.easybuy.Utils.SessionManager;
 
 public class AdminSettingsFragment extends Fragment {
@@ -71,7 +71,7 @@ public class AdminSettingsFragment extends Fragment {
             tvUserName.setText(userName);
         } else {
             AdminDAO adminDAO = new AdminDAO(requireContext());
-            String adminEmail = sessionManager.getAdminEmail();
+            String adminEmail = sessionManager.getEmail();
             if (!adminEmail.isEmpty()) {
                 Admin admin = adminDAO.getAdminByEmail(adminEmail);
                 if (admin != null) {
@@ -87,7 +87,7 @@ public class AdminSettingsFragment extends Fragment {
     }
 
     private void updateEmail() {
-        String email = sessionManager.getAdminEmail();
+        String email = sessionManager.getEmail();
         if (!email.isEmpty()) {
             tvEmail.setText(email);
         } else {
@@ -96,7 +96,7 @@ public class AdminSettingsFragment extends Fragment {
     }
 
     private void showEditNameDialog() {
-        CustomDialogName dialog = new CustomDialogName(requireContext(), newName -> {
+        AdminCustomDialogName dialog = new AdminCustomDialogName(requireContext(), newName -> {
             tvUserName.setText(newName);
             int adminId = sessionManager.getAdminId();
             if (adminId != -1) {
@@ -119,15 +119,15 @@ public class AdminSettingsFragment extends Fragment {
     }
 
     private void showChangePasswordDialog() {
-        CustomDialogPassword dialog = new CustomDialogPassword(requireContext());
+        AdminCustomDialogPassword dialog = new AdminCustomDialogPassword(requireContext());
         dialog.show();
     }
 
     private void showChangeEmailDialog() {
-        CustomDialogEmail dialog = new CustomDialogEmail(requireContext(), newEmail -> {
+        AdminCustomDialogEmail dialog = new AdminCustomDialogEmail(requireContext(), newEmail -> {
             tvEmail.setText(newEmail); // Cập nhật UI
         });
-        dialog.show(sessionManager.getAdminEmail());
+        dialog.show(sessionManager.getEmail());
     }
 
     private void logout() {

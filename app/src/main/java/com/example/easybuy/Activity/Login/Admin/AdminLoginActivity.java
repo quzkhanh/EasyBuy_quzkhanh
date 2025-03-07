@@ -66,7 +66,7 @@ public class AdminLoginActivity extends AppCompatActivity {
             if (admin != null) {
                 Log.d("AdminLogin", "Stored password hash: " + admin.getPassword());
                 if (BCrypt.checkpw(password, admin.getPassword())) {
-                    sessionManager.createLoginSession(admin.getId(), admin.getEmail(), admin.getFullName());
+                    sessionManager.createAdminLoginSession(admin.getId(), admin.getEmail(), admin.getFullName());
                     Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(this, AdminMainActivity.class));
                     finish();

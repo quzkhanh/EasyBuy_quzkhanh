@@ -8,8 +8,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
-import com.example.easybuy.Activity.User.fragment.FavoriteFragment;
-import com.example.easybuy.Activity.User.fragment.HomeFragment;
+import com.example.easybuy.Activity.User.fragment.UserFavoriteFragment;
+import com.example.easybuy.Activity.User.fragment.UserHomeFragment;
 import com.example.easybuy.Activity.User.fragment.OrderFragment;
 import com.example.easybuy.Activity.User.fragment.UserSettingsFragment;
 import com.example.easybuy.R;
@@ -30,7 +30,7 @@ public class UserMainActivity extends AppCompatActivity {
         // Đặt fragment mặc định là HomeFragment
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.frame_container, new HomeFragment())
+                    .replace(R.id.frame_container, new UserHomeFragment())
                     .commit();
         }
 
@@ -47,11 +47,11 @@ public class UserMainActivity extends AppCompatActivity {
                 Fragment selectedFragment = null;
 
                 if (item.getItemId() == R.id.nav_home) {
-                    selectedFragment = new HomeFragment();
+                    selectedFragment = new UserHomeFragment();
                 } else if (item.getItemId() == R.id.nav_order) {
                     selectedFragment = new OrderFragment();
                 } else if (item.getItemId() == R.id.nav_favorite) {
-                    selectedFragment = new FavoriteFragment();
+                    selectedFragment = new UserFavoriteFragment();
                 } else if (item.getItemId() == R.id.nav_profile) {
                     selectedFragment = new UserSettingsFragment();
                 }

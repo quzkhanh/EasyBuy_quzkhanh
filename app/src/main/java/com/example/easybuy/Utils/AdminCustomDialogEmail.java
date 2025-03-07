@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.util.Log;
 import android.util.Patterns;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -13,7 +12,7 @@ import com.example.easybuy.Database.AdminDAO;
 import com.example.easybuy.Model.Admin;
 import com.example.easybuy.R;
 
-public class CustomDialogEmail {
+public class AdminCustomDialogEmail {
     private Context context; // Khai báo biến instance context
     private Dialog dialog;
     private EditText edtNewEmail;
@@ -25,7 +24,7 @@ public class CustomDialogEmail {
         void onEmailChanged(String newEmail);
     }
 
-    public CustomDialogEmail(Context context, OnEmailChangeListener listener) {
+    public AdminCustomDialogEmail(Context context, OnEmailChangeListener listener) {
         this.context = context; // Khởi tạo context
         this.sessionManager = new SessionManager(context);
         this.listener = listener;
@@ -33,7 +32,7 @@ public class CustomDialogEmail {
 
     public void show(String currentEmail) {
         dialog = new Dialog(context);
-        dialog.setContentView(R.layout.dialog_change_email);
+        dialog.setContentView(R.layout.dialog_admin_change_email);
         dialog.setCancelable(true);
         dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
@@ -87,7 +86,7 @@ public class CustomDialogEmail {
                 boolean isUpdated = adminDAO.updateAdmin(admin);
                 if (isUpdated) {
                     Log.d("CustomDialogEmail", "Email updated to: " + newEmail);
-                    sessionManager.setAdminEmail(newEmail);
+                    sessionManager.setEmail(newEmail);
                     listener.onEmailChanged(newEmail);
                     Toast.makeText(context, "Đổi email thành công!", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();

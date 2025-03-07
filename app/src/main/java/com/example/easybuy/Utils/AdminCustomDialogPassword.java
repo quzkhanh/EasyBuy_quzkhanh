@@ -3,7 +3,6 @@ package com.example.easybuy.Utils;
 import android.app.Dialog;
 import android.content.Context;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -14,21 +13,21 @@ import com.example.easybuy.R;
 
 import org.mindrot.jbcrypt.BCrypt;
 
-public class CustomDialogPassword {
+public class AdminCustomDialogPassword {
     private Context context;
     private Dialog dialog;
     private EditText edtOldPassword, edtNewPassword, edtConfirmPassword;
     private Button btnCancelPassword, btnChangePassword;
     private SessionManager sessionManager;
 
-    public CustomDialogPassword(Context context) {
+    public AdminCustomDialogPassword(Context context) {
         this.context = context;
         this.sessionManager = new SessionManager(context);
     }
 
     public void show() {
         dialog = new Dialog(context);
-        dialog.setContentView(R.layout.dialog_change_password);
+        dialog.setContentView(R.layout.dialog_admin_change_password);
         dialog.setCancelable(true);
         dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
@@ -75,7 +74,7 @@ public class CustomDialogPassword {
         int adminId = sessionManager.getAdminId();
         if (adminId != -1) {
             AdminDAO adminDAO = new AdminDAO(context);
-            String adminEmail = sessionManager.getAdminEmail();
+            String adminEmail = sessionManager.getEmail();
             Log.d("CustomDialogPassword", "Admin email from SessionManager: " + adminEmail);
             Admin admin = adminDAO.getAdminByEmail(adminEmail);
             if (admin != null) {

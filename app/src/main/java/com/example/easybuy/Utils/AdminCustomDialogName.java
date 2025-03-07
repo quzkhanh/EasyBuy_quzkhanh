@@ -2,7 +2,6 @@ package com.example.easybuy.Utils;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -11,7 +10,7 @@ import android.widget.Toast;
 
 import com.example.easybuy.R;
 
-public class CustomDialogName {
+public class AdminCustomDialogName {
     private Context context;
     private Dialog dialog;
     private EditText edtName;
@@ -22,14 +21,14 @@ public class CustomDialogName {
         void onNameChanged(String newName);
     }
 
-    public CustomDialogName(Context context, OnNameChangeListener listener) {
+    public AdminCustomDialogName(Context context, OnNameChangeListener listener) {
         this.context = context;
         this.listener = listener;
     }
 
     public void show(String currentName) {
         dialog = new Dialog(context);
-        dialog.setContentView(R.layout.dialog_edit_name);
+        dialog.setContentView(R.layout.dialog_admin_edit_name);
         dialog.setCancelable(true);
         dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 

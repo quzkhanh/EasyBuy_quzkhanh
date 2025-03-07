@@ -1,43 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:paddingTop="20dp"
+    android:layout_gravity="center_horizontal"
+    android:layout_width="320dp"
+    android:layout_height="200dp"
     android:orientation="vertical"
-    android:padding="8dp"
-    android:background="@drawable/bg_dialog">
-
+    android:background="@drawable/bg_dialog"
+    android:padding="20dp">
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Chỉnh sửa Họ Tên"
+        android:text="Đổi Tên"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:paddingBottom="8dp"/>
+        android:paddingBottom="10dp" />
 
     <EditText
-        android:id="@+id/edtName"
+        android:id="@+id/edtNewName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Nhập họ tên mới"/>
+        android:hint="Tên mới"
+        android:inputType="textPersonName" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="end"
-        android:paddingTop="16dp">
+        android:paddingTop="10dp">
 
         <Button
-            android:id="@+id/btnCancel"
+            android:id="@+id/btnCancelName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Hủy"/>
+            android:text="Hủy" />
 
         <Button
-            android:id="@+id/btnSave"
+            android:id="@+id/btnChangeName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Lưu"
-            android:layout_marginStart="8dp"/>
+            android:layout_marginStart="10dp" />
     </LinearLayout>
 </LinearLayout>

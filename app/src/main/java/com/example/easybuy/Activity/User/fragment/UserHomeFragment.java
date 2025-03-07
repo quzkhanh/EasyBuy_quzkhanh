@@ -1,7 +1,6 @@
 package com.example.easybuy.Activity.User.fragment;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +19,7 @@ import com.example.easybuy.Database.ProductAdapter;
 import com.example.easybuy.Model.Order;
 import com.example.easybuy.Model.Product;
 import com.example.easybuy.R;
+import com.example.easybuy.Utils.SessionManager;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,14 +27,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class HomeFragment extends Fragment {
+public class UserHomeFragment extends Fragment {
 
     private RecyclerView productRecyclerView;
     private ProductDAO productDAO;
     private OrderDAO orderDAO;
     private ProductAdapter productAdapter;
     private TextView tvEmptyList;
-    private int userId;
+    private SessionManager sessionManager;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -48,9 +48,8 @@ public class HomeFragment extends Fragment {
         productDAO = new ProductDAO(requireContext());
         orderDAO = new OrderDAO(requireContext());
 
-        // Lấy userId từ SharedPreferences
-        SharedPreferences prefs = requireContext().getSharedPreferences("UserPrefs", requireContext().MODE_PRIVATE);
-        userId = prefs.getInt("userId", -1);
+        // Khởi tạo SessionManager
+        sessionManager = new SessionManager(requireContext());
 
         // Cấu hình RecyclerView với GridLayoutManager (2 cột)
         setupRecyclerView();
@@ -92,12 +91,19 @@ public class HomeFragment extends Fragment {
             return;
         }
 
+        // Lấy userId từ SessionManager
+        int userId = sessionManager.getUserId();
+        if (userId == -1) {
+            Toast.makeText(getContext(), "Không tìm thấy thông tin người dùng!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         // Lấy thời gian hiện tại
         String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                 .format(new Date());
 
         // Tạo đơn hàng mới
-        Order order = createOrder(product, currentDate);
+        Order order = createOrder(product, currentDate, userId);
 
         // Lưu đơn hàng vào database
         long orderId = orderDAO.addOrder(order);
@@ -109,7 +115,7 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private Order createOrder(Product product, String currentDate) {
+    private Order createOrder(Product product, String currentDate, int userId) {
         Order order = new Order();
         order.setUserId(userId);
         order.setProductId(product.getProductId());
@@ -117,13 +123,11 @@ public class HomeFragment extends Fragment {
         order.setTotalPrice(product.getPrice());
         order.setStatus("Pending");
         order.setOrderDate(currentDate);
-
-        // Bạn có thể thêm các thông tin khác như địa chỉ, số điện thoại nếu cần
         return order;
     }
 
     private boolean isUserLoggedIn() {
-        return userId != -1;
+        return sessionManager.isLoggedIn();
     }
 
     @Override
