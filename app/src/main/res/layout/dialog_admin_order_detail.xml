@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="16dp"
     android:background="#FFFFFF">
@@ -114,13 +115,21 @@
 
     <Button
         android:id="@+id/btnUpdateStatus"
+        android:layout_marginRight="30dp"
+        android:layout_marginLeft="30dp"
+        app:backgroundTint="@color/blue"
+        android:background="@drawable/rounded_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Cập nhật Trạng thái"
         android:layout_marginTop="8dp" />
 
     <Button
+        android:layout_marginRight="30dp"
+        android:layout_marginLeft="30dp"
+        app:backgroundTint="@color/cancel"
         android:id="@+id/btnCancelOrder"
+        android:background="@drawable/rounded_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Hủy Đơn Hàng"
@@ -128,6 +137,10 @@
 
     <Button
         android:id="@+id/btnCloseDialog"
+        android:layout_marginRight="30dp"
+        android:layout_marginLeft="30dp"
+        app:backgroundTint="@color/black_light"
+        android:background="@drawable/rounded_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Đóng"
