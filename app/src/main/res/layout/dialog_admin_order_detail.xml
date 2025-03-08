@@ -11,7 +11,7 @@
         android:id="@+id/tvOrderDetailTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Chi Tiết Đơn Hàng"
+        android:text="Chi Tiết Đơn Hàng 🗃️"
         android:textSize="20sp"
         android:textStyle="bold"
         android:textColor="#333333"
@@ -121,7 +121,7 @@
         android:background="@drawable/rounded_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Cập nhật Trạng thái"
+        android:text="Cập nhật Trạng thái ✅"
         android:layout_marginTop="8dp" />
 
     <Button
@@ -132,7 +132,7 @@
         android:background="@drawable/rounded_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hủy Đơn Hàng"
+        android:text="Hủy Đơn Hàng ❌"
         android:layout_marginTop="8dp" />
 
     <Button
@@ -143,6 +143,6 @@
         android:background="@drawable/rounded_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Đóng"
+        android:text="Đóng "
         android:layout_marginTop="8dp" />
 </LinearLayout>
