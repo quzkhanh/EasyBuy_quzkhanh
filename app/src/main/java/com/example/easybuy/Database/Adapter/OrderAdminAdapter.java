@@ -25,12 +25,15 @@ import java.util.List;
 
 public class OrderAdminAdapter extends RecyclerView.Adapter<OrderAdminAdapter.OrderViewHolder> {
 
+    // Danh sách các đơn hàng
     private List<Order> orderList;
+    // Listener cho sự kiện click vào đơn hàng
     private OnOrderClickListener listener;
     private OrderDAO orderDAO;
     private Context context;
     private UserDatabaseHelper userDbHelper;
 
+    // Interface để xử lý sự kiện click vào đơn hàng
     public interface OnOrderClickListener {
         void onOrderClick(Order order);
     }
@@ -38,6 +41,7 @@ public class OrderAdminAdapter extends RecyclerView.Adapter<OrderAdminAdapter.Or
     public OrderAdminAdapter(List<Order> orderList, OnOrderClickListener listener, Context context) {
         this.orderList = orderList;
         this.listener = listener;
+        // Lưu trữ Context
         this.context = context;
         this.orderDAO = new OrderDAO(context);
         DatabaseHelper dbHelper = new DatabaseHelper(context);

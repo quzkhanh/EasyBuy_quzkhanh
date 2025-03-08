@@ -30,7 +30,7 @@ public class UserFavoriteFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_favorite, container, false);
+        View view = inflater.inflate(R.layout.fragment_user_favorite, container, false);
 
         // Ánh xạ các view
         recyclerViewFavorites = view.findViewById(R.id.recyclerViewFavorites);

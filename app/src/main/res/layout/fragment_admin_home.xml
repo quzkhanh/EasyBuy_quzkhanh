@@ -33,42 +33,13 @@
         android:layout_height="wrap_content"
         app:tabGravity="fill"
         app:tabMode="fixed" />
-
     <!-- Số lượng sản phẩm (dùng TextView hoặc CardView) -->
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
-        android:layout_width="392dp"
-        android:layout_height="177dp"
+        android:layout_width="383dp"
+        android:layout_height="125dp"
         android:layout_margin="8dp" />
-
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="4dp">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="16dp">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Số lượng sản phẩm: "
-                android:textSize="16sp"
-                android:textStyle="bold" />
-            <TextView
-                android:id="@+id/tvProductCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/holo_blue_dark" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
 
     <!-- TextView khi danh sách rỗng -->
     <TextView
@@ -106,7 +77,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewProducts"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:padding="8dp" />
 

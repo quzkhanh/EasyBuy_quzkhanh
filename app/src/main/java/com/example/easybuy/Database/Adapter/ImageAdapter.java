@@ -14,12 +14,16 @@ import com.example.easybuy.R;
 
 import java.util.List;
 
+/**
+ * ImageAdapter này được sử dụng để hiển thị danh sách các hình ảnh trong RecyclerView.
+ * Nó có thể được sử dụng cho cả người dùng thông thường và admin, với khả năng hiển thị/ẩn nút xóa ảnh.
+ */
 public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHolder> {
     private List<String> imageUrls;
     private OnImageClickListener onImageClickListener;
-    private boolean isAdmin = false; // Thêm flag để kiểm soát btnRemove
+    private boolean isAdmin = false; // Flag để kiểm soát hiển thị nút xóa
 
-    // Định nghĩa interface OnImageClickListener
+    // Interface để xử lý sự kiện click vào ảnh
     public interface OnImageClickListener {
         void onImageClick(String imageUrl);
     }
@@ -47,7 +51,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
                 .error(R.drawable.product_placeholder)
                 .into(holder.imageView);
 
-        // Xử lý click trên toàn bộ item
+        // Xử lý sự kiện click vào ảnh
         holder.itemView.setOnClickListener(v -> {
             if (onImageClickListener != null) {
                 onImageClickListener.onImageClick(imageUrl);
@@ -55,6 +59,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         });
 
         // Ẩn/hiện btnRemove dựa trên isAdmin
+        // nếu là admin thì mới hiện nút xóa ảnh
         if (holder.btnRemove != null) {
             holder.btnRemove.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
         }
@@ -65,16 +70,23 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         return imageUrls != null ? imageUrls.size() : 0;
     }
 
+    /**
+     * Cập nhật danh sách ảnh và làm mới RecyclerView.
+     * @param newImageUrls Danh sách URL ảnh mới.
+     */
     public void updateImages(List<String> newImageUrls) {
         this.imageUrls = newImageUrls;
         notifyDataSetChanged();
     }
 
+    /**
+     * ViewHolder để giữ các thành phần giao diện cho mỗi item ảnh.
+     */
     static class ImageViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
         ImageButton btnRemove;
 
-        public ImageViewHolder(@NonNull View itemView) {
+            public ImageViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.ivAdditionalImage);
             btnRemove = itemView.findViewById(R.id.ibRemoveImage); // Đảm bảo ID này khớp với layout

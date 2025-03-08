@@ -17,7 +17,7 @@ import com.example.easybuy.R;
 public class AdminSignUpActivity extends AppCompatActivity {
     private EditText edtAdminName, edtAdminEmail, edtAdminPassword, edtRepeatAdminPW;
     private Button btnSignUp;
-    private AdminDAO adminDAO; // Sử dụng AdminDAO thay vì DatabaseHelper
+    private AdminDAO adminDAO;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

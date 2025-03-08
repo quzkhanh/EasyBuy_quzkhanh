@@ -46,7 +46,6 @@ public class AdminHomeFragment extends Fragment {
     private FloatingActionButton fabAddProduct;
     private ViewPager2 viewPager;
     private TabLayout tabLayout;
-    private TextView tvProductCount;
     private Spinner spinnerYear;
     private ProductAdapter productAdapter;
     private ProductDAO productDAO;
@@ -67,7 +66,6 @@ public class AdminHomeFragment extends Fragment {
         fabAddProduct = view.findViewById(R.id.fabAddProduct);
         viewPager = view.findViewById(R.id.viewPager);
         tabLayout = view.findViewById(R.id.tabLayout);
-        tvProductCount = view.findViewById(R.id.tvProductCount);
         spinnerYear = view.findViewById(R.id.spinnerYear);
 
         // Khởi tạo SessionManager

@@ -26,6 +26,16 @@ import com.example.easybuy.R;
 
 import java.util.List;
 
+/**
+ * OrderAdapter là một adapter dùng để hiển thị danh sách các đơn hàng (Order) trong một RecyclerView.
+ * Adapter này cung cấp các chức năng sau:
+ * - Hiển thị thông tin chi tiết của từng đơn hàng trong danh sách.
+ * - Cho phép người dùng vuốt sang trái để hủy đơn hàng (nếu đơn hàng đang ở trạng thái "Pending").
+ * - Tương tác với cơ sở dữ liệu thông qua OrderDAO để thực hiện các thao tác như xóa đơn hàng.
+ * - Cập nhật giao diện khi có sự thay đổi trong danh sách đơn hàng.
+ * - Sử dụng SwipeToDeleteCallback để xử lý thao tác vuốt để xóa.
+ */
+
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHolder> {
     private Context context;
     private List<Order> orderList;

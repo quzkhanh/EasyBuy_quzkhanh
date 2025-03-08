@@ -22,6 +22,11 @@ import com.example.easybuy.R;
 import java.text.DecimalFormat;
 import java.util.List;
 
+/**
+ * Adapter để hiển thị danh sách các sản phẩm yêu thích trong RecyclerView.
+ * Nó xử lý việc hiển thị chi tiết sản phẩm, vuốt để xóa và tương tác
+ * với FavoriteDAO để thực hiện các thao tác cơ sở dữ liệu.
+ */
 public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.FavoriteViewHolder> {
     private Context context;
     private List<Favorite> favoriteList;
@@ -64,9 +69,6 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.Favori
     public int getItemCount() {
         return favoriteList != null ? favoriteList.size() : 0;
     }
-
-    // Xóa phương thức addFavorite vì nó không thuộc về Adapter
-    // Logic này nên nằm trong FavoriteDAO hoặc FavoriteDatabaseHelper
 
     public static class FavoriteViewHolder extends RecyclerView.ViewHolder {
         ImageView ivFavoriteImage;

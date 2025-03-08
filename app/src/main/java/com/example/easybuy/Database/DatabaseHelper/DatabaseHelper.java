@@ -3,14 +3,13 @@ package com.example.easybuy.Database.DatabaseHelper;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-
 import org.mindrot.jbcrypt.BCrypt;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
+
     private static final String DATABASE_NAME = "easybuy.db";
     private static final int DATABASE_VERSION = 5;
 
-    // Table names
     public static final String TABLE_OTP = "otp_table";
     public static final String TABLE_USERS = "users";
     public static final String TABLE_ADMINS = "admins";
@@ -33,7 +32,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(DatabaseConstants.CREATE_ORDERS_TABLE);
         db.execSQL(DatabaseConstants.CREATE_FAVORITES_TABLE);
 
-        // Insert default data
         String userHashedPassword = BCrypt.hashpw("seller123", BCrypt.gensalt());
         db.execSQL("INSERT INTO " + TABLE_USERS + " (email, password) VALUES ('seller@easybuy.com', ?)",
                 new Object[]{userHashedPassword});
