@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    android:orientation="vertical">
-
+    android:orientation="vertical"
+    android:padding="8dp">
 
     <TextView
         android:layout_width="match_parent"
@@ -15,7 +15,7 @@
         android:textSize="17sp"
         android:text="Thống Kê Đơn Hàng, Doanh Thu 🚀"
         android:gravity="left"
-        android:padding="16dp" />
+        android:padding="8dp" />
 
     <!-- Spinner chọn năm -->
     <Spinner
@@ -33,62 +33,52 @@
         android:layout_height="wrap_content"
         app:tabGravity="fill"
         app:tabMode="fixed" />
-    <!-- Số lượng sản phẩm (dùng TextView hoặc CardView) -->
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
-        android:layout_width="383dp"
-        android:layout_height="125dp"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
         android:layout_margin="8dp" />
 
-    <!-- TextView khi danh sách rỗng -->
-    <TextView
-        android:id="@+id/tvEmptyList"
+    <!-- Thông tin cơ bản -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Không có sản phẩm nào"
-        android:gravity="center"
-        android:visibility="gone"
-        android:padding="16dp" />
+        android:layout_margin="8dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/jetbrains_mono_extrabold"
-        android:textStyle="bold"
-        android:textSize="17sp"
-        android:text="Danh Sách Sản Phẩm 🔥"
-        android:gravity="left"
-        android:padding="16dp" />
-    <!-- Thanh tìm kiếm -->
-    <EditText
-        android:id="@+id/etSearchProduct"
-        android:layout_width="347dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp"
-        android:background="@drawable/edittext_background"
-        android:hint="Tìm sản phẩm theo tên"
-        android:inputType="text"
-        android:maxLines="1"
-        android:padding="8dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-    <!-- RecyclerView sản phẩm -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewProducts"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:padding="8dp" />
+            <TextView
+                android:id="@+id/tvProductCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Số lượng sản phẩm: 0"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
 
-    <!-- Floating Action Button -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAddProduct"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_margin="16dp"
-        android:src="@android:drawable/ic_input_add"
-        app:fabSize="normal" />
+            <TextView
+                android:id="@+id/tvOrderCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Số lượng đơn hàng: 0"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
 
+            <TextView
+                android:id="@+id/tvSoldCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Số sản phẩm đã bán: 0"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 </LinearLayout>

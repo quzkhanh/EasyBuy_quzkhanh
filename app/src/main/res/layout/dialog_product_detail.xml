@@ -28,8 +28,8 @@
             android:id="@+id/ivDialogProductImage"
             android:layout_width="match_parent"
             android:layout_height="150dp"
-            android:scaleType="centerInside"
             android:contentDescription="Hình ảnh sản phẩm"
+            android:scaleType="centerInside"
             android:src="@drawable/product_placeholder" />
 
         <ImageButton
@@ -40,7 +40,7 @@
             android:src="@drawable/ic_image"
             android:background="?attr/selectableItemBackground"
             android:contentDescription="Chọn ảnh chính"
-            android:visibility="gone" />
+            android:visibility="visible" /> <!-- Thay đổi từ gone thành visible -->
     </LinearLayout>
 
     <!-- Tên sản phẩm -->
@@ -99,7 +99,7 @@
         android:src="@drawable/ic_image"
         android:background="?attr/selectableItemBackground"
         android:contentDescription="Chọn ảnh bổ sung"
-        android:visibility="gone" />
+        android:visibility="visible" /> <!-- Thay đổi từ gone thành visible -->
 
     <!-- Nút Sửa và Xóa -->
     <LinearLayout

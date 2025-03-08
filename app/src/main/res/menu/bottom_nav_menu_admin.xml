@@ -11,10 +11,14 @@
     <!-- Mục Products (tùy chọn mở rộng) -->
     <item
         android:id="@+id/nav_products"
+        android:icon="@drawable/ic_products"
+        android:title="Hàng Hóa" />
+
+    <item
+        android:id="@+id/nav_orders"
         android:icon="@drawable/ic_order"
         android:title="Đơn Hàng" />
 
-    <!-- Mục Settings (tùy chọn mở rộng) -->
     <item
         android:id="@+id/nav_settings"
         android:icon="@drawable/ic_settings"

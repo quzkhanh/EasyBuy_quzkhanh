@@ -98,8 +98,10 @@ public class ProductDatabaseHelper {
         values.put("price", product.getPrice());
         values.put("image_url", product.getImageUrl());
         values.put("description", product.getDescription());
-        return db.update(DatabaseHelper.TABLE_PRODUCT, values, "product_id = ?",
-                new String[]{String.valueOf(product.getProductId())});
+        Log.d("ProductDatabaseHelper", "Updating product - Product ID: " + product.getProductId() + ", Image URL: " + product.getImageUrl());
+        int rowsAffected = db.update(DatabaseHelper.TABLE_PRODUCT, values, "product_id = ?", new String[]{String.valueOf(product.getProductId())});
+        Log.d("ProductDatabaseHelper", "Rows affected: " + rowsAffected);
+        return rowsAffected;
     }
 
     public boolean deleteProduct(int productId, int adminId) {

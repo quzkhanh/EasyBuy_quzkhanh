@@ -49,9 +49,14 @@ public class AdminMainActivity extends AppCompatActivity {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
                 replaceFragment(new AdminHomeFragment());
-            } else if (itemId == R.id.nav_products) {
+            }
+            else if (itemId == R.id.nav_products) {
+                replaceFragment(new AdminProductFragment());
+            }
+            else if (itemId == R.id.nav_orders) {
                 replaceFragment(AdminOrderFragment.newInstance(adminId));
-            } else if (itemId == R.id.nav_settings) {
+            }
+            else if (itemId == R.id.nav_settings) {
                 replaceFragment(new AdminSettingsFragment());
             }
             return true;

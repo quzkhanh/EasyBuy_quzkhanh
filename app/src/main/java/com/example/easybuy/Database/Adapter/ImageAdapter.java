@@ -59,7 +59,6 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         });
 
         // Ẩn/hiện btnRemove dựa trên isAdmin
-        // nếu là admin thì mới hiện nút xóa ảnh
         if (holder.btnRemove != null) {
             holder.btnRemove.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
         }
@@ -86,7 +85,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         ImageView imageView;
         ImageButton btnRemove;
 
-            public ImageViewHolder(@NonNull View itemView) {
+        public ImageViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.ivAdditionalImage);
             btnRemove = itemView.findViewById(R.id.ibRemoveImage); // Đảm bảo ID này khớp với layout

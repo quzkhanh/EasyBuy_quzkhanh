@@ -1,75 +1,53 @@
 package com.example.easybuy.Activity.Admin;
 
-import static android.app.Activity.RESULT_OK;
-
-import android.app.AlertDialog;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.example.easybuy.Database.Adapter.ProductAdapter;
 import com.example.easybuy.Database.DAO.ProductDAO;
-import com.example.easybuy.Model.Product;
 import com.example.easybuy.R;
 import com.example.easybuy.Utils.SessionManager;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 
 public class AdminHomeFragment extends Fragment {
 
-    private RecyclerView recyclerViewProducts;
-    private TextView tvEmptyList;
-    private EditText etSearchProduct;
-    private FloatingActionButton fabAddProduct;
     private ViewPager2 viewPager;
     private TabLayout tabLayout;
     private Spinner spinnerYear;
-    private ProductAdapter productAdapter;
-    private ProductDAO productDAO;
+    private TextView tvProductCount;
+    private TextView tvOrderCount;
+    private TextView tvSoldCount;
     private SessionManager sessionManager;
+    private ProductDAO productDAO;
     private int adminId;
     private int selectedYear;
-    private ProductEditor productEditor;
-    private ActivityResultLauncher<Intent> imagePickerLauncher;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_admin_home, container, false);
 
         // Khởi tạo các thành phần UI
-        recyclerViewProducts = view.findViewById(R.id.recyclerViewProducts);
-        tvEmptyList = view.findViewById(R.id.tvEmptyList);
-        etSearchProduct = view.findViewById(R.id.etSearchProduct);
-        fabAddProduct = view.findViewById(R.id.fabAddProduct);
         viewPager = view.findViewById(R.id.viewPager);
         tabLayout = view.findViewById(R.id.tabLayout);
         spinnerYear = view.findViewById(R.id.spinnerYear);
+        tvProductCount = view.findViewById(R.id.tvProductCount);
+        tvOrderCount = view.findViewById(R.id.tvOrderCount);
+        tvSoldCount = view.findViewById(R.id.tvSoldCount);
 
-        // Khởi tạo SessionManager
+        // Khởi tạo SessionManager và ProductDAO
         sessionManager = new SessionManager(requireContext());
+        productDAO = new ProductDAO(requireContext());
         adminId = getAdminId();
 
         if (adminId == -1) {
@@ -77,40 +55,20 @@ public class AdminHomeFragment extends Fragment {
             return view;
         }
 
-        // Khởi tạo DAO và ProductEditor
-        productDAO = new ProductDAO(requireContext());
-
-        // Khởi tạo imagePickerLauncher
-        imagePickerLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        Uri selectedUri = result.getData().getData();
-                        if (selectedUri != null) {
-                            // ProductEditor sẽ xử lý logic này
-                        }
-                    }
-                }
-        );
-
-        productEditor = new ProductEditor(requireContext(), adminId, imagePickerLauncher);
-
-        // Thiết lập các chức năng
-        setupRecyclerView();
-        setupSearchListener();
-
         // Thiết lập Spinner để chọn năm
         spinnerYear.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 selectedYear = Integer.parseInt(parent.getItemAtPosition(position).toString());
                 setupViewPager();
+                updateStatistics();
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 selectedYear = Calendar.getInstance().get(Calendar.YEAR);
                 setupViewPager();
+                updateStatistics();
             }
         });
 
@@ -118,19 +76,14 @@ public class AdminHomeFragment extends Fragment {
         selectedYear = Calendar.getInstance().get(Calendar.YEAR);
         spinnerYear.setSelection(getYearIndex(selectedYear));
 
-        fabAddProduct.setOnClickListener(v -> {
-            Intent intent = new Intent(getActivity(), AddProductActivity.class);
-            intent.putExtra("adminId", adminId);
-            startActivity(intent);
-        });
-
-        loadProducts();
+        setupViewPager();
+        updateStatistics();
 
         return view;
     }
 
     private int getYearIndex(int year) {
-        String[] years = getResources().getStringArray(R.array.years_array); // Sửa tên thành years_array
+        String[] years = getResources().getStringArray(R.array.years_array);
         for (int i = 0; i < years.length; i++) {
             if (Integer.parseInt(years[i]) == year) {
                 return i;
@@ -167,61 +120,25 @@ public class AdminHomeFragment extends Fragment {
         return adminId;
     }
 
-    private void setupSearchListener() {
-        etSearchProduct.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+    private void updateStatistics() {
+        // Số lượng sản phẩm
+        int productCount = productDAO.getProductsByAdmin(adminId).size();
+        tvProductCount.setText("Số lượng sản phẩm: " + productCount);
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                filterProducts(s.toString());
-            }
+        // Số lượng đơn hàng (cần OrderDAO)
+        // Ví dụ: int orderCount = orderDAO.getOrderCountByAdminAndYear(adminId, selectedYear);
+        tvOrderCount.setText("Số lượng đơn hàng: " + "0"); // Placeholder - cần OrderDAO
 
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
-    }
-
-    private void filterProducts(String query) {
-        List<Product> allProducts = productDAO.getProductsByAdmin(adminId);
-        List<Product> filteredList = new ArrayList<>();
-        for (Product product : allProducts) {
-            if (product.getProductName().toLowerCase().contains(query.toLowerCase())) {
-                filteredList.add(product);
-            }
-        }
-        productAdapter.setProductList(filteredList);
-        tvEmptyList.setVisibility(filteredList.isEmpty() ? View.VISIBLE : View.GONE);
-    }
-
-    private void setupRecyclerView() {
-        recyclerViewProducts.setLayoutManager(new GridLayoutManager(getContext(), 2));
-        int currentAdminId = sessionManager.getAdminId();
-        List<Product> initialProducts = productDAO.getProductsByAdmin(adminId);
-        productAdapter = new ProductAdapter(getContext(), initialProducts, currentAdminId, product -> {
-            productEditor.showProductDialog(product, this::loadProducts);
-        });
-        recyclerViewProducts.setAdapter(productAdapter);
-    }
-
-    private void loadProducts() {
-        List<Product> products = productDAO.getProductsByAdmin(adminId);
-        productAdapter.setProductList(products);
-
-        if (products.isEmpty()) {
-            tvEmptyList.setVisibility(View.VISIBLE);
-            recyclerViewProducts.setVisibility(View.GONE);
-        } else {
-            tvEmptyList.setVisibility(View.GONE);
-            recyclerViewProducts.setVisibility(View.VISIBLE);
-        }
+        // Số sản phẩm đã bán (cần OrderDetailDAO hoặc tương tự)
+        // Ví dụ: int soldCount = orderDetailDAO.getSoldProductCountByAdminAndYear(adminId, selectedYear);
+        tvSoldCount.setText("Số sản phẩm đã bán: " + "0"); // Placeholder - cần OrderDetailDAO
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        loadProducts();
         setupViewPager();
+        updateStatistics();
     }
 
     private static class ViewPagerAdapter extends androidx.viewpager2.adapter.FragmentStateAdapter {

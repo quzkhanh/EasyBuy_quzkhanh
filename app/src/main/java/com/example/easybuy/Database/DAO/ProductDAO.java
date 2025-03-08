@@ -1,7 +1,11 @@
 package com.example.easybuy.Database.DAO;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.util.Log;
 
 import com.example.easybuy.Database.DatabaseHelper.DatabaseHelper;
 import com.example.easybuy.Database.DatabaseHelper.ProductDatabaseHelper;
@@ -67,5 +71,26 @@ public class ProductDAO {
 
     public Product getProductById(int productId) {
         return productDbHelper.getProductById(productId);
+    }
+
+    public String getProductImageUrl(int productId) {
+        SQLiteDatabase db = productDbHelper.getReadableDatabase();
+        String imageUrl = null;
+        try {
+            Cursor cursor = db.query(
+                    DatabaseHelper.TABLE_PRODUCT,
+                    new String[]{"image_url"},
+                    "product_id = ?",
+                    new String[]{String.valueOf(productId)},
+                    null, null, null
+            );
+            if (cursor.moveToFirst()) {
+                imageUrl = cursor.getString(0);
+            }
+            cursor.close();
+        } catch (Exception e) {
+            Log.e("ProductDAO", "Error getting image URL: " + e.getMessage());
+        }
+        return imageUrl;
     }
 }
