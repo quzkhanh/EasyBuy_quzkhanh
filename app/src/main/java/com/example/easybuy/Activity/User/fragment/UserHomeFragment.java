@@ -15,7 +15,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.easybuy.Activity.User.ProductDetailActivity;
+import com.example.easybuy.Activity.User.UserProductDetailActivity;
 import com.example.easybuy.Database.DAO.OrderDAO;
 import com.example.easybuy.Database.Adapter.ProductAdapter;
 import com.example.easybuy.Database.DAO.ProductDAO;
@@ -81,7 +81,7 @@ public class UserHomeFragment extends Fragment {
         // Khởi tạo ProductAdapter với currentUserId
         productAdapter = new ProductAdapter(getContext(), new ArrayList<>(), currentUserId, product -> {
             // Chuyển sang ProductDetailActivity
-            Intent intent = new Intent(getContext(), ProductDetailActivity.class);
+            Intent intent = new Intent(getContext(), UserProductDetailActivity.class);
             intent.putExtra("PRODUCT_ID", product.getProductId());
             startActivity(intent);
         });

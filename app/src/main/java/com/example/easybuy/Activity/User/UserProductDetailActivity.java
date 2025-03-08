@@ -41,12 +41,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
-public class ProductDetailActivity extends AppCompatActivity {
-    private static final String TAG = ProductDetailActivity.class.getSimpleName();
+public class UserProductDetailActivity extends AppCompatActivity {
+    private static final String TAG = UserProductDetailActivity.class.getSimpleName();
 
     // Views
     private ImageView ivDialogProductImage;
     private EditText etDialogProductName, etDialogPrice, etQuantity;
+    private TextView tvProductDescription; // Thêm TextView cho mô tả
     private RecyclerView recyclerViewImages;
     private Button btnBuyNow, btnDecrease, btnIncrease;
     private TextView tvTotalPrice;
@@ -58,7 +59,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private ImageAdapter imageAdapter;
     private int quantity = 1;
     private double totalPrice;
-    private SessionManager sessionManager; // Thêm SessionManager
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,8 +76,8 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         // Kiểm tra xem các view có null không
         if (ivDialogProductImage == null || etDialogProductName == null || etDialogPrice == null ||
-                recyclerViewImages == null || btnBuyNow == null || etQuantity == null ||
-                tvTotalPrice == null || btnDecrease == null || btnIncrease == null) {
+                tvProductDescription == null || recyclerViewImages == null || btnBuyNow == null ||
+                etQuantity == null || tvTotalPrice == null || btnDecrease == null || btnIncrease == null) {
             Log.e(TAG, "One or more views are null. Check layout IDs.");
             Toast.makeText(this, "Lỗi tải giao diện sản phẩm", Toast.LENGTH_SHORT).show();
             finish();
@@ -97,6 +98,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         ivDialogProductImage = findViewById(R.id.ivDialogProductImage);
         etDialogProductName = findViewById(R.id.etDialogProductName);
         etDialogPrice = findViewById(R.id.etDialogPrice);
+        tvProductDescription = findViewById(R.id.tvProductDescription); // Ánh xạ TextView mô tả
         recyclerViewImages = findViewById(R.id.recyclerViewImages);
         btnBuyNow = findViewById(R.id.btnBuyNow);
         etQuantity = findViewById(R.id.etQuantity);
@@ -161,7 +163,9 @@ public class ProductDetailActivity extends AppCompatActivity {
             }
 
             Log.d(TAG, "Product loaded: " + product.getProductName() + ", ImageUrl: " + product.getImageUrl());
+
             // Gán thông tin sản phẩm vào views
+            // Ảnh chính
             if (TextUtils.isEmpty(product.getImageUrl())) {
                 ivDialogProductImage.setImageResource(R.drawable.product_placeholder);
                 Log.w(TAG, "ImageUrl is empty or null for product: " + product.getProductName());
@@ -186,9 +190,19 @@ public class ProductDetailActivity extends AppCompatActivity {
                         .into(ivDialogProductImage);
             }
 
-            etDialogProductName.setText(product.getProductName());
+            // Tên sản phẩm
+            etDialogProductName.setText(product.getProductName() != null ? product.getProductName() : "Không có tên");
+
+            // Giá sản phẩm
             DecimalFormat df = new DecimalFormat("#,### VNĐ");
-            etDialogPrice.setText(df.format(product.getPrice()));
+            etDialogPrice.setText(product.getPrice() > 0 ? df.format(product.getPrice()) : "0 VNĐ");
+
+            // Mô tả sản phẩm
+            tvProductDescription.setText(product.getDescription() != null && !product.getDescription().isEmpty()
+                    ? product.getDescription()
+                    : "Không có mô tả cho sản phẩm này.");
+
+            // Số lượng mặc định và tổng giá
             etQuantity.setText("1");
             updateTotalPrice();
         } catch (Exception e) {
@@ -206,43 +220,58 @@ public class ProductDetailActivity extends AppCompatActivity {
             List<String> imageUrls = new ArrayList<>();
             HashSet<String> uniqueImageUrls = new HashSet<>();
 
-            // Thêm ảnh bổ sung từ ProductImage, giới hạn tối đa 1 ảnh bổ sung
+            // Thêm ảnh bổ sung từ ProductImage
             if (additionalImages != null) {
                 for (ProductImage image : additionalImages) {
                     String url = image.getImageUrl();
-                    if (!TextUtils.isEmpty(url) && !uniqueImageUrls.contains(url) && imageUrls.size() < 1) {
+                    if (!TextUtils.isEmpty(url) && !uniqueImageUrls.contains(url)) {
                         imageUrls.add(url);
                         uniqueImageUrls.add(url);
+                        Log.d(TAG, "Added additional image URL: " + url);
                     } else {
                         Log.w(TAG, "Skipped invalid or duplicate image URL: " + (url == null ? "null" : url));
                     }
                 }
+                Log.d(TAG, "Total additional images loaded: " + additionalImages.size());
+            } else {
+                Log.w(TAG, "No additional images found for productId: " + product.getProductId());
             }
 
-            // Chỉ thêm ảnh chính nếu nó hợp lệ, không trùng, và không vượt quá giới hạn
+            // Thêm ảnh chính nếu hợp lệ và không trùng
             String mainImageUrl = product.getImageUrl();
-            if (!TextUtils.isEmpty(mainImageUrl) && !uniqueImageUrls.contains(mainImageUrl) && imageUrls.size() < 2) {
+            if (!TextUtils.isEmpty(mainImageUrl) && !uniqueImageUrls.contains(mainImageUrl)) {
                 imageUrls.add(mainImageUrl);
+                Log.d(TAG, "Added main image URL: " + mainImageUrl);
             } else if (TextUtils.isEmpty(mainImageUrl)) {
-                Log.w(TAG, "Main image URL is empty or null, skipping addition to RecyclerView");
+                Log.w(TAG, "Main image URL is empty or null for product: " + product.getProductName());
             }
 
-            boolean isAdmin = sessionManager.getAdminId() != -1; // Sử dụng SessionManager để kiểm tra admin
+            // Thiết lập adapter
+            boolean isAdmin = sessionManager.getAdminId() != -1;
             imageAdapter = new ImageAdapter(imageUrls, new ImageAdapter.OnImageClickListener() {
                 @Override
                 public void onImageClick(String imageUrl) {
                     if (!TextUtils.isEmpty(imageUrl)) {
-                        Glide.with(ProductDetailActivity.this)
+                        Glide.with(UserProductDetailActivity.this)
                                 .load(imageUrl)
                                 .placeholder(R.drawable.product_placeholder)
                                 .error(R.drawable.product_placeholder)
                                 .into(ivDialogProductImage);
                     } else {
                         Log.w(TAG, "URL ảnh null hoặc rỗng khi nhấp vào");
-                        Toast.makeText(ProductDetailActivity.this, "Không thể tải ảnh", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(UserProductDetailActivity.this, "Không thể tải ảnh", Toast.LENGTH_SHORT).show();
                     }
                 }
             }, isAdmin);
+
+            // Thêm listener để xử lý xóa ảnh (chỉ áp dụng nếu là admin)
+            if (isAdmin) {
+                imageAdapter.setOnRemoveImageListener(position -> {
+                    imageAdapter.removeImageAt(position);
+                    Toast.makeText(UserProductDetailActivity.this, "Ảnh đã được xóa", Toast.LENGTH_SHORT).show();
+                    // Lưu ý: Bạn cần cập nhật cơ sở dữ liệu nếu muốn xóa ảnh vĩnh viễn
+                });
+            }
 
             recyclerViewImages.setAdapter(imageAdapter);
             Log.d(TAG, "RecyclerView loaded with " + imageUrls.size() + " images: " + imageUrls);
