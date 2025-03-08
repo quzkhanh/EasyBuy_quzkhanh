@@ -1,48 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/white"
-        android:orientation="vertical">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
 
-        <!-- Thanh tìm kiếm -->
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/jetbrains_mono_extrabold"
+        android:textStyle="bold"
+        android:textSize="17sp"
+        android:text="Thống Kê Đơn Hàng, Doanh Thu 🚀"
+        android:gravity="left"
+        android:padding="16dp" />
+
+    <!-- Spinner chọn năm -->
+    <Spinner
+        android:id="@+id/spinnerYear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="8dp"
+        android:entries="@array/years_array" />
+
+    <!-- TabLayout và ViewPager -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:tabGravity="fill"
+        app:tabMode="fixed" />
+
+    <!-- Số lượng sản phẩm (dùng TextView hoặc CardView) -->
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
+        android:layout_width="392dp"
+        android:layout_height="177dp"
+        android:layout_margin="8dp" />
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Số lượng sản phẩm: "
+                android:textSize="16sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/tvProductCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/holo_blue_dark" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- TextView khi danh sách rỗng -->
+    <TextView
+        android:id="@+id/tvEmptyList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Không có sản phẩm nào"
+        android:gravity="center"
+        android:visibility="gone"
+        android:padding="16dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/jetbrains_mono_extrabold"
+        android:textStyle="bold"
+        android:textSize="17sp"
+        android:text="Danh Sách Sản Phẩm 🔥"
+        android:gravity="left"
+        android:padding="16dp" />
+    <!-- Thanh tìm kiếm -->
     <EditText
         android:id="@+id/etSearchProduct"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_width="347dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
         android:background="@drawable/edittext_background"
         android:hint="Tìm sản phẩm theo tên"
         android:inputType="text"
         android:maxLines="1"
         android:padding="8dp" />
 
-        <!-- TextView khi danh sách rỗng -->
-    <TextView
-    android:id="@+id/tvEmptyList"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="Không có sản phẩm nào"
-    android:gravity="center"
-    android:visibility="gone"
-    android:padding="16dp" />
-
-        <!-- RecyclerView sản phẩm -->
+    <!-- RecyclerView sản phẩm -->
     <androidx.recyclerview.widget.RecyclerView
-    android:id="@+id/recyclerViewProducts"
-    android:layout_width="match_parent"
-    android:layout_height="0dp"
-    android:layout_weight="1"
-    android:padding="8dp" />
+        android:id="@+id/recyclerViewProducts"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp" />
 
-        <!-- Floating Action Button -->
+    <!-- Floating Action Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-    android:id="@+id/fabAddProduct"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="end"
-    android:layout_margin="16dp"
-    android:src="@android:drawable/ic_input_add"
-    app:fabSize="normal" />
+        android:id="@+id/fabAddProduct"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_margin="16dp"
+        android:src="@android:drawable/ic_input_add"
+        app:fabSize="normal" />
 
-        </LinearLayout>
+</LinearLayout>
