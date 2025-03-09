@@ -120,11 +120,14 @@ public class UserHomeFragment extends Fragment {
         });
     }
 
+    /**
+     * Lọc danh sách sản phẩm dựa trên chuỗi truy vấn.
+     * @param query Chuỗi truy vấn để lọc sản phẩm.
+     */
     private void filterProducts(String query) {
         List<Product> filteredList = new ArrayList<>();
 
-        // Nếu query rỗng, hiển thị toàn bộ danh sách
-        if (query == null || query.trim().isEmpty()) {
+        if (query == null || query.trim().isEmpty()) { // Nếu chuỗi truy vấn rỗng hoặc null
             filteredList.addAll(allProducts);
         } else {
             // Lọc sản phẩm theo tên (không phân biệt hoa thường)
@@ -136,7 +139,7 @@ public class UserHomeFragment extends Fragment {
             }
         }
 
-        // Cập nhật giao diện
+        // Cập nhật giao diện dựa trên danh sách đã lọc
         if (filteredList.isEmpty()) {
             tvEmptyList.setVisibility(View.VISIBLE);
             productRecyclerView.setVisibility(View.GONE);
