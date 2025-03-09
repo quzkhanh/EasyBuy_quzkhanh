@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.easybuy.R;
 
 import java.util.List;
@@ -21,9 +22,8 @@ import java.util.List;
 public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHolder> {
     private List<String> imageUrls;
     private OnImageClickListener onImageClickListener;
-    private boolean isAdmin = false; // Flag để kiểm soát hiển thị nút xóa
+    private boolean isAdmin = false;
 
-    // Interface để xử lý sự kiện click vào ảnh
     public interface OnImageClickListener {
         void onImageClick(String imageUrl);
     }
@@ -49,16 +49,16 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
                 .load(imageUrl)
                 .placeholder(R.drawable.product_placeholder)
                 .error(R.drawable.product_placeholder)
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
                 .into(holder.imageView);
 
-        // Xử lý sự kiện click vào ảnh
         holder.itemView.setOnClickListener(v -> {
             if (onImageClickListener != null) {
                 onImageClickListener.onImageClick(imageUrl);
             }
         });
 
-        // Ẩn/hiện btnRemove dựa trên isAdmin
         if (holder.btnRemove != null) {
             holder.btnRemove.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
         }
@@ -69,18 +69,11 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         return imageUrls != null ? imageUrls.size() : 0;
     }
 
-    /**
-     * Cập nhật danh sách ảnh và làm mới RecyclerView.
-     * @param newImageUrls Danh sách URL ảnh mới.
-     */
     public void updateImages(List<String> newImageUrls) {
         this.imageUrls = newImageUrls;
         notifyDataSetChanged();
     }
 
-    /**
-     * ViewHolder để giữ các thành phần giao diện cho mỗi item ảnh.
-     */
     static class ImageViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
         ImageButton btnRemove;
@@ -88,7 +81,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         public ImageViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.ivAdditionalImage);
-            btnRemove = itemView.findViewById(R.id.ibRemoveImage); // Đảm bảo ID này khớp với layout
+            btnRemove = itemView.findViewById(R.id.ibRemoveImage);
         }
     }
 }

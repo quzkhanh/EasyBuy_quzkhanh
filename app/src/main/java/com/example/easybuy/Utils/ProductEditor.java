@@ -6,6 +6,8 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -24,13 +26,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.easybuy.Database.Adapter.ImageAdapter;
 import com.example.easybuy.Database.DAO.ProductDAO;
 import com.example.easybuy.Model.Product;
-import com.bumptech.glide.Glide;
 import com.example.easybuy.R;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProductEditor {
+    private static final String TAG = "ProductEditor";
     private final Fragment fragment;
     private final int adminId;
     private ProductDAO productDAO;
@@ -60,9 +64,15 @@ public class ProductEditor {
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                         Uri selectedUri = result.getData().getData();
                         if (selectedUri != null) {
+                            Log.d(TAG, "Selected URI: " + selectedUri);
                             ImageButton clickedButton = (ImageButton) dialogView.getTag();
                             if (clickedButton == ibPickDialogImage) {
-                                Glide.with(fragment.requireContext()).load(selectedUri).into(ivDialogProductImage);
+                                Glide.with(fragment.requireContext())
+                                        .load(selectedUri)
+                                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                        .skipMemoryCache(true)
+                                        .placeholder(R.drawable.product_placeholder)
+                                        .into(ivDialogProductImage);
                                 ivDialogProductImage.setTag(selectedUri.toString());
                                 Toast.makeText(fragment.requireContext(), "Ảnh chính đã được chọn!", Toast.LENGTH_SHORT).show();
                             } else if (clickedButton == ibPickAdditionalImage) {
@@ -71,23 +81,24 @@ public class ProductEditor {
                                 Toast.makeText(fragment.requireContext(), "Ảnh bổ sung đã được chọn!", Toast.LENGTH_SHORT).show();
                             }
                         } else {
-                            Toast.makeText(fragment.requireContext(), "Không thể lấy ảnh đã chọn!", Toast.LENGTH_SHORT).show();
+                            Log.w(TAG, "Selected URI is null");
                         }
                     } else {
-                        Toast.makeText(fragment.requireContext(), "Chưa chọn ảnh nào!", Toast.LENGTH_SHORT).show();
+                        Log.w(TAG, "Image selection canceled or failed");
                     }
                 }
         );
         this.onProductUpdated = onProductUpdated;
         this.productDAO = new ProductDAO(fragment.requireContext());
 
-        // Khởi tạo launcher để yêu cầu quyền
         this.requestPermissionLauncher = fragment.registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 isGranted -> {
                     if (isGranted) {
+                        Log.d(TAG, "Permission granted, opening gallery");
                         openGallery();
                     } else {
+                        Log.w(TAG, "Permission denied");
                         Toast.makeText(fragment.requireContext(), "Cần quyền truy cập bộ nhớ để chọn ảnh!", Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -97,7 +108,7 @@ public class ProductEditor {
     public void showProductDialog(Product product) {
         AlertDialog.Builder builder = new AlertDialog.Builder(fragment.requireContext());
         LayoutInflater inflater = LayoutInflater.from(fragment.requireContext());
-        dialogView = inflater.inflate(R.layout.dialog_product_detail, null);
+        dialogView = inflater.inflate(R.layout.dialog_admin_product_detail, null);
 
         ivDialogProductImage = dialogView.findViewById(R.id.ivDialogProductImage);
         etDialogProductName = dialogView.findViewById(R.id.etDialogProductName);
@@ -109,21 +120,27 @@ public class ProductEditor {
         btnEditProduct = dialogView.findViewById(R.id.btnEditProduct);
         btnDeleteProduct = dialogView.findViewById(R.id.btnDeleteProduct);
 
-        final String originalProductName = product.getProductName();
-        final double originalPrice = product.getPrice();
-        final String originalDescription = product.getDescription();
         final String originalImageUrl = product.getImageUrl();
-
-        Glide.with(fragment.requireContext()).load(originalImageUrl).into(ivDialogProductImage);
+        Glide.with(fragment.requireContext())
+                .load(originalImageUrl)
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
+                .placeholder(R.drawable.product_placeholder)
+                .into(ivDialogProductImage);
         ivDialogProductImage.setTag(originalImageUrl);
-        etDialogProductName.setText(originalProductName);
-        etDialogPrice.setText(String.valueOf(originalPrice));
-        etDialogDescription.setText(originalDescription);
+        etDialogProductName.setText(product.getProductName());
+        etDialogPrice.setText(String.valueOf(product.getPrice()));
+        etDialogDescription.setText(product.getDescription());
 
-        // Thiết lập RecyclerView cho ảnh bổ sung
+        List<String> initialImageUrls = productDAO.getAdditionalImages(product.getProductId());
+        additionalImageUris.clear();
+        for (String imageUrl : initialImageUrls) {
+            additionalImageUris.add(Uri.parse(imageUrl));
+        }
+        Log.d(TAG, "Initial additional images: " + additionalImageUris);
+
         recyclerViewImages.setLayoutManager(new LinearLayoutManager(fragment.requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        List<String> initialImageUrls = new ArrayList<>();
-        imageAdapter = new ImageAdapter(initialImageUrls, imageUrl -> {}, false); // Không cần xóa ảnh ở đây
+        imageAdapter = new ImageAdapter(initialImageUrls, imageUrl -> {}, false);
         recyclerViewImages.setAdapter(imageAdapter);
 
         final boolean[] isEditing = {false};
@@ -133,10 +150,13 @@ public class ProductEditor {
                 etDialogProductName.setEnabled(true);
                 etDialogPrice.setEnabled(true);
                 etDialogDescription.setEnabled(true);
+                ibPickDialogImage.setEnabled(true);
+                ibPickAdditionalImage.setEnabled(true);
                 btnEditProduct.setText("Lưu");
                 isEditing[0] = true;
+                Log.d(TAG, "Edit mode enabled");
             } else {
-                boolean isUpdated = saveProductChanges(product, originalProductName, originalPrice, originalDescription, originalImageUrl);
+                boolean isUpdated = saveProductChanges(product);
                 if (isUpdated && dialog != null) {
                     dialog.dismiss();
                 }
@@ -166,24 +186,20 @@ public class ProductEditor {
         });
 
         ibPickDialogImage.setOnClickListener(v -> {
-            if (isEditing[0] && imagePickerLauncher != null) {
+            if (isEditing[0]) {
                 dialogView.setTag(ibPickDialogImage);
-                checkStoragePermissionAndOpenGallery();
-            } else if (!isEditing[0]) {
-                Toast.makeText(fragment.requireContext(), "Vui lòng nhấn Sửa để chọn ảnh", Toast.LENGTH_SHORT).show();
+                pickImage();
             } else {
-                Toast.makeText(fragment.requireContext(), "Không thể chọn ảnh do lỗi khởi tạo", Toast.LENGTH_SHORT).show();
+                Toast.makeText(fragment.requireContext(), "Vui lòng nhấn Sửa để chọn ảnh", Toast.LENGTH_SHORT).show();
             }
         });
 
         ibPickAdditionalImage.setOnClickListener(v -> {
-            if (isEditing[0] && imagePickerLauncher != null) {
+            if (isEditing[0]) {
                 dialogView.setTag(ibPickAdditionalImage);
-                checkStoragePermissionAndOpenGallery();
-            } else if (!isEditing[0]) {
-                Toast.makeText(fragment.requireContext(), "Vui lòng nhấn Sửa để chọn ảnh", Toast.LENGTH_SHORT).show();
+                pickImage();
             } else {
-                Toast.makeText(fragment.requireContext(), "Không thể chọn ảnh do lỗi khởi tạo", Toast.LENGTH_SHORT).show();
+                Toast.makeText(fragment.requireContext(), "Vui lòng nhấn Sửa để chọn ảnh", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -192,27 +208,30 @@ public class ProductEditor {
         dialog.show();
     }
 
-    private void checkStoragePermissionAndOpenGallery() {
-        if (ContextCompat.checkSelfPermission(fragment.requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
-        } else {
-            openGallery();
+    private void pickImage() {
+        if (!checkPermission()) {
+            requestPermissionLauncher.launch(getPermission());
+            return;
         }
+        openGallery();
+    }
+
+    private boolean checkPermission() {
+        String permission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ?
+                Manifest.permission.READ_MEDIA_IMAGES : Manifest.permission.READ_EXTERNAL_STORAGE;
+        return ContextCompat.checkSelfPermission(fragment.requireContext(), permission) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private String getPermission() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ?
+                Manifest.permission.READ_MEDIA_IMAGES : Manifest.permission.READ_EXTERNAL_STORAGE;
     }
 
     private void openGallery() {
-        if (imagePickerLauncher == null) {
-            Toast.makeText(fragment.requireContext(), "Không thể mở gallery do lỗi khởi tạo", Toast.LENGTH_SHORT).show();
-            return;
-        }
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
-        if (intent.resolveActivity(fragment.requireContext().getPackageManager()) != null) {
-            imagePickerLauncher.launch(intent);
-        } else {
-            Toast.makeText(fragment.requireContext(), "Không tìm thấy ứng dụng chọn ảnh", Toast.LENGTH_SHORT).show();
-        }
+        imagePickerLauncher.launch(intent);
+        Log.d(TAG, "Opening gallery with ACTION_GET_CONTENT");
     }
 
     private void updateImageAdapter() {
@@ -220,13 +239,15 @@ public class ProductEditor {
         for (Uri uri : additionalImageUris) {
             imageUrls.add(uri.toString());
         }
+        Log.d(TAG, "Updating RecyclerView with images: " + imageUrls);
         imageAdapter.updateImages(imageUrls);
     }
 
-    private boolean saveProductChanges(Product product, String originalProductName, double originalPrice, String originalDescription, String originalImageUrl) {
+    private boolean saveProductChanges(Product product) {
         String productName = etDialogProductName.getText().toString().trim();
         String priceStr = etDialogPrice.getText().toString().trim();
         String description = etDialogDescription.getText().toString().trim();
+        String newImageUrl = (String) ivDialogProductImage.getTag();
 
         if (productName.isEmpty() || priceStr.isEmpty() || description.isEmpty()) {
             Toast.makeText(fragment.requireContext(), "Vui lòng điền đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
@@ -240,43 +261,47 @@ public class ProductEditor {
                 return false;
             }
 
-            boolean hasChanges = false;
-            if (!productName.equals(originalProductName)) {
-                product.setProductName(productName);
-                hasChanges = true;
-            }
-            if (price != originalPrice) {
-                product.setPrice(price);
-                hasChanges = true;
-            }
-            if (!description.equals(originalDescription)) {
-                product.setDescription(description);
-                hasChanges = true;
-            }
-
-            String newImageUrl = (String) ivDialogProductImage.getTag();
-            if (newImageUrl != null) {
+            // Cập nhật thông tin sản phẩm
+            product.setProductName(productName);
+            product.setPrice(price);
+            product.setDescription(description);
+            if (newImageUrl != null && !newImageUrl.equals(product.getImageUrl())) {
                 product.setImageUrl(newImageUrl);
-                hasChanges = true;
+                Log.d(TAG, "Main image updated to: " + newImageUrl);
             }
 
-            if (!hasChanges) {
-                Toast.makeText(fragment.requireContext(), "Không có thay đổi để cập nhật!", Toast.LENGTH_SHORT).show();
-                return false;
+            // Lưu ảnh phụ
+            boolean additionalImagesChanged = !additionalImageUris.isEmpty();
+            if (additionalImagesChanged) {
+                productDAO.updateProductImages(product.getProductId(), additionalImageUris);
+                Log.d(TAG, "Updated additional images: " + additionalImageUris);
             }
 
-            List<Uri> additionalUris = new ArrayList<>(additionalImageUris);
-            productDAO.updateProductImages(product.getProductId(), additionalUris);
-
+            // Lưu sản phẩm
             int rowsAffected = productDAO.updateProduct(product, adminId);
-            if (rowsAffected > 0) {
+            if (rowsAffected > 0 || additionalImagesChanged) {
                 Toast.makeText(fragment.requireContext(), "Cập nhật sản phẩm thành công!", Toast.LENGTH_SHORT).show();
                 if (onProductUpdated != null) {
                     onProductUpdated.run();
                 }
+                // Đồng bộ ảnh phụ từ cơ sở dữ liệu
+                List<String> updatedImageUrls = productDAO.getAdditionalImages(product.getProductId());
+                additionalImageUris.clear();
+                for (String imageUrl : updatedImageUrls) {
+                    additionalImageUris.add(Uri.parse(imageUrl));
+                }
+                updateImageAdapter();
+                // Cập nhật lại ảnh chính trên giao diện
+                Glide.with(fragment.requireContext())
+                        .load(product.getImageUrl())
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .skipMemoryCache(true)
+                        .placeholder(R.drawable.product_placeholder)
+                        .into(ivDialogProductImage);
+                ivDialogProductImage.setTag(product.getImageUrl());
                 return true;
             } else {
-                Toast.makeText(fragment.requireContext(), "Cập nhật thất bại: Không tìm thấy sản phẩm hoặc lỗi database!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(fragment.requireContext(), "Cập nhật thất bại!", Toast.LENGTH_SHORT).show();
                 return false;
             }
         } catch (NumberFormatException e) {

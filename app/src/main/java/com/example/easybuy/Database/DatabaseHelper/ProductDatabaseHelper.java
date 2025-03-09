@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 
 public class ProductDatabaseHelper {
+    private static final String TAG = "ProductDatabaseHelper";
     private final DatabaseHelper dbHelper;
 
     public ProductDatabaseHelper(DatabaseHelper dbHelper) {
@@ -39,10 +40,11 @@ public class ProductDatabaseHelper {
                     new String[]{String.valueOf(productId), String.valueOf(adminId)});
             return cursor != null && cursor.getCount() > 0;
         } catch (Exception e) {
-            Log.e("ProductDatabaseHelper", "Error checking product owner", e);
+            Log.e(TAG, "Error checking product owner", e);
             return false;
         } finally {
             if (cursor != null) cursor.close();
+            if (db != null && db.isOpen()) db.close();
         }
     }
 
@@ -54,7 +56,9 @@ public class ProductDatabaseHelper {
         values.put("image_url", imageUrl);
         values.put("description", description);
         values.put("created_by", adminId);
-        return db.insert(DatabaseHelper.TABLE_PRODUCT, null, values);
+        long id = db.insert(DatabaseHelper.TABLE_PRODUCT, null, values);
+        db.close();
+        return id;
     }
 
     public long addProductWithImages(Product product, List<String> additionalImageUrls, int adminId) {
@@ -76,6 +80,7 @@ public class ProductDatabaseHelper {
                 db.insert(DatabaseHelper.TABLE_PRODUCT_IMAGES, null, imageValues);
             }
         }
+        db.close();
         return productId;
     }
 
@@ -84,12 +89,14 @@ public class ProductDatabaseHelper {
         ContentValues values = new ContentValues();
         values.put("product_id", productId);
         values.put("image_url", imageUrl);
-        return db.insert(DatabaseHelper.TABLE_PRODUCT_IMAGES, null, values);
+        long id = db.insert(DatabaseHelper.TABLE_PRODUCT_IMAGES, null, values);
+        db.close();
+        return id;
     }
 
     public int updateProduct(Product product, int adminId) {
         if (!isProductOwner(product.getProductId(), adminId)) {
-            Log.w("ProductDatabaseHelper", "Admin " + adminId + " does not have permission to update product " + product.getProductId());
+            Log.w(TAG, "Admin " + adminId + " does not have permission to update product " + product.getProductId());
             return 0;
         }
         SQLiteDatabase db = getWritableDatabase();
@@ -98,91 +105,103 @@ public class ProductDatabaseHelper {
         values.put("price", product.getPrice());
         values.put("image_url", product.getImageUrl());
         values.put("description", product.getDescription());
-        Log.d("ProductDatabaseHelper", "Updating product - Product ID: " + product.getProductId() + ", Image URL: " + product.getImageUrl());
-        int rowsAffected = db.update(DatabaseHelper.TABLE_PRODUCT, values, "product_id = ?", new String[]{String.valueOf(product.getProductId())});
-        Log.d("ProductDatabaseHelper", "Rows affected: " + rowsAffected);
+        Log.d(TAG, "Updating product - Product ID: " + product.getProductId() + ", Image URL: " + product.getImageUrl());
+        int rowsAffected = db.update(DatabaseHelper.TABLE_PRODUCT, values, "product_id = ?",
+                new String[]{String.valueOf(product.getProductId())});
+        Log.d(TAG, "Rows affected: " + rowsAffected);
+        db.close();
         return rowsAffected;
     }
 
     public boolean deleteProduct(int productId, int adminId) {
         if (!isProductOwner(productId, adminId)) {
-            Log.w("ProductDatabaseHelper", "Admin " + adminId + " does not have permission to delete product " + productId);
+            Log.w(TAG, "Admin " + adminId + " does not have permission to delete product " + productId);
             return false;
         }
         SQLiteDatabase db = getWritableDatabase();
         int rowsAffected = db.delete(DatabaseHelper.TABLE_PRODUCT, "product_id = ?",
                 new String[]{String.valueOf(productId)});
+        db.close();
         return rowsAffected > 0;
     }
 
     public List<ProductImage> getProductImages(int productId) {
         List<ProductImage> imageList = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_PRODUCT_IMAGES +
-                " WHERE product_id = ?", new String[]{String.valueOf(productId)});
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_PRODUCT_IMAGES +
+                    " WHERE product_id = ?", new String[]{String.valueOf(productId)});
 
-        HashSet<String> uniqueUrls = new HashSet<>();
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                ProductImage image = new ProductImage();
-                image.setImageId(cursor.getInt(cursor.getColumnIndexOrThrow("image_id")));
-                image.setProductId(cursor.getInt(cursor.getColumnIndexOrThrow("product_id")));
-                String url = cursor.getString(cursor.getColumnIndexOrThrow("image_url"));
-                if (!TextUtils.isEmpty(url) && !uniqueUrls.contains(url)) {
-                    image.setImageUrl(url);
-                    imageList.add(image);
-                    uniqueUrls.add(url);
-                    Log.d("ProductDatabaseHelper", "Added ProductImage: " + image.toString());
-                } else {
-                    Log.w("ProductDatabaseHelper", "Skipped invalid or duplicate URL: " + (url == null ? "null" : url));
-                }
-            } while (cursor.moveToNext());
+            HashSet<String> uniqueUrls = new HashSet<>();
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    ProductImage image = new ProductImage();
+                    image.setImageId(cursor.getInt(cursor.getColumnIndexOrThrow("image_id")));
+                    image.setProductId(cursor.getInt(cursor.getColumnIndexOrThrow("product_id")));
+                    String url = cursor.getString(cursor.getColumnIndexOrThrow("image_url"));
+                    if (!TextUtils.isEmpty(url) && !uniqueUrls.contains(url)) {
+                        image.setImageUrl(url);
+                        imageList.add(image);
+                        uniqueUrls.add(url);
+                        Log.d(TAG, "Added ProductImage: " + image.toString());
+                    } else {
+                        Log.w(TAG, "Skipped invalid or duplicate URL: " + (url == null ? "null" : url));
+                    }
+                } while (cursor.moveToNext());
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting product images", e);
+        } finally {
+            if (cursor != null) cursor.close();
+            if (db != null && db.isOpen()) db.close();
         }
-        if (cursor != null) cursor.close();
         return imageList;
     }
 
     public List<Product> getAllProducts() {
         List<Product> productList = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_PRODUCT, null);
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_PRODUCT, null);
 
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                Product product = new Product();
-                product.setProductId(cursor.getInt(cursor.getColumnIndexOrThrow("product_id")));
-                product.setProductName(cursor.getString(cursor.getColumnIndexOrThrow("product_name")));
-                product.setPrice(cursor.getDouble(cursor.getColumnIndexOrThrow("price")));
-                product.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow("image_url")));
-                product.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
-                product.setCreatedBy(cursor.getInt(cursor.getColumnIndexOrThrow("created_by")));
-                productList.add(product);
-                Log.d("ProductDatabaseHelper", "Fetched Product: " + product.toString());
-            } while (cursor.moveToNext());
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    Product product = extractProductFromCursor(cursor);
+                    productList.add(product);
+                    Log.d(TAG, "Fetched Product: " + product.toString());
+                } while (cursor.moveToNext());
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting all products", e);
+        } finally {
+            if (cursor != null) cursor.close();
+            if (db != null && db.isOpen()) db.close();
         }
-        if (cursor != null) cursor.close();
         return productList;
     }
 
     public List<Product> getProductsByAdmin(int adminId) {
         List<Product> productList = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_PRODUCT +
-                " WHERE created_by = ?", new String[]{String.valueOf(adminId)});
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_PRODUCT +
+                    " WHERE created_by = ?", new String[]{String.valueOf(adminId)});
 
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                Product product = new Product();
-                product.setProductId(cursor.getInt(cursor.getColumnIndexOrThrow("product_id")));
-                product.setProductName(cursor.getString(cursor.getColumnIndexOrThrow("product_name")));
-                product.setPrice(cursor.getDouble(cursor.getColumnIndexOrThrow("price")));
-                product.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow("image_url")));
-                product.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
-                product.setCreatedBy(cursor.getInt(cursor.getColumnIndexOrThrow("created_by")));
-                productList.add(product);
-            } while (cursor.moveToNext());
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    Product product = extractProductFromCursor(cursor);
+                    productList.add(product);
+                } while (cursor.moveToNext());
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting products by admin", e);
+        } finally {
+            if (cursor != null) cursor.close();
+            if (db != null && db.isOpen()) db.close();
         }
-        if (cursor != null) cursor.close();
         return productList;
     }
 
@@ -196,47 +215,39 @@ public class ProductDatabaseHelper {
             values.put("image_url", uri.toString());
             db.insert(DatabaseHelper.TABLE_PRODUCT_IMAGES, null, values);
         }
+        db.close();
     }
 
     public Product getProductById(int productId) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = null;
         Product product = null;
-
         try {
             cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_PRODUCT +
                     " WHERE product_id = ?", new String[]{String.valueOf(productId)});
 
             if (cursor != null && cursor.moveToFirst()) {
-                product = new Product();
-                int productIdIndex = cursor.getColumnIndex("product_id");
-                int productNameIndex = cursor.getColumnIndex("product_name");
-                int priceIndex = cursor.getColumnIndex("price");
-                int imageUrlIndex = cursor.getColumnIndex("image_url");
-                int descriptionIndex = cursor.getColumnIndex("description");
-                int createdByIndex = cursor.getColumnIndex("created_by");
-
-                if (productIdIndex != -1 && productNameIndex != -1 && priceIndex != -1 &&
-                        imageUrlIndex != -1 && descriptionIndex != -1 && createdByIndex != -1) {
-                    product.setProductId(cursor.getInt(productIdIndex));
-                    product.setProductName(cursor.getString(productNameIndex));
-                    product.setPrice(cursor.getDouble(priceIndex));
-                    product.setImageUrl(cursor.getString(imageUrlIndex));
-                    product.setDescription(cursor.getString(descriptionIndex));
-                    product.setCreatedBy(cursor.getInt(createdByIndex));
-                } else {
-                    Log.e("ProductDatabaseHelper", "One or more columns not found in product table");
-                }
+                product = extractProductFromCursor(cursor);
             } else {
-                Log.w("ProductDatabaseHelper", "Product not found with ID: " + productId);
+                Log.w(TAG, "Product not found with ID: " + productId);
             }
         } catch (Exception e) {
-            Log.e("ProductDatabaseHelper", "Error retrieving product by ID: " + e.getMessage(), e);
+            Log.e(TAG, "Error retrieving product by ID: " + e.getMessage(), e);
         } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
+            if (cursor != null) cursor.close();
+            if (db != null && db.isOpen()) db.close();
         }
+        return product;
+    }
+
+    private Product extractProductFromCursor(Cursor cursor) {
+        Product product = new Product();
+        product.setProductId(cursor.getInt(cursor.getColumnIndexOrThrow("product_id")));
+        product.setProductName(cursor.getString(cursor.getColumnIndexOrThrow("product_name")));
+        product.setPrice(cursor.getDouble(cursor.getColumnIndexOrThrow("price")));
+        product.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow("image_url")));
+        product.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
+        product.setCreatedBy(cursor.getInt(cursor.getColumnIndexOrThrow("created_by")));
         return product;
     }
 }
