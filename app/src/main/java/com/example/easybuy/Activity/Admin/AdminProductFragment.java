@@ -98,6 +98,18 @@ public class AdminProductFragment extends Fragment {
     }
 
     private void setupSearchListener() {
+        // Hàm này thiết lập trình nghe sự kiện cho EditText etSearchProduct.
+        // Mỗi khi nội dung trong EditText thay đổi, nó sẽ gọi phương thức filterProducts.
+        // Cụ thể:
+        // - beforeTextChanged: Được gọi trước khi văn bản trong EditText thay đổi.
+        // - onTextChanged: Được gọi khi văn bản trong EditText thay đổi.
+        //   Trong phương thức này, ta sẽ lấy chuỗi văn bản mới (s) và chuyển nó thành String (s.toString()).
+        //   Sau đó, ta gọi phương thức filterProducts với chuỗi này để lọc danh sách sản phẩm.
+        // - afterTextChanged: Được gọi sau khi văn bản trong EditText đã thay đổi.
+        //
+        // Tóm lại, hàm này cho phép lọc danh sách sản phẩm dựa trên nội dung được nhập vào EditText etSearchProduct.
+        // Khi người dùng nhập liệu, danh sách sản phẩm sẽ tự động được lọc để hiển thị các sản phẩm phù hợp.
+
         etSearchProduct.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -113,6 +125,19 @@ public class AdminProductFragment extends Fragment {
     }
 
     private void filterProducts(String query) {
+        // Phương thức này dùng để lọc danh sách sản phẩm dựa trên chuỗi truy vấn (query).
+        // Các bước thực hiện:
+        // 1. Lấy danh sách tất cả sản phẩm của admin hiện tại từ cơ sở dữ liệu.
+        // 2. Tạo một danh sách mới để chứa các sản phẩm đã được lọc.
+        // 3. Duyệt qua từng sản phẩm trong danh sách tất cả sản phẩm.
+        // 4. Đối với mỗi sản phẩm, chuyển tên sản phẩm và chuỗi truy vấn thành chữ thường để so sánh không phân biệt hoa thường.
+        // 5. Kiểm tra xem tên sản phẩm có chứa chuỗi truy vấn không.
+        // 6. Nếu có chứa, thêm sản phẩm đó vào danh sách đã lọc.
+        // 7. Sau khi duyệt xong, cập nhật danh sách sản phẩm trong adapter với danh sách đã lọc.
+        // 8. Hiển thị/ẩn TextView "tvEmptyList" tùy thuộc vào việc danh sách đã lọc có trống hay không.
+        //    - Nếu danh sách trống, hiển thị "tvEmptyList".
+        //    - Nếu danh sách không trống, ẩn "tvEmptyList".
+
         List<Product> allProducts = productDAO.getProductsByAdmin(adminId);
         List<Product> filteredList = new ArrayList<>();
         for (Product product : allProducts) {

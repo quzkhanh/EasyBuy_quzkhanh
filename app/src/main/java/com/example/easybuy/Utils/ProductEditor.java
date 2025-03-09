@@ -50,15 +50,16 @@ public class ProductEditor {
     private Runnable onProductUpdated;
     private AlertDialog dialog;
     private ImageAdapter imageAdapter;
-    private boolean isMainImage = true; // Xác định loại ảnh đang chọn
+    private boolean isMainImage = true;
+    private boolean isEditing = false;
 
     public ProductEditor(Fragment fragment, int adminId, ActivityResultLauncher<Intent> imagePickerLauncher, Runnable onProductUpdated) {
+        // Constructor remains unchanged
         this.fragment = fragment;
         this.adminId = adminId;
         this.onProductUpdated = onProductUpdated;
         this.productDAO = new ProductDAO(fragment.requireContext());
 
-        // Đăng ký trình chọn ảnh
         this.imagePickerLauncher = fragment.registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -85,7 +86,6 @@ public class ProductEditor {
                 }
         );
 
-        // Đăng ký yêu cầu quyền truy cập ảnh
         this.requestPermissionLauncher = fragment.registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 isGranted -> {
@@ -113,6 +113,9 @@ public class ProductEditor {
         btnEditProduct = dialogView.findViewById(R.id.btnEditProduct);
         btnDeleteProduct = dialogView.findViewById(R.id.btnDeleteProduct);
 
+        // Initially disable EditTexts and image buttons
+        setEditMode(false);
+
         Glide.with(fragment.requireContext())
                 .load(product.getImageUrl())
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
@@ -136,7 +139,18 @@ public class ProductEditor {
         recyclerViewImages.setAdapter(imageAdapter);
         recyclerViewImages.requestLayout();
 
-        btnEditProduct.setOnClickListener(v -> saveProductChanges(product));
+        btnEditProduct.setOnClickListener(v -> {
+            if (!isEditing) {
+                // Enter edit mode
+                setEditMode(true);
+                btnEditProduct.setText("Lưu");
+                Toast.makeText(fragment.requireContext(), "Bắt đầu chỉnh sửa sản phẩm", Toast.LENGTH_SHORT).show();
+            } else {
+                // Save changes
+                saveProductChanges(product);
+            }
+        });
+
         btnDeleteProduct.setOnClickListener(v -> confirmDeleteProduct(product));
 
         ibPickDialogImage.setOnClickListener(v -> {
@@ -152,6 +166,15 @@ public class ProductEditor {
         builder.setView(dialogView);
         dialog = builder.create();
         dialog.show();
+    }
+
+    private void setEditMode(boolean enabled) {
+        isEditing = enabled;
+        etDialogProductName.setEnabled(enabled);
+        etDialogPrice.setEnabled(enabled);
+        etDialogDescription.setEnabled(enabled);
+        ibPickDialogImage.setEnabled(enabled);
+        ibPickAdditionalImage.setEnabled(enabled);
     }
 
     private void pickImage() {
@@ -210,6 +233,9 @@ public class ProductEditor {
             productDAO.updateProductImages(product.getProductId(), additionalImageUris);
             onProductUpdated.run();
 
+            Toast.makeText(fragment.requireContext(), "Đã cập nhật sản phẩm thành công!", Toast.LENGTH_SHORT).show();
+            setEditMode(false);
+            btnEditProduct.setText("Sửa");
             dialog.dismiss();
         } catch (NumberFormatException e) {
             Toast.makeText(fragment.requireContext(), "Giá không hợp lệ!", Toast.LENGTH_SHORT).show();
@@ -219,6 +245,7 @@ public class ProductEditor {
     private void confirmDeleteProduct(Product product) {
         productDAO.deleteProduct(product.getProductId(), adminId);
         onProductUpdated.run();
+        Toast.makeText(fragment.requireContext(), "Đã xóa sản phẩm thành công!", Toast.LENGTH_SHORT).show();
         dialog.dismiss();
     }
 }
