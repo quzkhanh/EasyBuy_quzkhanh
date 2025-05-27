@@ -7,7 +7,7 @@
     android:background="@color/white"
     android:orientation="vertical"
     android:id="@+id/login"
-    tools:context=".Activity.Login.Admin.AdminLoginActivity">
+    tools:context=".view.Login.Admin.AdminLoginActivity">
 
     <TextView
         android:id="@+id/textView2"

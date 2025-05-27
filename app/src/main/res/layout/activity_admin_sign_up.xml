@@ -7,7 +7,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="@color/white"
-    tools:context=".Activity.Login.Admin.AdminSignUpActivity">
+    tools:context=".view.Login.Admin.AdminSignUpActivity">
 
     <TextView
         android:id="@+id/textView2"

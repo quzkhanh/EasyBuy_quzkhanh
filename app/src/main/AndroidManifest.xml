@@ -4,7 +4,8 @@
 
     <!-- Android 12 trở xuống -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- Android 13 trở lên -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- Android 13 trở lên -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
@@ -20,44 +21,44 @@
         android:theme="@style/Theme.EasyBuy"
         tools:targetApi="31">
         <activity
-            android:name=".Activity.User.ProductDetailActivity"
+            android:name=".view.User.ProductDetailActivity"
             android:exported="false" />
         <activity
-            android:name=".Activity.Login.ForgotPW.PasswordResetSuccessActivity"
+            android:name=".view.Login.ForgotPW.PasswordResetSuccessActivity"
             android:exported="false" />
         <activity
-            android:name=".Activity.Login.ForgotPW.SetNewPasswordActivity"
+            android:name=".view.Login.ForgotPW.SetNewPasswordActivity"
             android:exported="false" />
         <activity
-            android:name=".Activity.Login.ForgotPW.CheckEmailActivity"
+            android:name=".view.Login.ForgotPW.CheckEmailActivity"
             android:exported="false" />
         <activity
-            android:name=".Activity.Login.ForgotPW.ForgotPasswordActivity"
+            android:name=".view.Login.ForgotPW.ForgotPasswordActivity"
             android:exported="false" />
         <activity
-            android:name=".Activity.Login.Admin.AdminSignUpActivity"
+            android:name=".view.Login.Admin.AdminSignUpActivity"
             android:exported="false" />
         <activity
-            android:name=".Activity.Login.User.UserLoginActivity"
+            android:name=".view.Login.User.UserLoginActivity"
             android:exported="false" />
         <activity
-            android:name=".Activity.Login.Admin.AdminLoginActivity"
+            android:name=".view.Login.Admin.AdminLoginActivity"
             android:exported="false" />
         <activity
-            android:name=".Activity.Admin.AdminMainActivity"
+            android:name=".view.Admin.AdminMainActivity"
             android:exported="false" />
         <activity
-            android:name=".Activity.User.UserMainActivity"
+            android:name=".view.User.UserMainActivity"
             android:exported="false" />
         <activity
-            android:name=".Activity.Login.User.UserSignUpActivity"
+            android:name=".view.Login.User.UserSignUpActivity"
             android:exported="false" />
         <activity
-            android:name=".Activity.Admin.AddProductActivity"
+            android:name=".view.Admin.AddProductActivity"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
             android:launchMode="singleTop" />
         <activity
-            android:name=".Activity.WelcomeActivity"
+            android:name=".view.Login.WelcomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
