@@ -20,6 +20,7 @@
         android:fontFamily="@font/jetbrains_mono_extrabold"
         android:textColor="@color/black"
         android:textStyle="bold"
+        android:paddingLeft="10sp"
         android:text="Đăng Ký Bán Hàng"
         android:background="@color/white"
         android:textSize="40sp" />
@@ -30,11 +31,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:paddingLeft="10sp"
         android:layout_gravity="center_horizontal"
         android:fontFamily="@font/jetbrains_mono_semibold"
         android:background="@color/white"
         android:text="Bắt đầu bán các sản phẩm của bạn ngay hôm nay!"
-        android:textSize="22sp"
+        android:textSize="20sp"
         android:textStyle="bold" />
 
     <!-- Full Name Input -->

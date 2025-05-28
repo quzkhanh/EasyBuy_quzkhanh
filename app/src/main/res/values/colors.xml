@@ -4,10 +4,11 @@
     <color name="black_light">#322D2D</color>
     <color name="white">#FFFFFFFF</color>
     <color name="blue">#4A90E2</color>
-    <color name="save">#FF6200EE</color>
+    <color name="save">#4A90E2</color>
     <color name="save2">#5FCBF7</color>
     <color name="red">#F54655</color>
-    <color name="deep_blue">#FF6200EE</color>
+<!--    <color name="deep_blue">#FF6200EE</color>-->
+    <color name="deep_blue">#4A90E2</color>
     <color name="cancel">#EF6571</color>
     <color name="background">#FFFFFF</color>
     <!-- Màu chữ chính (gần đen, dùng cho tiêu đề, text quan trọng) -->

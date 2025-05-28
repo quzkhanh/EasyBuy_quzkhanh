@@ -4,26 +4,26 @@
     <item
         android:id="@+id/nav_home"
         android:icon="@drawable/ic_home"
-        android:title="Home"
+        android:title="Trang Chủ"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/nav_order"
         android:icon="@drawable/ic_order"
-        android:title="Cart"
+        android:title="Giỏ Hàng"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/nav_favorite"
         android:icon="@drawable/ic_favorite"
-        android:title="Favorite"
+        android:title="Yêu Thích"
         app:showAsAction="ifRoom" />
 
 
     <item
         android:id="@+id/nav_profile"
         android:icon="@drawable/ic_profile"
-        android:title="Profile"
+        android:title="Tài Khoản"
         app:showAsAction="ifRoom" />
 
 </menu>

@@ -19,6 +19,7 @@
         android:fontFamily="@font/jetbrains_mono_extrabold"
         android:textColor="@color/blue"
         android:textStyle="bold"
+        android:paddingLeft="12sp"
         android:text="Đăng Nhập Nguời Bán"
         android:textSize="34sp" />
 
@@ -29,6 +30,7 @@
         android:layout_marginTop="8dp"
         android:layout_gravity="center_horizontal"
         android:text="Bán hàng đơn giản với EasyBuy."
+        android:paddingLeft="12sp"
         android:textSize="22sp"
         android:fontFamily="@font/jetbrains_mono_semibold"
         android:textStyle="bold" />
@@ -93,31 +95,34 @@
 
     <!-- Save Login and Forget Password -->
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
         android:orientation="horizontal"
-        android:layout_marginBottom="30dp">
+        android:padding="10dp">
 
+        <!-- CheckBox bên trái -->
         <CheckBox
             android:id="@+id/btnSaveLogin"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:fontFamily="@font/jetbrains_mono"
             android:textStyle="bold"
             android:text="Lưu Đăng Nhập"
             android:textSize="16sp" />
 
+        <!-- TextView bên phải -->
         <TextView
             android:id="@+id/txtForgetPW"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Quên Mật Khẩu?"
             android:textColor="@color/black"
             android:textSize="16sp"
             android:fontFamily="@font/jetbrains_mono"
-            android:layout_marginStart="10dp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:gravity="end" />
     </LinearLayout>
 
     <com.google.android.material.button.MaterialButton
