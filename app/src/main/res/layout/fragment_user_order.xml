@@ -1,35 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/white">
+    android:background="@color/white"
+    android:padding="16dp">
 
+    <!-- Heading: Danh Sách Đơn Hàng -->
     <TextView
-        android:layout_width="match_parent"
+        android:id="@+id/tvOrderListHeading"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Đơn hàng của tôi"
+        android:text="Danh Sách Đơn Hàng"
+        android:textColor="#1A1A1A"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:padding="16dp"
-        android:textColor="#000000"
-        android:background="@color/white"/>
+        android:layout_marginBottom="16dp" />
 
-    <TextView
-        android:id="@+id/tvNoOrders"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="Bạn chưa có đơn hàng nào"
-        android:textSize="18sp"
-        android:textColor="#808080"
-        android:visibility="gone"/>
-
+    <!-- RecyclerView để hiển thị danh sách đơn hàng -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewOrders"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/tvOrderListHeading"
+        android:visibility="gone"
         android:background="@color/white"
-        android:padding="8dp"/>
+        android:clipToPadding="false"
+        android:paddingBottom="16dp" />
 
-</LinearLayout>
+    <!-- Layout hiển thị khi danh sách trống -->
+    <LinearLayout
+        android:id="@+id/emptyOrderLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/tvOrderListHeading"
+        android:gravity="center"
+        android:background="@color/white"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <!-- Hình ảnh minh họa -->
+        <ImageView
+            android:id="@+id/ivEmptyOrder"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:src="@drawable/ic_empty_cart"
+            android:contentDescription="No orders image" />
+
+        <!-- Dòng text thông báo -->
+        <TextView
+            android:id="@+id/tvNoOrders"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Bạn chưa có đơn hàng nào"
+            android:textColor="#333333"
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-medium"
+            android:textAlignment="center" />
+        <!-- Nút hành động (tùy chọn) -->
+        <Button
+            android:id="@+id/btnExploreNow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="#FF6200EE"
+            android:fontFamily="sans-serif-medium"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="12dp"
+            android:text="Khám phá ngay! 🛍️"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+</RelativeLayout>

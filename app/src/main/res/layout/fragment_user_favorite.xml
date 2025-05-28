@@ -2,23 +2,74 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     android:orientation="vertical"
-    android:background="@color/white">
+    android:padding="16dp">
 
+    <!-- Heading: Danh Sách Yêu Thích -->
     <TextView
-        android:id="@+id/tvNoFavorites"
+        android:id="@+id/tvFavoriteListHeading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Không có sản phẩm yêu thích nào"
-        android:textSize="18sp"
-        android:textColor="#000000"
-        android:layout_gravity="center"
-        android:visibility="gone" />
+        android:layout_marginBottom="16dp"
+        android:text="Danh Sách Yêu Thích"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
+    <!-- RecyclerView để hiển thị danh sách yêu thích -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewFavorites"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingBottom="16dp"
+        android:visibility="gone" />
+
+    <!-- Layout hiển thị khi danh sách trống -->
+    <LinearLayout
+        android:id="@+id/emptyFavoriteLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <!-- Hình ảnh minh họa -->
+        <ImageView
+            android:id="@+id/ivEmptyFavorite"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:contentDescription="No favorites image"
+            android:src="@drawable/ic_empty_favorite" />
+
+        <!-- Dòng text thông báo -->
+        <TextView
+            android:id="@+id/tvNoFavorites"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="sans-serif-medium"
+            android:text="Bạn chưa tìm được sản phẩm yêu thích ư? 😅"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="18sp" />
+
+        <!-- Nút hành động (tùy chọn) -->
+        <Button
+            android:id="@+id/btnExploreNow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="#FF6200EE"
+            android:fontFamily="sans-serif-medium"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="12dp"
+            android:text="Khám phá ngay! 🛍️"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+
+    </LinearLayout>
 
 </LinearLayout>

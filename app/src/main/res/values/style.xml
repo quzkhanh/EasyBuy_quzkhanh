@@ -1,0 +1,8 @@
+<resources>
+    <style name="TextInputLayoutHint">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:fontFamily">@font/jetbrains_mono_semibold</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+</resources>

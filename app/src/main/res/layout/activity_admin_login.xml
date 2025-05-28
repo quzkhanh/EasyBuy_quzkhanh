@@ -17,10 +17,10 @@
         android:layout_marginBottom="10dp"
         android:layout_gravity="center_horizontal"
         android:fontFamily="@font/jetbrains_mono_extrabold"
-        android:textColor="@color/black"
+        android:textColor="@color/blue"
         android:textStyle="bold"
         android:text="Đăng Nhập Nguời Bán"
-        android:textSize="40sp" />
+        android:textSize="34sp" />
 
     <TextView
         android:id="@+id/textView6"
@@ -36,11 +36,14 @@
     <!-- Email Input -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_marginTop="50dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
         android:layout_marginBottom="30dp"
-        android:layout_gravity="center"
+        android:layout_gravity="center_horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Email"
+        app:hintTextAppearance="@style/TextInputLayoutHint"
         app:endIconMode="clear_text"
         app:boxBackgroundMode="outline"
         app:boxStrokeColor="@color/black"
@@ -50,25 +53,26 @@
         app:boxCornerRadiusBottomEnd="12dp">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:layout_gravity="center"
-            android:layout_width="370dp"
+            android:id="@+id/edtAdminEmail"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textEmailAddress"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:id="@+id/edtAdminEmail"
             android:textColor="@android:color/black" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Password Input -->
     <com.google.android.material.textfield.TextInputLayout
-        android:layout_gravity="center"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="20dp"
+        android:layout_gravity="center_horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Mật khẩu"
-        app:hintTextAppearance="@font/jetbrains_mono_semibold"
+        app:hintTextAppearance="@style/TextInputLayoutHint"
         app:endIconMode="password_toggle"
         app:boxBackgroundMode="outline"
         app:boxStrokeColor="@color/black"
@@ -78,29 +82,27 @@
         app:boxCornerRadiusBottomEnd="12dp">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:layout_gravity="center"
-            android:layout_width="370dp"
+            android:id="@+id/edtAdminPassword"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textPassword"
-            android:id="@+id/edtAdminPassword"
             android:textSize="18sp"
             android:textColor="@android:color/black"
             android:textStyle="bold"/>
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Email Input -->
+    <!-- Save Login and Forget Password -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
         android:orientation="horizontal"
-        android:gravity="center_horizontal"
         android:layout_marginBottom="30dp">
 
         <CheckBox
             android:id="@+id/btnSaveLogin"
-            android:layout_width="239dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0"
             android:fontFamily="@font/jetbrains_mono"
             android:textStyle="bold"
             android:text="Lưu Đăng Nhập"

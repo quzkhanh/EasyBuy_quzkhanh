@@ -1,48 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_marginTop="30dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/white">
+    android:background="@color/background"
+    android:padding="16dp">
 
+    <!-- Avatar Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical">
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingVertical="16dp">
 
         <ImageView
             android:id="@+id/imgAvatar"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_gravity="center_horizontal"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:background="@drawable/circle_background"
             android:scaleType="centerCrop"
-            android:src="@drawable/avatar_placeholder" />
+            android:src="@drawable/avatar_placeholder"
+            android:contentDescription="User avatar"
+            android:elevation="4dp"
+            android:transitionName="avatar_transition" />
+
+        <TextView
+            android:id="@+id/tvAccountTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tài Khoản Của Bạn"
+            android:fontFamily="@font/jetbrains_mono_extrabold"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:textSize="20sp"
+            android:layout_marginTop="12dp" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/tvAccountTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Tài Khoản Người Dùng"
-        android:fontFamily="@font/jetbrains_mono_extrabold"
-        android:textFontWeight="@integer/material_motion_duration_long_1"
-        android:textColor="#A9A9A9"
-        android:textSize="14sp"
-        android:paddingStart="16dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="8dp" />
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider_color"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginVertical="8dp" />
 
+    <!-- Profile Item -->
     <LinearLayout
+        android:id="@+id/profileItem"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical">
+        android:padding="12dp"
+        android:gravity="center_vertical"
+        android:background="@drawable/ripple_background"
+        android:clickable="true"
+        android:focusable="true">
 
         <ImageView
             android:id="@+id/imgProfileIcon"
@@ -57,24 +72,38 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Họ Tên"
+            android:fontFamily="@font/jetbrains_mono"
             android:textStyle="bold"
-            android:textColor="#000000"
-            android:textSize="18sp" />
+            android:textColor="@color/text_primary"
+            android:textSize="16sp" />
     </LinearLayout>
 
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider_color"
+        android:layout_marginHorizontal="16dp" />
+
+    <!-- Password Item -->
     <LinearLayout
+        android:id="@+id/passwordItem"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical">
+        android:padding="12dp"
+        android:gravity="center_vertical"
+        android:background="@drawable/ripple_background"
+        android:clickable="true"
+        android:focusable="true">
 
         <ImageView
             android:id="@+id/imgPasswordIcon"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_pw"
-            android:layout_marginEnd="16dp" />
+            android:layout_marginEnd="16dp"
+            app:tint="@color/text_secondary" />
 
         <TextView
             android:id="@+id/tvPassword"
@@ -82,25 +111,38 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Mật Khẩu"
+            android:fontFamily="@font/jetbrains_mono"
             android:textStyle="bold"
-            android:textColor="#000000"
-            android:textSize="18sp" />
+            android:textColor="@color/text_primary"
+            android:textSize="16sp" />
     </LinearLayout>
 
-    <!-- Notifications -->
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider_color"
+        android:layout_marginHorizontal="16dp" />
+
+    <!-- Email Item -->
     <LinearLayout
+        android:id="@+id/emailItem"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical">
+        android:padding="12dp"
+        android:gravity="center_vertical"
+        android:background="@drawable/ripple_background"
+        android:clickable="true"
+        android:focusable="true">
 
         <ImageView
             android:id="@+id/icEmail"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_email"
-            android:layout_marginEnd="16dp" />
+            android:layout_marginEnd="16dp"
+            app:tint="@color/text_secondary" />
 
         <TextView
             android:id="@+id/tvEmail"
@@ -108,25 +150,38 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Email"
+            android:fontFamily="@font/jetbrains_mono"
             android:textStyle="bold"
-            android:textColor="#000000"
-            android:textSize="18sp" />
-
+            android:textColor="@color/text_primary"
+            android:textSize="16sp" />
     </LinearLayout>
 
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider_color"
+        android:layout_marginHorizontal="16dp" />
+
+    <!-- Logout Item -->
     <LinearLayout
+        android:id="@+id/logoutItem"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical">
+        android:padding="12dp"
+        android:gravity="center_vertical"
+        android:background="@drawable/ripple_background"
+        android:clickable="true"
+        android:focusable="true">
 
         <ImageView
             android:id="@+id/imgLogoutIcon"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_logout"
-            android:layout_marginEnd="16dp" />
+            android:layout_marginEnd="16dp"
+            app:tint="@color/text_secondary" />
 
         <TextView
             android:id="@+id/btnLogout"
@@ -134,9 +189,10 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Đăng Xuất"
+            android:fontFamily="@font/jetbrains_mono"
             android:textStyle="bold"
-            android:textColor="#000000"
-            android:textSize="18sp" />
+            android:textColor="@color/text_primary"
+            android:textSize="16sp" />
     </LinearLayout>
 
 </LinearLayout>

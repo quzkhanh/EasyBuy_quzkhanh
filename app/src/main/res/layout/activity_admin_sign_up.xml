@@ -9,159 +9,158 @@
     android:background="@color/white"
     tools:context=".view.Login.Admin.AdminSignUpActivity">
 
+    <!-- Tiêu đề lớn -->
     <TextView
         android:id="@+id/textView2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="60dp"
-        android:layout_marginBottom="20dp"
+        android:layout_marginTop="70dp"
+        android:layout_marginBottom="10dp"
+        android:layout_gravity="center_horizontal"
         android:fontFamily="@font/jetbrains_mono_extrabold"
+        android:textColor="@color/black"
+        android:textStyle="bold"
         android:text="Đăng Ký Bán Hàng"
         android:background="@color/white"
-        android:textColor="@color/black"
-        android:textSize="36sp"
-        android:textStyle="bold" />
+        android:textSize="40sp" />
 
+    <!-- Mô tả -->
     <TextView
         android:id="@+id/textView6"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
+        android:layout_marginTop="8dp"
+        android:layout_gravity="center_horizontal"
         android:fontFamily="@font/jetbrains_mono_semibold"
-        android:paddingTop="12dp"
         android:background="@color/white"
-        android:text="Bắt đầu bán các sản phẩm của bạn hàng của bạn ngay hôm nay! "
-        android:textSize="20sp"
+        android:text="Bắt đầu bán các sản phẩm của bạn ngay hôm nay!"
+        android:textSize="22sp"
         android:textStyle="bold" />
 
-
-    <LinearLayout
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
+    <!-- Full Name Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_marginTop="50dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:layout_gravity="center_horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
-        <!-- User Input -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_marginTop="20dp"
-            android:layout_gravity="center"
+        android:hint="Họ Tên"
+        app:hintTextAppearance="@style/TextInputLayoutHint"
+        app:endIconMode="clear_text"
+        app:boxBackgroundMode="outline"
+        app:boxStrokeColor="@color/black"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edtUserName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Họ Tên: "
-            app:boxBackgroundMode="outline"
-            app:boxStrokeColor="@color/black"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusBottomEnd="12dp">
+            android:inputType="textPersonName"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edtUserName"
-                android:layout_gravity="center"
-                android:layout_width="370dp"
-                android:layout_height="wrap_content"
-                android:inputType="textEmailAddress"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/black" />
-        </com.google.android.material.textfield.TextInputLayout>
+    <!-- Email Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email"
+        app:hintTextAppearance="@style/TextInputLayoutHint"
+        app:endIconMode="clear_text"
+        app:boxBackgroundMode="outline"
+        app:boxStrokeColor="@color/black"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp">
 
-
-        <!-- Email Input -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
-            android:layout_gravity="center"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edtUserEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Email: "
-            app:endIconMode="clear_text"
-            app:boxBackgroundMode="outline"
-            app:boxStrokeColor="@color/black"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusBottomEnd="12dp">
+            android:inputType="textEmailAddress"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edtUserEmail"
-                android:layout_gravity="center"
-                android:layout_width="370dp"
-                android:layout_height="wrap_content"
-                android:inputType="textEmailAddress"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/black" />
-        </com.google.android.material.textfield.TextInputLayout>
+    <!-- Password Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Mật khẩu"
+        app:hintTextAppearance="@style/TextInputLayoutHint"
+        app:endIconMode="password_toggle"
+        app:boxBackgroundMode="outline"
+        app:boxStrokeColor="@color/black"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp">
 
-        <!-- Password Input -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_gravity="center"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="20dp"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edtUserPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Mật khẩu: "
-            app:hintTextAppearance="@font/jetbrains_mono_semibold"
-            app:endIconMode="password_toggle"
-            app:boxBackgroundMode="outline"
-            app:boxStrokeColor="@color/black"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusBottomEnd="12dp">
+            android:inputType="textPassword"
+            android:textSize="18sp"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edtUserPassword"
-                android:layout_gravity="center"
-                android:layout_width="370dp"
-                android:layout_height="wrap_content"
-                android:inputType="textPassword"
-                android:textSize="18sp"
-                android:textColor="@android:color/black"
-                android:textStyle="bold"/>
-        </com.google.android.material.textfield.TextInputLayout>
+    <!-- Confirm Password Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="30dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Xác Nhận Mật khẩu"
+        app:hintTextAppearance="@style/TextInputLayoutHint"
+        app:endIconMode="password_toggle"
+        app:boxBackgroundMode="outline"
+        app:boxStrokeColor="@color/black"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp">
 
-        <!-- Password Input -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_gravity="center"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="20dp"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edtRepeatPW"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Xác Nhận Mật khẩu: "
-            app:hintTextAppearance="@font/jetbrains_mono_semibold"
-            app:endIconMode="password_toggle"
-            app:boxBackgroundMode="outline"
-            app:boxStrokeColor="@color/black"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusBottomEnd="12dp">
+            android:inputType="textPassword"
+            android:textSize="18sp"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edtRepeatPW"
-                android:layout_gravity="center"
-                android:layout_width="370dp"
-                android:layout_height="wrap_content"
-                android:inputType="textPassword"
-                android:textSize="18sp"
-                android:textColor="@android:color/black"
-                android:textStyle="bold"/>
-        </com.google.android.material.textfield.TextInputLayout>
-    </LinearLayout>
-
+    <!-- Sign Up Button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSignUp"
-        android:layout_width="140dp"
+        android:layout_width="200dp"
         android:layout_height="50dp"
         android:layout_gravity="center_horizontal"
         android:background="@drawable/rounded_button"
-        app:backgroundTint="@color/blue"
         android:fontFamily="@font/jetbrains_mono_semibold"
+        app:backgroundTint="@color/blue"
         android:text="Đăng Ký"
-        android:textSize="18sp" />
+        android:textSize="16sp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -222,10 +221,6 @@
             android:background="@drawable/rounded_button"
             android:scaleType="center"
             app:srcCompat="@drawable/facebook_logo" />
-
     </LinearLayout>
-
-
-
 
 </LinearLayout>
