@@ -13,26 +13,25 @@
         android:id="@+id/textView2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
         android:layout_marginTop="70dp"
-        android:layout_marginBottom="20dp"
+        android:layout_marginBottom="10dp"
+        android:layout_gravity="center_horizontal"
         android:fontFamily="@font/jetbrains_mono_extrabold"
         android:textColor="@color/black"
         android:textStyle="bold"
         android:text="Đăng Nhập Nguời Bán"
-        android:textSize="36sp" />
+        android:textSize="40sp" />
 
     <TextView
         android:id="@+id/textView6"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:paddingTop="12dp"
+        android:layout_marginTop="8dp"
+        android:layout_gravity="center_horizontal"
         android:text="Bán hàng đơn giản với EasyBuy."
-        android:textSize="20sp"
+        android:textSize="22sp"
         android:fontFamily="@font/jetbrains_mono_semibold"
         android:textStyle="bold" />
-
 
     <!-- Email Input -->
     <com.google.android.material.textfield.TextInputLayout
@@ -88,6 +87,7 @@
             android:textColor="@android:color/black"
             android:textStyle="bold"/>
     </com.google.android.material.textfield.TextInputLayout>
+
     <!-- Email Input -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -188,8 +188,7 @@
             android:id="@+id/btnFacebook"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/facebook_logo"
-            />
+            app:srcCompat="@drawable/facebook_logo" />
 
     </LinearLayout>
 
@@ -203,6 +202,5 @@
         android:textStyle="bold"
         android:textColor="@color/black"
         android:text="Chưa có tài khoản? Đăng Ký Ngay" />
-
 
 </LinearLayout>
