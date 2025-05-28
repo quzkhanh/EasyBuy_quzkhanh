@@ -5,15 +5,15 @@
     android:layout_height="match_parent"
     android:background="@color/white"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:padding="16dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fontFamily="@font/jetbrains_mono_extrabold"
         android:textStyle="bold"
-        android:textSize="17sp"
-        android:text="Thống Kê Đơn Hàng, Doanh Thu 🚀"
+        android:textSize="20sp"
+        android:text="Thống Kê Đơn Hàng, Doanh Thu"
         android:gravity="left"
         android:padding="8dp" />
 
@@ -36,8 +36,8 @@
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_width="391dp"
+        android:layout_height="249dp"
         android:layout_margin="8dp" />
 
     <!-- Thông tin cơ bản -->
@@ -81,4 +81,14 @@
                 android:textStyle="bold" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
+    <!-- ImageView để hiển thị hình ảnh -->
+    <ImageView
+        android:layout_width="280dp"
+        android:layout_height="209dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="30dp"
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop"
+        android:src="@drawable/background" />
+
 </LinearLayout>

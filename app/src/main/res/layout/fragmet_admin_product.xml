@@ -21,7 +21,7 @@
         android:fontFamily="@font/jetbrains_mono_extrabold"
         android:textStyle="bold"
         android:textSize="17sp"
-        android:text="Danh Sách Sản Phẩm 🔥"
+        android:text="Danh Sách Sản Phẩm "
         android:gravity="left"
         android:padding="16dp" />
     <!-- Thanh tìm kiếm -->

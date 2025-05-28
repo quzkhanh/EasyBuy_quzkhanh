@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
@@ -23,6 +24,7 @@ public class AdminOrderFragment extends Fragment {
 
     private static final String TAG = "AdminOrderFragment";
     private RecyclerView recyclerViewOrders;
+    private LinearLayout emptyListContainer;
     private OrderAdminAdapter orderAdapter;
     private OrderDAO orderDAO;
     private int adminId;
@@ -57,6 +59,7 @@ public class AdminOrderFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_admin_order, container, false);
 
         recyclerViewOrders = view.findViewById(R.id.recyclerViewOrders);
+        emptyListContainer = view.findViewById(R.id.emptyListContainer);
 
         if (orderDAO == null) {
             Toast.makeText(getContext(), "Không thể truy cập dữ liệu đơn hàng", Toast.LENGTH_SHORT).show();
@@ -65,7 +68,6 @@ public class AdminOrderFragment extends Fragment {
         }
 
         setupRecyclerView();
-
 
         return view;
     }
@@ -80,7 +82,11 @@ public class AdminOrderFragment extends Fragment {
             recyclerViewOrders.setAdapter(orderAdapter);
 
             if (orders.isEmpty()) {
-                Toast.makeText(getContext(), "Không có đơn hàng nào", Toast.LENGTH_SHORT).show();
+                emptyListContainer.setVisibility(View.VISIBLE);
+                recyclerViewOrders.setVisibility(View.GONE);
+            } else {
+                emptyListContainer.setVisibility(View.GONE);
+                recyclerViewOrders.setVisibility(View.VISIBLE);
             }
         } catch (Exception e) {
             Log.e(TAG, "Error setting up RecyclerView: " + e.getMessage());
