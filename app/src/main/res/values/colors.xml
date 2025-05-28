@@ -6,7 +6,7 @@
     <color name="blue">#4A90E2</color>
     <color name="save">#4A90E2</color>
     <color name="save2">#5FCBF7</color>
-    <color name="red">#F54655</color>
+<!--    <color name="red">#F54655</color>-->
 <!--    <color name="deep_blue">#FF6200EE</color>-->
     <color name="deep_blue">#4A90E2</color>
     <color name="cancel">#EF6571</color>
@@ -17,6 +17,8 @@
     <color name="text_secondary">#333333</color>
     <!-- Màu đường phân cách (xám nhạt) -->
     <color name="divider_color">#E0E0E0</color>
-
+    <color name="gray">#666666</color>
+    <color name="red">#FF0000</color>
+    <color name="light_gray">#E0E0E0</color>
 
 </resources>

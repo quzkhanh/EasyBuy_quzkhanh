@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/background"
+    android:background="@drawable/gradient_background"
     android:padding="16dp">
 
     <!-- Avatar Section -->
@@ -18,181 +18,188 @@
 
         <ImageView
             android:id="@+id/imgAvatar"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
             android:background="@drawable/circle_background"
             android:scaleType="centerCrop"
             android:src="@drawable/avatar_placeholder"
             android:contentDescription="User avatar"
-            android:elevation="4dp"
+            android:elevation="8dp"
+            android:padding="4dp"
             android:transitionName="avatar_transition" />
 
         <TextView
             android:id="@+id/tvAccountTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tài Khoản Của Bạn"
+            android:text="Tài Khoản Người Mua"
             android:fontFamily="@font/jetbrains_mono_extrabold"
             android:textStyle="bold"
-            android:textColor="@color/text_primary"
-            android:textSize="20sp"
+            android:textColor="@color/gray"
+            android:textSize="22sp"
             android:layout_marginTop="12dp" />
     </LinearLayout>
 
-    <!-- Divider -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/divider_color"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginVertical="8dp" />
-
-    <!-- Profile Item -->
-    <LinearLayout
-        android:id="@+id/profileItem"
+    <!-- CardView chứa các mục -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="12dp"
-        android:gravity="center_vertical"
-        android:background="@drawable/ripple_background"
-        android:clickable="true"
-        android:focusable="true">
+        android:layout_margin="8dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="@android:color/white">
 
-        <ImageView
-            android:id="@+id/imgProfileIcon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_profile"
-            android:layout_marginEnd="16dp" />
-
-        <TextView
-            android:id="@+id/tvUserName"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Họ Tên"
-            android:fontFamily="@font/jetbrains_mono"
-            android:textStyle="bold"
-            android:textColor="@color/text_primary"
-            android:textSize="16sp" />
-    </LinearLayout>
+            android:orientation="vertical"
+            android:padding="8dp">
 
-    <!-- Divider -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/divider_color"
-        android:layout_marginHorizontal="16dp" />
+            <!-- Profile Item -->
+            <LinearLayout
+                android:id="@+id/profileItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:gravity="center_vertical"
+                android:background="@drawable/ripple_background"
+                android:clickable="true"
+                android:focusable="true">
 
-    <!-- Password Item -->
-    <LinearLayout
-        android:id="@+id/passwordItem"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="12dp"
-        android:gravity="center_vertical"
-        android:background="@drawable/ripple_background"
-        android:clickable="true"
-        android:focusable="true">
+                <ImageView
+                    android:id="@+id/imgProfileIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_profile"
+                    android:layout_marginEnd="16dp"
+                    app:tint="@color/gray" />
 
-        <ImageView
-            android:id="@+id/imgPasswordIcon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_pw"
-            android:layout_marginEnd="16dp"
-            app:tint="@color/text_secondary" />
+                <TextView
+                    android:id="@+id/tvUserName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Họ Tên"
+                    android:fontFamily="@font/jetbrains_mono"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/tvPassword"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Mật Khẩu"
-            android:fontFamily="@font/jetbrains_mono"
-            android:textStyle="bold"
-            android:textColor="@color/text_primary"
-            android:textSize="16sp" />
-    </LinearLayout>
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_arrow_right"
+                    app:tint="@color/gray" />
+            </LinearLayout>
 
-    <!-- Divider -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/divider_color"
-        android:layout_marginHorizontal="16dp" />
+            <!-- Password Item -->
+            <LinearLayout
+                android:id="@+id/passwordItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:gravity="center_vertical"
+                android:background="@drawable/ripple_background"
+                android:clickable="true"
+                android:focusable="true">
 
-    <!-- Email Item -->
-    <LinearLayout
-        android:id="@+id/emailItem"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="12dp"
-        android:gravity="center_vertical"
-        android:background="@drawable/ripple_background"
-        android:clickable="true"
-        android:focusable="true">
+                <ImageView
+                    android:id="@+id/imgPasswordIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_pw"
+                    android:layout_marginEnd="16dp"
+                    app:tint="@color/gray" />
 
-        <ImageView
-            android:id="@+id/icEmail"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_email"
-            android:layout_marginEnd="16dp"
-            app:tint="@color/text_secondary" />
+                <TextView
+                    android:id="@+id/tvPassword"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Mật Khẩu"
+                    android:fontFamily="@font/jetbrains_mono"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/tvEmail"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Email"
-            android:fontFamily="@font/jetbrains_mono"
-            android:textStyle="bold"
-            android:textColor="@color/text_primary"
-            android:textSize="16sp" />
-    </LinearLayout>
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_arrow_right"
+                    app:tint="@color/gray" />
+            </LinearLayout>
 
-    <!-- Divider -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/divider_color"
-        android:layout_marginHorizontal="16dp" />
+            <!-- Email Item -->
+            <LinearLayout
+                android:id="@+id/emailItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:gravity="center_vertical"
+                android:background="@drawable/ripple_background"
+                android:clickable="true"
+                android:focusable="true">
 
-    <!-- Logout Item -->
-    <LinearLayout
-        android:id="@+id/logoutItem"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="12dp"
-        android:gravity="center_vertical"
-        android:background="@drawable/ripple_background"
-        android:clickable="true"
-        android:focusable="true">
+                <ImageView
+                    android:id="@+id/icEmail"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_email"
+                    android:layout_marginEnd="16dp"
+                    app:tint="@color/gray" />
 
-        <ImageView
-            android:id="@+id/imgLogoutIcon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_logout"
-            android:layout_marginEnd="16dp"
-            app:tint="@color/text_secondary" />
+                <TextView
+                    android:id="@+id/tvEmail"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Email"
+                    android:fontFamily="@font/jetbrains_mono"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/btnLogout"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Đăng Xuất"
-            android:fontFamily="@font/jetbrains_mono"
-            android:textStyle="bold"
-            android:textColor="@color/text_primary"
-            android:textSize="16sp" />
-    </LinearLayout>
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_arrow_right"
+                    app:tint="@color/gray" />
+            </LinearLayout>
 
+            <!-- Logout Item -->
+            <LinearLayout
+                android:id="@+id/logoutItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:gravity="center_vertical"
+                android:background="@drawable/ripple_background"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:id="@+id/imgLogoutIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_logout"
+                    android:layout_marginEnd="16dp"
+                    app:tint="@color/red" />
+
+                <TextView
+                    android:id="@+id/btnLogout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Đăng Xuất"
+                    android:fontFamily="@font/jetbrains_mono"
+                    android:textStyle="bold"
+                    android:textColor="@color/red"
+                    android:textSize="16sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 </LinearLayout>
