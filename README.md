@@ -27,13 +27,36 @@
 
 ## 📷 Demo Screenshots
 
-| Screen            | Preview                                                                 |
-|-------------------|-------------------------------------------------------------------------|
-| Start Screen      | <img src="https://raw.githubusercontent.com/quzkhanh/EasyBuy_quzkhanh/master/img/start.png" width="300"> |
-| Sign In           | <img src="https://raw.githubusercontent.com/quzkhanh/EasyBuy_quzkhanh/master/img/signIn.png" width="300"> |
-| Product List      | <img src="https://raw.githubusercontent.com/quzkhanh/EasyBuy_quzkhanh/master/img/product.png" width="300"> |
-| Account Page      | <img src="https://raw.githubusercontent.com/quzkhanh/EasyBuy_quzkhanh/master/img/account.png" width="300"> |
-| Revenue Chart     | <img src="https://raw.githubusercontent.com/quzkhanh/EasyBuy_quzkhanh/master/img/roundChart.png" width="300"> |
+<table>
+  <tr>
+    <td align="center">
+      <strong>Start Screen</strong><br>
+      <img src="https://raw.githubusercontent.com/quzkhanh/EasyBuy_quzkhanh/master/img/start.png" width="300">
+    </td>
+    <td align="center">
+      <strong>Sign In</strong><br>
+      <img src="https://raw.githubusercontent.com/quzkhanh/EasyBuy_quzkhanh/master/img/signIn.png" width="300">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <strong>Product List</strong><br>
+      <img src="https://raw.githubusercontent.com/quzkhanh/EasyBuy_quzkhanh/master/img/product.png" width="300">
+    </td>
+    <td align="center">
+      <strong>Account Page</strong><br>
+      <img src="https://raw.githubusercontent.com/quzkhanh/EasyBuy_quzkhanh/master/img/account.png" width="300">
+    </td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">
+      <strong>Revenue Chart</strong><br>
+      <img src="https://raw.githubusercontent.com/quzkhanh/EasyBuy_quzkhanh/master/img/roundChart.png" width="300">
+    </td>
+  </tr>
+</table>
+
+> **Note:** All demo images are in the `/img/` folder. Make sure they’re uploaded to your GitHub repo!
 
 > **Note:** All demo images are in the `/img/` folder. Make sure they’re uploaded to your GitHub repo!
 
