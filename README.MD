@@ -29,32 +29,34 @@
 
 <table>
   <tr>
-    <td align="center">
+    <td align="center" style="padding: 10px">
       <strong>Start Screen</strong><br>
       <img src="https://raw.githubusercontent.com/quzkhanh/EasyBuy_quzkhanh/master/img/start.png" width="300">
     </td>
-    <td align="center">
+    <td align="center" style="padding: 10px">
       <strong>Sign In</strong><br>
       <img src="https://raw.githubusercontent.com/quzkhanh/EasyBuy_quzkhanh/master/img/signIn.png" width="300">
     </td>
   </tr>
   <tr>
-    <td align="center">
+    <td align="center" style="padding: 10px">
       <strong>Product List</strong><br>
       <img src="https://raw.githubusercontent.com/quzkhanh/EasyBuy_quzkhanh/master/img/product.png" width="300">
     </td>
-    <td align="center">
+    <td align="center" style="padding: 10px">
       <strong>Account Page</strong><br>
       <img src="https://raw.githubusercontent.com/quzkhanh/EasyBuy_quzkhanh/master/img/account.png" width="300">
     </td>
   </tr>
   <tr>
-    <td align="center" colspan="2">
+    <td align="center" colspan="2" style="padding: 10px">
       <strong>Revenue Chart</strong><br>
       <img src="https://raw.githubusercontent.com/quzkhanh/EasyBuy_quzkhanh/master/img/roundChart.png" width="300">
     </td>
   </tr>
 </table>
+
+> **Note:** All demo images are in the `/img/` folder. Make sure they’re uploaded to your GitHub repo!
 
 ---
 
@@ -69,26 +71,45 @@
 
 ## 📁 Project Structure
 
+### Repo Structure
 ```
-com.example.easybuy
-├── view          // Activities and Fragments for UI
+EasyBuy_quzkhanh/
+├── .idea/         // IntelliJ IDEA config files
+├── .vscode/       // VS Code config files
+├── app/           // Main app source code
+├── gradle/        // Gradle build system files
+├── img/           // Demo images for README
+│   ├── start.png
+│   ├── signIn.png
+│   ├── product.png
+│   ├── account.png
+│   ├── roundChart.png
+│   └── ...
+├── LICENSE        // MIT License file
+└── README.md      // This file
+```
+
+### Code Structure
+```
+com.example.easybuy/
+├── view/          // Activities and Fragments for UI
 │   ├── MainActivity.java
 │   ├── ProductListFragment.java
 │   └── ...
-├── viewmodel     // ViewModels for UI logic and model interaction
+├── viewmodel/     // ViewModels for UI logic and model interaction
 │   ├── ProductViewModel.java
 │   ├── OrderViewModel.java
 │   └── ...
-├── model         // Data classes for core app entities
+├── model/         // Data classes for core app entities
 │   ├── User.java
 │   ├── Product.java
 │   ├── Order.java
 │   └── ...
-├── database      // SQLite helpers and DAO classes
+├── database/      // SQLite helpers and DAO classes
 │   ├── DBHelper.java
 │   ├── ProductDAO.java
 │   └── ...
-└── utils         // Utility classes, dialogs, and reusable components
+└── utils/         // Utility classes, dialogs, and reusable components
     ├── DialogUtils.java
     ├── Constants.java
     └── ...
@@ -100,7 +121,7 @@ com.example.easybuy
 
 1. Clone the repo:
    ```bash
-   git clone https://github.com/your-username/easybuy.git
+   git clone https://github.com/quzkhanh/EasyBuy_quzkhanh.git
    ```
 
 2. Open in **Android Studio**.
@@ -110,22 +131,32 @@ com.example.easybuy
 
 ## 🛠️ Badges
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/your-username/easybuy)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/quzkhanh/EasyBuy_quzkhanh)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Java](https://img.shields.io/badge/language-Java-blue)](https://www.java.com/)
 [![SQLite](https://img.shields.io/badge/database-SQLite-lightgrey)](https://www.sqlite.org/)
-[![GitHub Stars](https://img.shields.io/github/stars/your-username/easybuy)](https://github.com/your-username/easybuy)
+[![GitHub Stars](https://img.shields.io/github/stars/quzkhanh/EasyBuy_quzkhanh)](https://github.com/quzkhanh/EasyBuy_quzkhanh)
 
 ---
 
 ## 📩 Contact
 
-Created by **QuzKhanh** – Got questions? Slide into my DMs! 😎
-📧 Email: quzkhanh.dev@gmail.com
+Created by **QuzKhanh** – Got questions? Slide into my DMs! 😎  
+📧 Email: quzkhanh.dev@gmail.com  
 🌐 GitHub: [quzkhanh](https://github.com/quzkhanh)
+
+---
+
+## 🤝 Contributing
+
+Wanna make EasyBuy even cooler? Fork the repo, submit a pull request, or drop an issue with your ideas! Let’s build something awesome together! 🚀
 
 ---
 
 ## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+*Last Updated: May 29, 2025*
