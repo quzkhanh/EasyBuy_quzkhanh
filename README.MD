@@ -56,7 +56,6 @@
   </tr>
 </table>
 
-> **Note:** All demo images are in the `/img/` folder. Make sure they’re uploaded to your GitHub repo!
 
 ---
 
