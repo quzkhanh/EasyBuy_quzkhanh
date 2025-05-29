@@ -56,14 +56,6 @@
   </tr>
 </table>
 
-> **Note:** All demo images are in the `/img/` folder. Make sure they’re uploaded to your GitHub repo!
-
-> **Note:** All demo images are in the `/img/` folder. Make sure they’re uploaded to your GitHub repo!
-
-> **Note:** All demo images are in the `/img/` folder. Make sure they’re uploaded to your GitHub repo!
-
-> **Note:** All demo images are in the `/img/` folder. Make sure to upload them to your GitHub repo!
-
 ---
 
 ## 🧠 Tech Stack
