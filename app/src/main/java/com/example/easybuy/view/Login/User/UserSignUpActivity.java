@@ -6,17 +6,15 @@ import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.example.easybuy.database.dao.UserDAO;
-import com.example.easybuy.model.User;
+import androidx.lifecycle.ViewModelProvider;
 import com.example.easybuy.R;
+import com.example.easybuy.viewmodel.UserViewModel;
 
 public class UserSignUpActivity extends AppCompatActivity {
     private EditText edtUserName, edtUserEmail, edtUserPassword, edtRepeatPW;
     private Button btnSignUp;
-    private UserDAO userDAO;
+    private UserViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,8 +28,24 @@ public class UserSignUpActivity extends AppCompatActivity {
         edtRepeatPW = findViewById(R.id.edtRepeatPW);
         btnSignUp = findViewById(R.id.btnSignUp);
 
-        // Khởi tạo UserDAO
-        userDAO = new UserDAO(this); // Không cần gọi open()
+        // Khởi tạo ViewModel
+        viewModel = new ViewModelProvider(this).get(UserViewModel.class);
+
+        // Quan sát trạng thái đăng ký
+        viewModel.getSignUpStatus().observe(this, isSuccess -> {
+            if (isSuccess) {
+                Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, UserLoginActivity.class));
+                finish();
+            } else {
+                Toast.makeText(this, "Đăng ký thất bại!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Quan sát thông báo lỗi
+        viewModel.getErrorMessage().observe(this, error -> {
+            Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+        });
 
         // Xử lý sự kiện click vào nút đăng ký
         btnSignUp.setOnClickListener(v -> registerUser());
@@ -61,30 +75,7 @@ public class UserSignUpActivity extends AppCompatActivity {
             return;
         }
 
-        // Kiểm tra email đã tồn tại chưa
-        if (userDAO.isEmailExists(email)) {
-            Toast.makeText(this, "Email đã tồn tại!", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Tạo đối tượng User và thêm vào database
-        User newUser = new User(0, fullName, email, password, ""); // userId = 0 sẽ được tự động tăng trong DB
-        long result = userDAO.addUser(newUser);
-
-        if (result > 0) {
-            Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, UserLoginActivity.class));
-            finish();
-        } else {
-            Toast.makeText(this, "Đăng ký thất bại!", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (userDAO != null) {
-            userDAO.close(); // Đóng database khi activity bị hủy
-        }
+        // Gọi ViewModel để đăng ký người dùng
+        viewModel.signUpUser(fullName, email, password, "");
     }
 }

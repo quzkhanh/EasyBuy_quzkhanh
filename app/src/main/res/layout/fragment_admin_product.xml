@@ -3,56 +3,108 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="@color/white"
-    android:orientation="vertical">
+    android:padding="16dp">
 
-    <TextView
-        android:id="@+id/tvEmptyList"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Không có sản phẩm nào"
-        android:gravity="center"
-        android:visibility="gone"
-        android:padding="16dp" />
-
+    <!-- Tiêu đề -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fontFamily="@font/jetbrains_mono_extrabold"
         android:textStyle="bold"
-        android:textSize="17sp"
+        android:textSize="20sp"
         android:text="Danh Sách Sản Phẩm 🔥"
         android:gravity="left"
-        android:padding="16dp" />
+        android:padding="16dp"
+        android:textColor="@color/black" />
 
     <!-- Thanh tìm kiếm -->
-    <EditText
-        android:id="@+id/etSearchProduct"
-        android:layout_width="347dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp"
-        android:background="@drawable/edittext_background"
-        android:hint="Tìm sản phẩm theo tên"
-        android:inputType="text"
-        android:maxLines="1"
-        android:padding="8dp" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/edittext_rounded_background"
+        android:padding="4dp">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_search"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            app:tint="@color/gray" />
+
+        <EditText
+            android:id="@+id/etSearchProduct"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:hint="Tìm sản phẩm theo tên 🔍"
+            android:inputType="text"
+            android:maxLines="1"
+            android:padding="8dp"
+            android:textSize="16sp"
+            android:fontFamily="@font/jetbrains_mono"
+            android:textColor="@color/black"
+            android:textColorHint="@color/gray" />
+    </LinearLayout>
+
+    <!-- Phần hiển thị khi danh sách trống -->
+    <LinearLayout
+        android:id="@+id/emptyListContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_weight="1">
+
+        <ImageView
+            android:id="@+id/ivEmptyList"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:src="@drawable/soldout"
+            android:contentDescription="Danh sách trống" />
+
+        <TextView
+            android:id="@+id/tvEmptyList"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Không có sản phẩm nào 😢"
+            android:gravity="center"
+            android:padding="16dp"
+            android:textSize="18sp"
+            android:fontFamily="@font/jetbrains_mono"
+            android:textColor="@color/gray" />
+    </LinearLayout>
 
     <!-- RecyclerView sản phẩm -->
+
+    <!-- Floating Action Button -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewProducts"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="8dp" />
+        android:background="@drawable/recycler_background"
+        android:padding="8dp"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:spanCount="2" />
 
-    <!-- Floating Action Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddProduct"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="end"
+        android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
-        android:src="@android:drawable/ic_input_add"
-        app:fabSize="normal" />
+        android:src="@drawable/plus"
+        app:fabSize="normal"
+        app:backgroundTint="@color/blue"
+        app:tint="@android:color/white"
+        app:elevation="6dp" />
 </LinearLayout>

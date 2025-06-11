@@ -4,107 +4,237 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@drawable/gradient_background"
     android:padding="16dp"
-    android:background="@color/white"
+    android:gravity="center"
     android:layout_marginTop="40dp">
 
-    <EditText
-        android:id="@+id/etProductName"
+    <!-- CardView chứa các trường nhập liệu -->
+    <androidx.cardview.widget.CardView
+        android:layout_gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Tên sản phẩm"
-        android:background="@drawable/edittext_background"
-        android:padding="12dp" />
+        android:layout_margin="8dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="@android:color/white">
 
-    <EditText
-        android:id="@+id/etPrice"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Giá (VNĐ)"
-        android:inputType="numberDecimal"
-        android:background="@drawable/edittext_background"
-        android:padding="12dp" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
-        <EditText
-            android:id="@+id/etMainImageUrl"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Đường dẫn ảnh chính"
-            android:background="@drawable/edittext_background"
-            android:padding="12dp"
-            android:focusable="false" />
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <ImageButton
-            android:id="@+id/ibPickImage"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_image"
-            android:background="?attr/selectableItemBackground"
-            android:contentDescription="Chọn ảnh chính" />
+            <!-- Tên sản phẩm -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
 
-        <ImageView
-            android:id="@+id/ivProductImage"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:visibility="gone" />
-    </LinearLayout>
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_product_name"
+                    android:layout_marginEnd="12dp"
+                    app:tint="@color/gray" />
 
-    <EditText
-        android:id="@+id/etDescription"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Mô tả sản phẩm"
-        android:background="@drawable/edittext_background"
-        android:padding="12dp"
-        android:minLines="3"
-        android:maxLines="5" />
+                <EditText
+                    android:id="@+id/etProductName"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:hint="Tên sản phẩm"
+                    android:background="@drawable/edittext_rounded_background"
+                    android:padding="12dp"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/jetbrains_mono"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/gray" />
+            </LinearLayout>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Ảnh mô tả bổ sung"
-        android:textStyle="bold"
-        android:paddingTop="8dp" />
+            <!-- Giá -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="20dp">
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_price"
+                    android:layout_marginEnd="12dp"
+                    app:tint="@color/gray" />
 
-        <ImageButton
-            android:id="@+id/ibPickAdditionalImage"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_image"
-            android:background="?attr/selectableItemBackground"
-            android:contentDescription="Chọn ảnh bổ sung" />
+                <EditText
+                    android:id="@+id/etPrice"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:hint="Giá (VNĐ)"
+                    android:inputType="numberDecimal"
+                    android:background="@drawable/edittext_rounded_background"
+                    android:padding="12dp"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/jetbrains_mono"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/gray" />
+            </LinearLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewImages"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="100dp"
-            android:paddingStart="8dp"
-            android:paddingTop="8dp" />
-    </LinearLayout>
+            <!-- Ảnh chính -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
 
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_image"
+                    android:layout_marginEnd="12dp"
+                    app:tint="@color/gray" />
+
+                <EditText
+                    android:id="@+id/etMainImageUrl"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:hint="Đường dẫn ảnh chính"
+                    android:background="@drawable/edittext_rounded_background"
+                    android:padding="12dp"
+                    android:focusable="false"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/jetbrains_mono"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/gray" />
+
+                <ImageButton
+                    android:id="@+id/ibPickImage"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_image"
+                    android:background="@drawable/rounded_icon_background"
+                    android:contentDescription="Chọn ảnh chính"
+                    android:layout_marginStart="8dp" />
+
+                <ImageView
+                    android:id="@+id/ivProductImage"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:visibility="gone"
+                    android:scaleType="centerCrop"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/image_preview_background" />
+            </LinearLayout>
+
+            <!-- Mô tả -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_description"
+                    android:layout_marginEnd="12dp"
+                    app:tint="@color/gray" />
+
+                <EditText
+                    android:id="@+id/etDescription"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:hint="Mô tả sản phẩm"
+                    android:background="@drawable/edittext_rounded_background"
+                    android:padding="12dp"
+                    android:minLines="3"
+                    android:maxLines="5"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/jetbrains_mono"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/gray" />
+            </LinearLayout>
+
+            <!-- Ảnh mô tả bổ sung -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_images"
+                        android:layout_marginEnd="12dp"
+                        app:tint="@color/gray" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="Ảnh mô tả bổ sung 📸"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:fontFamily="@font/jetbrains_mono"
+                        android:textColor="@color/black" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <ImageButton
+                        android:id="@+id/ibPickAdditionalImage"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_image"
+                        android:background="@drawable/rounded_icon_background"
+                        android:contentDescription="Chọn ảnh bổ sung" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerViewImages"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="100dp"
+                        android:paddingStart="8dp"
+                        android:paddingTop="8dp"
+                        android:background="@drawable/recycler_background"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        android:orientation="horizontal" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Nút Lưu Sản Phẩm -->
     <Button
         android:id="@+id/btnSaveProduct"
-        android:layout_width="160dp"
-        android:layout_height="50dp"
+        android:layout_width="180dp"
+        android:layout_height="56dp"
         android:layout_gravity="center_horizontal"
-        android:background="@drawable/rounded_button"
-        app:backgroundTint="@color/blue"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/gradient_button_background"
+        app:backgroundTint="#4A90E2"
         android:fontFamily="@font/jetbrains_mono_semibold"
-        android:text="Lưu Sản Phẩm"
-        android:textSize="16sp" />
-
+        android:text="Lưu Sản Phẩm 💾"
+        android:textSize="16sp"
+        android:textColor="@android:color/white"
+        android:elevation="4dp" />
 </LinearLayout>

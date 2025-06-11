@@ -4,7 +4,21 @@
     <color name="black_light">#322D2D</color>
     <color name="white">#FFFFFFFF</color>
     <color name="blue">#4A90E2</color>
-    <color name="save">#5FCBF7</color>
-    <color name="red">#F54655</color>
+    <color name="save">#4A90E2</color>
+    <color name="save2">#5FCBF7</color>
+<!--    <color name="red">#F54655</color>-->
+<!--    <color name="deep_blue">#FF6200EE</color>-->
+    <color name="deep_blue">#4A90E2</color>
     <color name="cancel">#EF6571</color>
+    <color name="background">#FFFFFF</color>
+    <!-- Màu chữ chính (gần đen, dùng cho tiêu đề, text quan trọng) -->
+    <color name="text_primary">#1A1A1A</color>
+    <!-- Màu chữ phụ (xám đậm, dùng cho icon, text phụ) -->
+    <color name="text_secondary">#333333</color>
+    <!-- Màu đường phân cách (xám nhạt) -->
+    <color name="divider_color">#E0E0E0</color>
+    <color name="gray">#666666</color>
+    <color name="red">#FF0000</color>
+    <color name="light_gray">#E0E0E0</color>
+
 </resources>

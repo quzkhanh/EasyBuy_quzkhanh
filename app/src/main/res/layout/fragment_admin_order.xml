@@ -2,23 +2,59 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@color/white">
-
+    android:background="@color/white"
+    android:padding="16dp">
+<!--    <-android:background="@drawable/gradient_background"->-->
+    <!-- Tiêu đề -->
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Quản lý Đơn Hàng"
-        android:textSize="24sp"
+        android:fontFamily="@font/jetbrains_mono_extrabold"
         android:textStyle="bold"
-        android:textColor="#333333" />
+        android:textSize="20sp"
+        android:text="Quản Lý Đơn Hàng 📦"
+        android:gravity="left"
+        android:padding="16dp"
+        android:textColor="@color/black" />
 
+    <!-- Phần hiển thị khi danh sách trống -->
+    <LinearLayout
+        android:id="@+id/emptyListContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_weight="1">
+
+        <ImageView
+            android:id="@+id/ivEmptyOrders"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:src="@drawable/ic_empty_cart"
+            android:contentDescription="Danh sách đơn hàng trống" />
+
+        <TextView
+            android:id="@+id/tvEmptyOrders"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Không có đơn hàng nào 😢"
+            android:gravity="center"
+            android:padding="16dp"
+            android:textSize="18sp"
+            android:fontFamily="@font/jetbrains_mono"
+            android:textColor="@color/gray" />
+    </LinearLayout>
+
+    <!-- RecyclerView đơn hàng -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewOrders"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="16dp" />
-
+        android:layout_marginTop="16dp"
+        android:background="@drawable/recycler_background"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 </LinearLayout>
