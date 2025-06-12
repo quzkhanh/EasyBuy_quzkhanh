@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.example.easybuy.database.dao.OrderDAO;
 import com.example.easybuy.database.dao.ProductDAO;
 import com.example.easybuy.R;
 import com.example.easybuy.utils.SessionManager;
@@ -30,6 +31,7 @@ public class AdminHomeFragment extends Fragment {
     private TextView tvSoldCount;
     private SessionManager sessionManager;
     private ProductDAO productDAO;
+    private OrderDAO orderDAO; // Thêm khai báo OrderDAO
     private int adminId;
     private int selectedYear;
 
@@ -45,9 +47,10 @@ public class AdminHomeFragment extends Fragment {
         tvOrderCount = view.findViewById(R.id.tvOrderCount);
         tvSoldCount = view.findViewById(R.id.tvSoldCount);
 
-        // Khởi tạo SessionManager và ProductDAO
+        // Khởi tạo SessionManager, ProductDAO và OrderDAO
         sessionManager = new SessionManager(requireContext());
         productDAO = new ProductDAO(requireContext());
+        orderDAO = new OrderDAO(requireContext()); // Khởi tạo OrderDAO
         adminId = getAdminId();
 
         if (adminId == -1) {
@@ -125,13 +128,11 @@ public class AdminHomeFragment extends Fragment {
         int productCount = productDAO.getProductsByAdmin(adminId).size();
         tvProductCount.setText("Số lượng sản phẩm: " + productCount);
 
-        // Số lượng đơn hàng (cần OrderDAO)
-        // Ví dụ: int orderCount = orderDAO.getOrderCountByAdminAndYear(adminId, selectedYear);
-        tvOrderCount.setText("Số lượng đơn hàng: " + "0"); // Placeholder - cần OrderDAO
+        int orderCount = orderDAO.getOrderCountByAdminAndYear(adminId, selectedYear);
+        tvOrderCount.setText("Số lượng đơn hàng: " + orderCount);
 
-        // Số sản phẩm đã bán (cần OrderDetailDAO hoặc tương tự)
-        // Ví dụ: int soldCount = orderDetailDAO.getSoldProductCountByAdminAndYear(adminId, selectedYear);
-        tvSoldCount.setText("Số sản phẩm đã bán: " + "0"); // Placeholder - cần OrderDetailDAO
+        int soldCount = orderDAO.getSoldProductCountByAdminAndYear(adminId, selectedYear);
+        tvSoldCount.setText("Số sản phẩm đã bán: " + soldCount);
     }
 
     @Override

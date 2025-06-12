@@ -92,7 +92,7 @@ public class OrderAdminAdapter extends RecyclerView.Adapter<OrderAdminAdapter.Or
 
             tvOrderId.setText("Mã đơn: " + order.getOrderId());
             tvUserId.setText("Người dùng: " + userName);
-            tvProductId.setText("Sản phẩm: " + order.getProductId());
+            tvProductId.setText("Sản phẩm: " + order.getProductName());
             tvStatus.setText("Trạng thái: " + order.getStatus());
             tvOrderDate.setText("Ngày đặt: " + order.getOrderDate());
         }

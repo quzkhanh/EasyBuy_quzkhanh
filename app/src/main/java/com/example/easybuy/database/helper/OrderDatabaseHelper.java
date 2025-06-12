@@ -135,4 +135,32 @@ public class OrderDatabaseHelper {
         cursor.close();
         return orders;
     }
+
+    public int getOrderCountByAdminAndYear(int adminId, int year) {
+        SQLiteDatabase db = getReadableDatabase();
+        String query = "SELECT COUNT(*) FROM " + DatabaseHelper.TABLE_ORDERS + " o " +
+                "INNER JOIN " + DatabaseHelper.TABLE_PRODUCT + " p ON o.product_id = p.product_id " +
+                "WHERE p.created_by = ? AND strftime('%Y', o.order_date) = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(adminId), String.valueOf(year)});
+        int count = 0;
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+        return count;
+    }
+
+    public int getSoldProductCountByAdminAndYear(int adminId, int year) {
+        SQLiteDatabase db = getReadableDatabase();
+        String query = "SELECT SUM(o.quantity) FROM " + DatabaseHelper.TABLE_ORDERS + " o " +
+                "INNER JOIN " + DatabaseHelper.TABLE_PRODUCT + " p ON o.product_id = p.product_id " +
+                "WHERE p.created_by = ? AND strftime('%Y', o.order_date) = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(adminId), String.valueOf(year)});
+        int count = 0;
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+        return count;
+    }
 }

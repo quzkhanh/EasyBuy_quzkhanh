@@ -4,6 +4,7 @@ public class Order {
     private int orderId;
     private int userId;
     private int productId;
+    private String productName; // Thêm productName
     private int quantity;
     private double totalPrice;
     private String status;
@@ -16,12 +17,13 @@ public class Order {
     public Order() {}
 
     // Full constructor
-    public Order(int orderId, int userId, int productId, int quantity, double totalPrice,
+    public Order(int orderId, int userId, int productId, String productName, int quantity, double totalPrice,
                  String status, String orderDate, String shippingAddress,
                  String phoneNumber, String paymentMethod) {
         this.orderId = orderId;
         this.userId = userId;
         this.productId = productId;
+        this.productName = productName;
         this.quantity = quantity;
         this.totalPrice = totalPrice;
         this.status = status;
@@ -40,6 +42,9 @@ public class Order {
 
     public int getProductId() { return productId; }
     public void setProductId(int productId) { this.productId = productId; }
+
+    public String getProductName() { return productName; }
+    public void setProductName(String productName) { this.productName = productName; }
 
     public int getQuantity() { return quantity; }
     public void setQuantity(int quantity) { this.quantity = quantity; }
@@ -61,4 +66,9 @@ public class Order {
 
     public String getPaymentMethod() { return paymentMethod; }
     public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+
+    // Hàm getName trả về productName
+    public String getName() {
+        return productName != null ? productName : "Không có tên sản phẩm";
+    }
 }

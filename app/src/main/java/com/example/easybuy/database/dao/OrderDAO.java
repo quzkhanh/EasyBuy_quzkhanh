@@ -7,8 +7,6 @@ import com.example.easybuy.database.helper.OrderDatabaseHelper;
 import com.example.easybuy.model.Order;
 import java.util.List;
 
-
-
 public class OrderDAO {
     private final OrderDatabaseHelper orderDbHelper;
 
@@ -39,5 +37,13 @@ public class OrderDAO {
 
     public List<Order> getOrdersByAdminId(int adminId) {
         return orderDbHelper.getOrdersByAdminId(adminId);
+    }
+
+    public int getOrderCountByAdminAndYear(int adminId, int year) {
+        return orderDbHelper.getOrderCountByAdminAndYear(adminId, year);
+    }
+
+    public int getSoldProductCountByAdminAndYear(int adminId, int year) {
+        return orderDbHelper.getSoldProductCountByAdminAndYear(adminId, year);
     }
 }
