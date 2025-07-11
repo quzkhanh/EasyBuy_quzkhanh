@@ -59,17 +59,30 @@ public class AdminLoginActivity extends AppCompatActivity {
 
         if (!validateInputs(email, password)) return;
 
-        // Kiểm tra thông tin đăng nhập
-        boolean isAuthenticated = adminDAO.authenticateAdmin(email, password);
+        Map<String, String> credentials = new HashMap<>();
+        credentials.put("email", email);
+        credentials.put("password", password);
 
-        if (isAuthenticated) {
-            Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, AdminMainActivity.class)); // Chuyển đến màn hình Admin
-            finish();
-        } else {
-            Toast.makeText(this, "Email hoặc mật khẩu không đúng!", Toast.LENGTH_SHORT).show();
-        }
+        AdminApi api = ApiClient.getClient().create(AdminApi.class);
+        api.login(credentials).enqueue(new Callback<Map<String, Object>>() {
+            @Override
+            public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> res) {
+                if (res.isSuccessful() && res.body() != null) {
+                    Toast.makeText(AdminLoginActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(AdminLoginActivity.this, AdminMainActivity.class));
+                    finish();
+                } else {
+                    Toast.makeText(AdminLoginActivity.this, "Email hoặc mật khẩu không đúng!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Map<String, Object>> call, Throwable t) {
+                Toast.makeText(AdminLoginActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
 
     private boolean validateInputs(String email, String password) {
         if (email.isEmpty() || password.isEmpty()) {
@@ -87,6 +100,5 @@ public class AdminLoginActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        adminDAO.close(); // Đóng database
     }
 }

@@ -13,12 +13,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.easybuy.database.dao.AdminDAO;
 import com.example.easybuy.model.Admin;
 import com.example.easybuy.R;
+import com.example.easybuy.network.AdminApi;
+import com.example.easybuy.network.ApiClient;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AdminSignUpActivity extends AppCompatActivity {
     private EditText edtAdminName, edtAdminEmail, edtAdminPassword, edtRepeatAdminPW;
     private Button btnSignUp;
-    private AdminDAO adminDAO;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,43 +37,53 @@ public class AdminSignUpActivity extends AppCompatActivity {
         edtAdminPassword = findViewById(R.id.edtUserPassword);
         edtRepeatAdminPW = findViewById(R.id.edtRepeatPW);
         btnSignUp = findViewById(R.id.btnSignUp);
-
-        // Khởi tạo AdminDAO
-        adminDAO = new AdminDAO(this);
-
         // Xử lý sự kiện đăng ký
         btnSignUp.setOnClickListener(v -> registerAdmin());
     }
 
     private void registerAdmin() {
-        String fullName = edtAdminName.getText().toString().trim();
-        String email = edtAdminEmail.getText().toString().trim();
-        String password = edtAdminPassword.getText().toString().trim();
+        String fullName       = edtAdminName.getText().toString().trim();
+        String email          = edtAdminEmail.getText().toString().trim();
+        String password       = edtAdminPassword.getText().toString().trim();
         String repeatPassword = edtRepeatAdminPW.getText().toString().trim();
 
-        // Kiểm tra nhập liệu
-        if (!validateInputs(fullName, email, password, repeatPassword)) return;
-
-        // Kiểm tra email đã tồn tại
-        if (adminDAO.checkAdminEmail(email)) { // Sử dụng checkAdminEmail từ AdminDAO
-            Toast.makeText(this, "Email đã tồn tại!", Toast.LENGTH_SHORT).show();
+        if (fullName.isEmpty() || email.isEmpty() || password.isEmpty() || repeatPassword.isEmpty()) {
+            Toast.makeText(this, "Vui lòng điền đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (!password.equals(repeatPassword)) {
+            Toast.makeText(this, "Mật khẩu không khớp!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Tạo Admin mới
-        Admin newAdmin = new Admin(fullName, email, password);
-        long adminId = adminDAO.addAdmin(newAdmin);
+        // ① Chuẩn bị Retrofit
+        AdminApi api = ApiClient.getClient().create(AdminApi.class);
 
-        if (adminId > 0) {
-            // Lưu adminId vào SharedPreferences để sử dụng sau này
-            saveAdminSession((int) adminId);
+        Map<String,String> body = new HashMap<>();
+        body.put("full_name", fullName);
+        body.put("email", email);
+        body.put("password", password);
 
-            Toast.makeText(this, "Đăng ký Admin thành công!", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, AdminLoginActivity.class));
-            finish();
-        } else {
-            Toast.makeText(this, "Đăng ký thất bại!", Toast.LENGTH_SHORT).show();
-        }
+        // ② Gọi API
+        api.register(body).enqueue(new Callback<Map<String, Object>>() {
+            @Override
+            public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> res) {
+                if (res.isSuccessful()) {
+                    Toast.makeText(AdminSignUpActivity.this, "Đăng ký Admin thành công!", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(AdminSignUpActivity.this, AdminLoginActivity.class));
+                    finish();
+                } else if (res.code() == 400) {
+                    Toast.makeText(AdminSignUpActivity.this, "Email đã tồn tại!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(AdminSignUpActivity.this, "Đăng ký thất bại!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Map<String, Object>> call, Throwable t) {
+                Toast.makeText(AdminSignUpActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private boolean validateInputs(String fullName, String email, String password, String repeatPassword) {

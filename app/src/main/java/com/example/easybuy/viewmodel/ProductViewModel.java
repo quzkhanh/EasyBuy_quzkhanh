@@ -1,15 +1,23 @@
 package com.example.easybuy.viewmodel;
 
 import android.content.Context;
+import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import com.example.easybuy.database.dao.ProductDAO;
 import com.example.easybuy.model.Product;
+import com.example.easybuy.network.ApiClient;
+import com.example.easybuy.network.ProductApi;
 import java.util.ArrayList;
 import java.util.List;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 
 public class ProductViewModel extends ViewModel {
+    private ProductApi productApi;
     private ProductDAO productDAO;
     private MutableLiveData<List<Product>> allProducts;
     private MutableLiveData<List<Product>> adminProducts;
@@ -29,13 +37,64 @@ public class ProductViewModel extends ViewModel {
 
     // Khởi tạo ProductDAO với context
     public void init(Context context) {
-        productDAO = new ProductDAO(context);
+        productDAO = new ProductDAO(context); // vẫn dùng local tạm
+        productApi = ApiClient.getClient().create(ProductApi.class);
+    }
+
+    //    Thêm phương thức này để gọi API thêm sản phẩm:
+    public void addProductToServer(Product product) {
+        ProductApi api = ApiClient.getClient().create(ProductApi.class);
+        api.addProduct(product).enqueue(new Callback<Product>() {
+            @Override
+            public void onResponse(Call<Product> call, Response<Product> response) {
+                operationSuccess.postValue(response.isSuccessful());
+            }
+
+            @Override
+            public void onFailure(Call<Product> call, Throwable t) {
+                operationSuccess.postValue(false);
+            }
+        });
+    }
+
+    private void fetchAllProductsFromServer() {
+        productApi.getAllProducts().enqueue(new Callback<List<Product>>() {
+            @Override
+            public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Product> products = response.body();
+                    allProducts.postValue(products);
+                    originalAdminProducts = new ArrayList<>(products); // phục vụ tìm kiếm
+                } else {
+                    Log.e("ProductViewModel", "Lỗi phản hồi sản phẩm: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Product>> call, Throwable t) {
+                Log.e("ProductViewModel", "Lỗi tải sản phẩm: " + t.getMessage());
+            }
+        });
     }
 
     // Lấy tất cả sản phẩm
-    public LiveData<List<Product>> getAllProducts() {
-        loadAllProducts();
-        return allProducts;
+    public LiveData<List<Product>> getAllProductsFromServer() {
+        MutableLiveData<List<Product>> live = new MutableLiveData<>();
+
+        productApi.getAllProducts().enqueue(new retrofit2.Callback<List<Product>>() {
+            @Override public void onResponse(Call<List<Product>> c, Response<List<Product>> r) {
+                if (r.isSuccessful() && r.body()!=null) {
+                    live.postValue(r.body());
+                    originalAdminProducts = new ArrayList<>(r.body());  // phục vụ search
+                } else {
+                    live.postValue(new ArrayList<>());
+                }
+            }
+            @Override public void onFailure(Call<List<Product>> c, Throwable t) {
+                live.postValue(new ArrayList<>());
+            }
+        });
+        return live;
     }
 
     // Lấy sản phẩm theo admin
@@ -78,9 +137,9 @@ public class ProductViewModel extends ViewModel {
 
     // Load tất cả sản phẩm
     private void loadAllProducts() {
-        List<Product> products = productDAO.getAllProducts();
-        allProducts.setValue(products);
+        fetchAllProductsFromServer();
     }
+
 
     // Load sản phẩm theo admin
     private void loadProductsByAdmin(int adminId) {

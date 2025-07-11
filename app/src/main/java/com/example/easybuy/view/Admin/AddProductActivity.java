@@ -23,6 +23,8 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.easybuy.network.ApiClient;
+import com.example.easybuy.network.ProductApi;
 import com.example.easybuy.view.Adapter.ImageAdapter;
 import com.example.easybuy.database.dao.ProductDAO;
 import com.example.easybuy.model.Product;
@@ -201,20 +203,25 @@ public class AddProductActivity extends AppCompatActivity {
         }
 
         Product newProduct = new Product(productName, price, mainImageUri.toString(), description, adminId);
-        ProductDAO productDAO = new ProductDAO(this);
-        List<String> additionalImageUrls = new ArrayList<>();
-        for (Uri uri : additionalImageUris) {
-            additionalImageUrls.add(uri.toString());
-        }
+        ProductApi api = ApiClient.getClient().create(ProductApi.class);
+        api.addProduct(newProduct).enqueue(new retrofit2.Callback<Product>() {
+            @Override
+            public void onResponse(retrofit2.Call<Product> call, retrofit2.Response<Product> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(AddProductActivity.this, "Thêm sản phẩm thành công", Toast.LENGTH_SHORT).show();
+                    setResult(RESULT_OK);
+                    finish();
+                } else {
+                    Toast.makeText(AddProductActivity.this, "Thêm sản phẩm thất bại: " + response.message(), Toast.LENGTH_SHORT).show();
+                }
+            }
 
-        long productId = productDAO.addProductWithImages(newProduct, additionalImageUrls, adminId);
+            @Override
+            public void onFailure(retrofit2.Call<Product> call, Throwable t) {
+                Toast.makeText(AddProductActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "API error: ", t);
+            }
+        });
 
-        if (productId != -1) {
-            Toast.makeText(this, "Thêm sản phẩm thành công", Toast.LENGTH_SHORT).show();
-            setResult(RESULT_OK);
-            finish();
-        } else {
-            Toast.makeText(this, "Lỗi khi thêm sản phẩm", Toast.LENGTH_SHORT).show();
-        }
     }
 }

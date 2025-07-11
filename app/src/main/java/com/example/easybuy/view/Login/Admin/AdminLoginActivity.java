@@ -12,6 +12,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.easybuy.network.AdminApi;
+import com.example.easybuy.network.ApiClient;
 import com.example.easybuy.view.Admin.AdminMainActivity;
 import com.example.easybuy.view.Login.ForgotPW.ForgotPasswordActivity;
 import com.example.easybuy.database.dao.AdminDAO;
@@ -20,6 +22,13 @@ import com.example.easybuy.R;
 import com.example.easybuy.utils.SessionManager;
 
 import org.mindrot.jbcrypt.BCrypt;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AdminLoginActivity extends AppCompatActivity {
     private EditText edtAdminEmail, edtAdminPassword;
@@ -64,35 +73,49 @@ public class AdminLoginActivity extends AppCompatActivity {
 
         if (!validateInputs(email, password)) return;
 
-        try {
-            Admin admin = adminDAO.getAdminByEmail(email);
-            if (admin != null) {
-                Log.d("AdminLogin", "Stored password hash: " + admin.getPassword());
-                if (BCrypt.checkpw(password, admin.getPassword())) {
-                    // Luôn lưu adminId vào tempAdminId, chỉ lưu vào SharedPreferences nếu chọn lưu
-                    sessionManager.createAdminLoginSession(admin.getId(), admin.getEmail(), admin.getFullName());
-                    if (!btnSaveLogin.isChecked()) {
-                        // Nếu không lưu phiên, xóa dữ liệu trong SharedPreferences nhưng giữ tempAdminId
-                        sessionManager.logout();
-                        sessionManager.createAdminLoginSession(admin.getId(), admin.getEmail(), admin.getFullName());
+        // Gọi API login
+        AdminApi api = ApiClient.getClient().create(AdminApi.class);
+        Map<String, String> loginData = new HashMap<>();
+        loginData.put("email", email);
+        loginData.put("password", password);
+
+        api.login(loginData).enqueue(new Callback<Map<String, Object>>() {
+            @Override
+            public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Map<String, Object> body = response.body();
+                    Map<String, Object> adminMap = (Map<String, Object>) body.get("admin");
+
+                    String fullName = (String) adminMap.get("full_name");
+                    String email = (String) adminMap.get("email");
+                    int id;
+
+                    // Nếu backend trả _id là String (MongoDB)
+                    try {
+                        id = adminMap.get("id") != null
+                                ? ((Double) adminMap.get("id")).intValue()  // nếu bạn dùng SQLite hoặc số
+                                : fullName.hashCode(); // fallback nếu không có id
+                    } catch (Exception e) {
+                        id = fullName.hashCode();
                     }
-                    Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(this, AdminMainActivity.class);
-                    startActivity(intent);
-                    Log.d("AdminLogin", "Starting AdminMainActivity and finishing AdminLoginActivity");
+
+                    sessionManager.createAdminLoginSession(id, email, fullName);
+
+                    Toast.makeText(AdminLoginActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(AdminLoginActivity.this, AdminMainActivity.class));
                     finish();
                 } else {
-                    Log.d("AdminLogin", "Password mismatch");
-                    Toast.makeText(this, "Email hoặc mật khẩu không đúng!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AdminLoginActivity.this, "Sai email hoặc mật khẩu", Toast.LENGTH_SHORT).show();
                 }
-            } else {
-                Toast.makeText(this, "Email không tồn tại!", Toast.LENGTH_SHORT).show();
             }
-        } catch (Exception e) {
-            Toast.makeText(this, "Lỗi khi đăng nhập: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            Log.e("AdminLogin", "Login error: " + e.getMessage());
-        }
+
+            @Override
+            public void onFailure(Call<Map<String, Object>> call, Throwable t) {
+                Toast.makeText(AdminLoginActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
 
     private boolean validateInputs(String email, String password) {
         if (email.isEmpty() || password.isEmpty()) {

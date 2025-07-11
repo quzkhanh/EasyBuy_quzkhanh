@@ -15,14 +15,15 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.easybuy.view.User.ProductDetailActivity;
-import com.example.easybuy.database.dao.OrderDAO;
-import com.example.easybuy.view.Adapter.ProductAdapter;
-import com.example.easybuy.database.dao.ProductDAO;
+import com.example.easybuy.R;
 import com.example.easybuy.model.Order;
 import com.example.easybuy.model.Product;
-import com.example.easybuy.R;
+import com.example.easybuy.network.ApiClient;
+import com.example.easybuy.network.ProductApi;
 import com.example.easybuy.utils.SessionManager;
+import com.example.easybuy.view.Adapter.ProductAdapter;
+import com.example.easybuy.view.User.ProductDetailActivity;
+import com.example.easybuy.database.dao.OrderDAO;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -30,44 +31,38 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class UserHomeFragment extends Fragment {
 
     private RecyclerView productRecyclerView;
-    private ProductDAO productDAO;
     private OrderDAO orderDAO;
     private ProductAdapter productAdapter;
     private TextView tvEmptyList;
-    private EditText searchBar; // Thay SearchView bằng EditText
+    private EditText searchBar;
     private SessionManager sessionManager;
-    private List<Product> allProducts; // Danh sách đầy đủ để lọc
+    private List<Product> allProducts;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        // Khởi tạo các thành phần
+        // Ánh xạ View
         productRecyclerView = view.findViewById(R.id.productRecyclerView);
         tvEmptyList = view.findViewById(R.id.tvEmptyList);
         searchBar = view.findViewById(R.id.searchBar);
 
-        // Khởi tạo DAO
-        productDAO = new ProductDAO(requireContext());
+        // Khởi tạo DAO & session
         orderDAO = new OrderDAO(requireContext());
-
-        // Khởi tạo SessionManager
         sessionManager = new SessionManager(requireContext());
 
-        // Lưu danh sách đầy đủ sản phẩm
         allProducts = new ArrayList<>();
 
-        // Cấu hình RecyclerView với GridLayoutManager (2 cột)
         setupRecyclerView();
-
-        // Tải danh sách sản phẩm
-        loadProducts();
-
-        // Thiết lập sự kiện tìm kiếm
-        setupSearchBar();
+        loadProducts();        // Tải từ API
+        setupSearchBar();      // Gắn bộ lọc
 
         return view;
     }
@@ -75,62 +70,65 @@ public class UserHomeFragment extends Fragment {
     private void setupRecyclerView() {
         productRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
 
-        // Lấy currentUserId từ SessionManager
         int currentUserId = sessionManager.getUserId();
-
-        // Khởi tạo ProductAdapter với currentUserId
         productAdapter = new ProductAdapter(getContext(), new ArrayList<>(), currentUserId, product -> {
-            // Chuyển sang ProductDetailActivity
             Intent intent = new Intent(getContext(), ProductDetailActivity.class);
             intent.putExtra("PRODUCT_ID", product.getProductId());
             startActivity(intent);
         });
+
         productRecyclerView.setAdapter(productAdapter);
     }
 
     private void loadProducts() {
-        allProducts = productDAO.getAllProducts();
+        ProductApi api = ApiClient.getClient().create(ProductApi.class);
 
-        if (allProducts.isEmpty()) {
+        api.getAllProducts().enqueue(new Callback<List<Product>>() {
+            @Override
+            public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    allProducts = response.body();
+                    updateProductList(allProducts);
+                } else {
+                    Toast.makeText(getContext(), "Không tải được sản phẩm!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Product>> call, Throwable t) {
+                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void updateProductList(List<Product> products) {
+        if (products.isEmpty()) {
             tvEmptyList.setVisibility(View.VISIBLE);
             productRecyclerView.setVisibility(View.GONE);
         } else {
             tvEmptyList.setVisibility(View.GONE);
             productRecyclerView.setVisibility(View.VISIBLE);
-            productAdapter.setProductList(allProducts);
+            productAdapter.setProductList(products);
         }
     }
 
     private void setupSearchBar() {
         searchBar.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // Không cần xử lý
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Không cần xử lý
-            }
-
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
             @Override
             public void afterTextChanged(Editable s) {
-                filterProducts(s.toString()); // Lọc sản phẩm khi người dùng nhập
+                filterProducts(s.toString());
             }
         });
     }
 
-    /**
-     * Lọc danh sách sản phẩm dựa trên chuỗi truy vấn.
-     * @param query Chuỗi truy vấn để lọc sản phẩm.
-     */
     private void filterProducts(String query) {
         List<Product> filteredList = new ArrayList<>();
 
-        if (query == null || query.trim().isEmpty()) { // Nếu chuỗi truy vấn rỗng hoặc null
+        if (query == null || query.trim().isEmpty()) {
             filteredList.addAll(allProducts);
         } else {
-            // Lọc sản phẩm theo tên (không phân biệt hoa thường)
             String lowerCaseQuery = query.toLowerCase(Locale.getDefault());
             for (Product product : allProducts) {
                 if (product.getProductName().toLowerCase(Locale.getDefault()).contains(lowerCaseQuery)) {
@@ -139,40 +137,25 @@ public class UserHomeFragment extends Fragment {
             }
         }
 
-        // Cập nhật giao diện dựa trên danh sách đã lọc
-        if (filteredList.isEmpty()) {
-            tvEmptyList.setVisibility(View.VISIBLE);
-            productRecyclerView.setVisibility(View.GONE);
-            tvEmptyList.setText("Không tìm thấy sản phẩm nào");
-        } else {
-            tvEmptyList.setVisibility(View.GONE);
-            productRecyclerView.setVisibility(View.VISIBLE);
-            productAdapter.setProductList(filteredList);
-        }
+        updateProductList(filteredList);
     }
 
     private void placeOrder(Product product) {
-        // Kiểm tra đăng nhập
         if (!isUserLoggedIn()) {
             Toast.makeText(getContext(), "Vui lòng đăng nhập để mua hàng!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Lấy userId từ SessionManager
         int userId = sessionManager.getUserId();
         if (userId == -1) {
             Toast.makeText(getContext(), "Không tìm thấy thông tin người dùng!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Lấy thời gian hiện tại
         String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                 .format(new Date());
 
-        // Tạo đơn hàng mới
         Order order = createOrder(product, currentDate, userId);
-
-        // Lưu đơn hàng vào database
         long orderId = orderDAO.addOrder(order);
 
         if (orderId != -1) {
@@ -186,7 +169,7 @@ public class UserHomeFragment extends Fragment {
         Order order = new Order();
         order.setUserId(userId);
         order.setProductId(product.getProductId());
-        order.setQuantity(1); // Mặc định 1 sản phẩm
+        order.setQuantity(1);
         order.setTotalPrice(product.getPrice());
         order.setStatus("Pending");
         order.setOrderDate(currentDate);
@@ -200,6 +183,6 @@ public class UserHomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        loadProducts(); // Cập nhật khi quay lại
+        loadProducts();
     }
 }

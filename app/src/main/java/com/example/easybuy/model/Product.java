@@ -1,13 +1,23 @@
     package com.example.easybuy.model;
+    import com.google.gson.annotations.SerializedName;
 
     public class Product {
         private int productId;
-        private String productName;
-        private double price;
-        private String imageUrl;
-        private String description;
-        private int createdBy;
 
+        @SerializedName("product_name")
+        private String productName;
+
+        @SerializedName("price")
+        private double price;
+
+        @SerializedName("image_url")
+        private String imageUrl;
+
+        @SerializedName("description")
+        private String description;
+
+        @SerializedName("created_by")
+        private int createdBy;
         // Default constructor
         public Product() {}
 

@@ -11,12 +11,21 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.easybuy.network.ApiClient;
+import com.example.easybuy.network.UserApi;
 import com.example.easybuy.view.User.UserMainActivity;
 import com.example.easybuy.database.helper.DatabaseHelper;
 import com.example.easybuy.database.helper.UserDatabaseHelper;
 import com.example.easybuy.model.User;
 import com.example.easybuy.R;
 import com.example.easybuy.utils.SessionManager;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class UserLoginActivity extends AppCompatActivity {
     private EditText edtUserEmail, edtUserPassword;
@@ -60,20 +69,55 @@ public class UserLoginActivity extends AppCompatActivity {
 
         if (!validateInputs(email, password)) return;
 
-        User user = userDbHelper.checkLogin(email, password);
-        if (user != null) {
-            String fullName = user.getFullName();
+        // Gọi API bằng Retrofit
+        UserApi userApi = ApiClient.getClient().create(UserApi.class);
 
-            // Luôn lưu phiên đăng nhập
-            sessionManager.createUserLoginSession(user.getUserId(), email, fullName);
+        HashMap<String, String> loginRequest = new HashMap<>();
+        loginRequest.put("email", email);
+        loginRequest.put("password", password);
 
-            Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, UserMainActivity.class));
-            finish();
-        } else {
-            Toast.makeText(this, "Email hoặc mật khẩu không đúng!", Toast.LENGTH_SHORT).show();
-        }
+        userApi.loginUser(loginRequest).enqueue(new Callback<HashMap<String, Object>>() {
+            @Override
+            public void onResponse(Call<HashMap<String, Object>> call,
+                                   Response<HashMap<String, Object>> response) {
+                if (!response.isSuccessful() || response.body() == null) {
+                    Toast.makeText(UserLoginActivity.this,
+                            "Sai email hoặc mật khẩu!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Lấy user object lồng bên trong
+                // Thay vì ép kiểu HashMap
+                Map<String, Object> userMap = (Map<String, Object>) response.body().get("user");
+
+                if (userMap == null) {
+                    Toast.makeText(UserLoginActivity.this, "Không đọc được dữ liệu người dùng!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                String userIdStr = (String) userMap.get("_id");
+                String fullName = (String) userMap.get("full_name");
+                String email = (String) userMap.get("email");
+
+// Convert userId từ string → int tạm thời (hashCode) nếu cần ID số nguyên
+                int userId = userIdStr.hashCode(); // bạn có thể lưu raw string nếu muốn chính xác
+
+                sessionManager.createUserLoginSession(userId, email, fullName);
+                Toast.makeText(UserLoginActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(UserLoginActivity.this, UserMainActivity.class));
+                finish();
+
+            }
+
+            @Override
+            public void onFailure(Call<HashMap<String, Object>> call, Throwable t) {
+                Toast.makeText(UserLoginActivity.this,
+                        "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
+
 
     private boolean validateInputs(String email, String password) {
         if (email.isEmpty() || password.isEmpty()) {

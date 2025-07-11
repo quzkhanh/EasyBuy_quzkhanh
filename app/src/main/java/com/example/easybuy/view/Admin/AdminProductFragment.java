@@ -123,16 +123,19 @@ public class AdminProductFragment extends Fragment {
         recyclerViewProducts.setAdapter(productAdapter);
 
         // Quan sát danh sách sản phẩm từ ViewModel
-        productViewModel.getProductsByAdmin(adminId).observe(getViewLifecycleOwner(), products -> {
-            productAdapter.setProductList(products);
-            if (products.isEmpty()) {
-                emptyListContainer.setVisibility(View.VISIBLE);
-                recyclerViewProducts.setVisibility(View.GONE);
-            } else {
-                emptyListContainer.setVisibility(View.GONE);
-                recyclerViewProducts.setVisibility(View.VISIBLE);
-            }
-        });
+        productViewModel
+                .getAllProductsFromServer()          // hoặc getProductsByAdminFromServer(adminId)
+                .observe(getViewLifecycleOwner(), products -> {
+                    productAdapter.setProductList(products);
+                    if (products.isEmpty()) {
+                        emptyListContainer.setVisibility(View.VISIBLE);
+                        recyclerViewProducts.setVisibility(View.GONE);
+                    } else {
+                        emptyListContainer.setVisibility(View.GONE);
+                        recyclerViewProducts.setVisibility(View.VISIBLE);
+                    }
+                });
+
     }
 
     @Override

@@ -75,6 +75,5 @@ public class AdminSignUpActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        adminDAO.close(); // Đóng database
     }
 }
